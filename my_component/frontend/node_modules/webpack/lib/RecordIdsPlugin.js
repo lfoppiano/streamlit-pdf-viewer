@@ -2,14 +2,12 @@
 	MIT License http://www.opensource.org/licenses/mit-license.php
 	Author Tobias Koppers @sokra
 */
-
 "use strict";
 
-const { compareNumbers } = require("./util/comparators");
 const identifierUtils = require("./util/identifier");
 
-/** @typedef {import("./Chunk")} Chunk */
 /** @typedef {import("./Compiler")} Compiler */
+/** @typedef {import("./Chunk")} Chunk */
 /** @typedef {import("./Module")} Module */
 
 /**
@@ -23,7 +21,7 @@ const identifierUtils = require("./util/identifier");
  * @typedef {Object} RecordsModules
  * @property {Record<string, number>=} byIdentifier
  * @property {Record<string, number>=} bySource
- * @property {number[]=} usedIds
+ * @property {Record<number, number>=} usedIds
  */
 
 /**
@@ -47,70 +45,58 @@ class RecordIdsPlugin {
 	 */
 	apply(compiler) {
 		const portableIds = this.options.portableIds;
-
-		const makePathsRelative =
-			identifierUtils.makePathsRelative.bindContextCache(
-				compiler.context,
-				compiler.root
-			);
-
-		/**
-		 * @param {Module} module the module
-		 * @returns {string} the (portable) identifier
-		 */
-		const getModuleIdentifier = module => {
-			if (portableIds) {
-				return makePathsRelative(module.identifier());
-			}
-			return module.identifier();
-		};
-
 		compiler.hooks.compilation.tap("RecordIdsPlugin", compilation => {
 			compilation.hooks.recordModules.tap(
 				"RecordIdsPlugin",
 				/**
-				 * @param {Iterable<Module>} modules the modules array
+				 * @param {Module[]} modules the modules array
 				 * @param {Records} records the records object
 				 * @returns {void}
 				 */
 				(modules, records) => {
-					const chunkGraph = compilation.chunkGraph;
 					if (!records.modules) records.modules = {};
 					if (!records.modules.byIdentifier) records.modules.byIdentifier = {};
-					/** @type {Set<number>} */
-					const usedIds = new Set();
+					if (!records.modules.usedIds) records.modules.usedIds = {};
 					for (const module of modules) {
-						const moduleId = chunkGraph.getModuleId(module);
-						if (typeof moduleId !== "number") continue;
-						const identifier = getModuleIdentifier(module);
-						records.modules.byIdentifier[identifier] = moduleId;
-						usedIds.add(moduleId);
+						if (typeof module.id !== "number") continue;
+						const identifier = portableIds
+							? identifierUtils.makePathsRelative(
+									compiler.context,
+									module.identifier(),
+									compilation.cache
+							  )
+							: module.identifier();
+						records.modules.byIdentifier[identifier] = module.id;
+						records.modules.usedIds[module.id] = module.id;
 					}
-					records.modules.usedIds = Array.from(usedIds).sort(compareNumbers);
 				}
 			);
 			compilation.hooks.reviveModules.tap(
 				"RecordIdsPlugin",
 				/**
-				 * @param {Iterable<Module>} modules the modules array
+				 * @param {Module[]} modules the modules array
 				 * @param {Records} records the records object
 				 * @returns {void}
 				 */
 				(modules, records) => {
 					if (!records.modules) return;
 					if (records.modules.byIdentifier) {
-						const chunkGraph = compilation.chunkGraph;
 						/** @type {Set<number>} */
 						const usedIds = new Set();
 						for (const module of modules) {
-							const moduleId = chunkGraph.getModuleId(module);
-							if (moduleId !== null) continue;
-							const identifier = getModuleIdentifier(module);
+							if (module.id !== null) continue;
+							const identifier = portableIds
+								? identifierUtils.makePathsRelative(
+										compiler.context,
+										module.identifier(),
+										compilation.cache
+								  )
+								: module.identifier();
 							const id = records.modules.byIdentifier[identifier];
 							if (id === undefined) continue;
 							if (usedIds.has(id)) continue;
 							usedIds.add(id);
-							chunkGraph.setModuleId(module, id);
+							module.id = id;
 						}
 					}
 					if (Array.isArray(records.modules.usedIds)) {
@@ -118,6 +104,21 @@ class RecordIdsPlugin {
 					}
 				}
 			);
+
+			/**
+			 * @param {Module} module the module
+			 * @returns {string} the (portable) identifier
+			 */
+			const getModuleIdentifier = module => {
+				if (portableIds) {
+					return identifierUtils.makePathsRelative(
+						compiler.context,
+						module.identifier(),
+						compilation.cache
+					);
+				}
+				return module.identifier();
+			};
 
 			/**
 			 * @param {Chunk} chunk the chunk
@@ -148,7 +149,7 @@ class RecordIdsPlugin {
 								} else if (
 									origin.loc &&
 									typeof origin.loc === "object" &&
-									"start" in origin.loc
+									origin.loc.start
 								) {
 									sources.push(
 										`${index} ${getModuleIdentifier(
@@ -166,7 +167,7 @@ class RecordIdsPlugin {
 			compilation.hooks.recordChunks.tap(
 				"RecordIdsPlugin",
 				/**
-				 * @param {Iterable<Chunk>} chunks the chunks array
+				 * @param {Chunk[]} chunks the chunks array
 				 * @param {Records} records the records object
 				 * @returns {void}
 				 */
@@ -186,13 +187,13 @@ class RecordIdsPlugin {
 						}
 						usedIds.add(chunk.id);
 					}
-					records.chunks.usedIds = Array.from(usedIds).sort(compareNumbers);
+					records.chunks.usedIds = Array.from(usedIds).sort();
 				}
 			);
 			compilation.hooks.reviveChunks.tap(
 				"RecordIdsPlugin",
 				/**
-				 * @param {Iterable<Chunk>} chunks the chunks array
+				 * @param {Chunk[]} chunks the chunks array
 				 * @param {Records} records the records object
 				 * @returns {void}
 				 */
@@ -209,12 +210,10 @@ class RecordIdsPlugin {
 							if (usedIds.has(id)) continue;
 							usedIds.add(id);
 							chunk.id = id;
-							chunk.ids = [id];
 						}
 					}
 					if (records.chunks.bySource) {
 						for (const chunk of chunks) {
-							if (chunk.id !== null) continue;
 							const sources = getChunkSources(chunk);
 							for (const source of sources) {
 								const id = records.chunks.bySource[source];
@@ -222,7 +221,6 @@ class RecordIdsPlugin {
 								if (usedIds.has(id)) continue;
 								usedIds.add(id);
 								chunk.id = id;
-								chunk.ids = [id];
 								break;
 							}
 						}

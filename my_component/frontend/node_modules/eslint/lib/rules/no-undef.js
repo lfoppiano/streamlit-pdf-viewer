@@ -23,15 +23,15 @@ function hasTypeOfOperator(node) {
 // Rule Definition
 //------------------------------------------------------------------------------
 
-/** @type {import('../shared/types').Rule} */
 module.exports = {
     meta: {
         type: "problem",
 
         docs: {
-            description: "Disallow the use of undeclared variables unless mentioned in `/*global */` comments",
+            description: "disallow the use of undeclared variables unless mentioned in `/*global */` comments",
+            category: "Variables",
             recommended: true,
-            url: "https://eslint.org/docs/latest/rules/no-undef"
+            url: "https://eslint.org/docs/rules/no-undef"
         },
 
         schema: [
@@ -54,11 +54,10 @@ module.exports = {
     create(context) {
         const options = context.options[0];
         const considerTypeOf = options && options.typeof === true || false;
-        const sourceCode = context.sourceCode;
 
         return {
-            "Program:exit"(node) {
-                const globalScope = sourceCode.getScope(node);
+            "Program:exit"(/* node */) {
+                const globalScope = context.getScope();
 
                 globalScope.through.forEach(ref => {
                     const identifier = ref.identifier;

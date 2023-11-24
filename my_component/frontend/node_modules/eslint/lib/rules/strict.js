@@ -63,15 +63,15 @@ function isSimpleParameterList(params) {
 // Rule Definition
 //------------------------------------------------------------------------------
 
-/** @type {import('../shared/types').Rule} */
 module.exports = {
     meta: {
         type: "suggestion",
 
         docs: {
-            description: "Require or disallow strict mode directives",
+            description: "require or disallow strict mode directives",
+            category: "Strict Mode",
             recommended: false,
-            url: "https://eslint.org/docs/latest/rules/strict"
+            url: "https://eslint.org/docs/rules/strict"
         },
 
         schema: [
@@ -105,7 +105,7 @@ module.exports = {
         if (ecmaFeatures.impliedStrict) {
             mode = "implied";
         } else if (mode === "safe") {
-            mode = ecmaFeatures.globalReturn || context.languageOptions.sourceType === "commonjs" ? "global" : "function";
+            mode = ecmaFeatures.globalReturn ? "global" : "function";
         }
 
         /**

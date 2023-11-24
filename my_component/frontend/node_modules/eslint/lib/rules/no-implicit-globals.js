@@ -9,15 +9,15 @@
 // Rule Definition
 //------------------------------------------------------------------------------
 
-/** @type {import('../shared/types').Rule} */
 module.exports = {
     meta: {
         type: "suggestion",
 
         docs: {
-            description: "Disallow declarations in the global scope",
+            description: "disallow declarations in the global scope",
+            category: "Best Practices",
             recommended: false,
-            url: "https://eslint.org/docs/latest/rules/no-implicit-globals"
+            url: "https://eslint.org/docs/rules/no-implicit-globals"
         },
 
         schema: [{
@@ -43,7 +43,6 @@ module.exports = {
     create(context) {
 
         const checkLexicalBindings = context.options[0] && context.options[0].lexicalBindings === true;
-        const sourceCode = context.sourceCode;
 
         /**
          * Reports the node.
@@ -63,8 +62,8 @@ module.exports = {
         }
 
         return {
-            Program(node) {
-                const scope = sourceCode.getScope(node);
+            Program() {
+                const scope = context.getScope();
 
                 scope.variables.forEach(variable => {
 
@@ -75,11 +74,6 @@ module.exports = {
                     if (isWritableEslintGlobalVariable) {
 
                         // Everything is allowed with writable ESLint global variables.
-                        return;
-                    }
-
-                    // Variables exported by "exported" block comments
-                    if (variable.eslintExported) {
                         return;
                     }
 

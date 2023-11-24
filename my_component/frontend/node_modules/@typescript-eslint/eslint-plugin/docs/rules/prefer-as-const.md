@@ -1,24 +1,10 @@
----
-description: 'Enforce the use of `as const` over literal type.'
----
+# Prefer usage of `as const` over literal type (`prefer-as-const`)
 
-> 🛑 This file is source code, not the primary documentation location! 🛑
->
-> See **https://typescript-eslint.io/rules/prefer-as-const** for documentation.
+This rule recommends usage of `const` assertion when type primitive value is equal to type.
 
-There are two common ways to tell TypeScript that a literal value should be interpreted as its literal type (e.g. `2`) rather than general primitive type (e.g. `number`);
+## Rule Details
 
-- `as const`: telling TypeScript to infer the literal type automatically
-- `as` with the literal type: explicitly telling the literal type to TypeScript
-
-`as const` is generally preferred, as it doesn't require re-typing the literal value.
-This rule reports when an `as` with an explicit literal type can be replaced with an `as const`.
-
-## Examples
-
-<!--tabs-->
-
-### ❌ Incorrect
+Examples of **incorrect** code for this rule:
 
 ```ts
 let bar: 2 = 2;
@@ -26,7 +12,7 @@ let foo = <'bar'>'bar';
 let foo = { bar: 'baz' as 'baz' };
 ```
 
-### ✅ Correct
+Examples of **correct** code for this rule:
 
 ```ts
 let foo = 'bar';
@@ -36,8 +22,6 @@ let bar = 'bar' as string;
 let foo = <string>'bar';
 let foo = { bar: 'baz' };
 ```
-
-<!--/tabs-->
 
 ## When Not To Use It
 

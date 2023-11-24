@@ -16,5 +16,6 @@
 // specific language governing permissions and limitations
 // under the License.
 Object.defineProperty(exports, "__esModule", { value: true });
+const enum_1 = require("./enum");
 
 //# sourceMappingURL=interfaces.js.map

@@ -14,16 +14,15 @@ const astUtils = require("./utils/ast-utils");
 // Rule Definition
 //------------------------------------------------------------------------------
 
-/** @type {import('../shared/types').Rule} */
 module.exports = {
     meta: {
-        hasSuggestions: true,
         type: "suggestion",
 
         docs: {
-            description: "Disallow empty block statements",
+            description: "disallow empty block statements",
+            category: "Possible Errors",
             recommended: true,
-            url: "https://eslint.org/docs/latest/rules/no-empty"
+            url: "https://eslint.org/docs/rules/no-empty"
         },
 
         schema: [
@@ -40,8 +39,7 @@ module.exports = {
         ],
 
         messages: {
-            unexpected: "Empty {{type}} statement.",
-            suggestComment: "Add comment inside empty {{type}} statement."
+            unexpected: "Empty {{type}} statement."
         }
     },
 
@@ -49,7 +47,7 @@ module.exports = {
         const options = context.options[0] || {},
             allowEmptyCatch = options.allowEmptyCatch || false;
 
-        const sourceCode = context.sourceCode;
+        const sourceCode = context.getSourceCode();
 
         return {
             BlockStatement(node) {
@@ -73,22 +71,7 @@ module.exports = {
                     return;
                 }
 
-                context.report({
-                    node,
-                    messageId: "unexpected",
-                    data: { type: "block" },
-                    suggest: [
-                        {
-                            messageId: "suggestComment",
-                            data: { type: "block" },
-                            fix(fixer) {
-                                const range = [node.range[0] + 1, node.range[1] - 1];
-
-                                return fixer.replaceTextRange(range, " /* empty */ ");
-                            }
-                        }
-                    ]
-                });
+                context.report({ node, messageId: "unexpected", data: { type: "block" } });
             },
 
             SwitchStatement(node) {

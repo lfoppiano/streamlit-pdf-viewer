@@ -4,19 +4,19 @@
   "additionalProperties": false,
   "properties": {
     "chunkOverhead": {
-      "description": "Extra cost for each chunk (Default: 9.8kiB).",
+      "description": "Default: 0",
       "type": "number"
     },
     "entryChunkMultiplicator": {
-      "description": "Extra cost multiplicator for entry chunks (Default: 10).",
+      "description": "Default: 1",
       "type": "number"
     },
     "maxSize": {
-      "description": "Byte, max size of per file (Default: 50kiB).",
+      "description": "Byte, maxsize of per file. Default: 51200",
       "type": "number"
     },
     "minSize": {
-      "description": "Byte, split point. (Default: 30kiB).",
+      "description": "Byte, split point. Default: 30720",
       "type": "number"
     }
   }

@@ -1,39 +1,29 @@
 {
-  "name": "my_component",
+  "name": "streamlit_component_template",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "streamlit-component-lib": "^2.0.0"
-  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "streamlit-component-lib": "^1.1.1",
+    "vue": "^3.0.0-0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "homepage": ".",
   "devDependencies": {
-    "@types/node": "^12.0.0",
-    "@types/react": "^16.9.0",
-    "@types/react-dom": "^16.9.0",
-    "react-scripts": "^5.0.1",
-    "typescript": "^4.2.0"
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-typescript": "^4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "@vue/compiler-sfc": "^3.0.0-0",
+    "@vue/eslint-config-typescript": "^5.0.2",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^7.0.0-0",
+    "typescript": "4"
   }
 }

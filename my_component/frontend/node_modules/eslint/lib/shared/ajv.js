@@ -27,7 +27,7 @@ module.exports = (additionalOptions = {}) => {
     });
 
     ajv.addMetaSchema(metaSchema);
-    // eslint-disable-next-line no-underscore-dangle -- Ajv's API
+    // eslint-disable-next-line no-underscore-dangle
     ajv._opts.defaultMeta = metaSchema.id;
 
     return ajv;

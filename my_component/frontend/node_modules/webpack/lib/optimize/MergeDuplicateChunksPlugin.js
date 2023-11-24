@@ -2,31 +2,16 @@
 	MIT License http://www.opensource.org/licenses/mit-license.php
 	Author Tobias Koppers @sokra
 */
-
 "use strict";
 
-const { STAGE_BASIC } = require("../OptimizationStages");
-const { runtimeEqual } = require("../util/runtime");
-
-/** @typedef {import("../Compiler")} Compiler */
-
 class MergeDuplicateChunksPlugin {
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"MergeDuplicateChunksPlugin",
 			compilation => {
-				compilation.hooks.optimizeChunks.tap(
-					{
-						name: "MergeDuplicateChunksPlugin",
-						stage: STAGE_BASIC
-					},
+				compilation.hooks.optimizeChunksBasic.tap(
+					"MergeDuplicateChunksPlugin",
 					chunks => {
-						const { chunkGraph, moduleGraph } = compilation;
-
 						// remember already tested chunks for performance
 						const notDuplicates = new Set();
 
@@ -34,18 +19,15 @@ class MergeDuplicateChunksPlugin {
 						for (const chunk of chunks) {
 							// track a Set of all chunk that could be duplicates
 							let possibleDuplicates;
-							for (const module of chunkGraph.getChunkModulesIterable(chunk)) {
+							for (const module of chunk.modulesIterable) {
 								if (possibleDuplicates === undefined) {
 									// when possibleDuplicates is not yet set,
 									// create a new Set from chunks of the current module
 									// including only chunks with the same number of modules
-									for (const dup of chunkGraph.getModuleChunksIterable(
-										module
-									)) {
+									for (const dup of module.chunksIterable) {
 										if (
 											dup !== chunk &&
-											chunkGraph.getNumberOfChunkModules(chunk) ===
-												chunkGraph.getNumberOfChunkModules(dup) &&
+											chunk.getNumberOfModules() === dup.getNumberOfModules() &&
 											!notDuplicates.has(dup)
 										) {
 											// delay allocating the new Set until here, reduce memory pressure
@@ -61,7 +43,7 @@ class MergeDuplicateChunksPlugin {
 									// validate existing possible duplicates
 									for (const dup of possibleDuplicates) {
 										// remove possible duplicate when module is not contained
-										if (!chunkGraph.isModuleInChunk(module, dup)) {
+										if (!dup.containsModule(module)) {
 											possibleDuplicates.delete(dup);
 										}
 									}
@@ -75,30 +57,11 @@ class MergeDuplicateChunksPlugin {
 								possibleDuplicates !== undefined &&
 								possibleDuplicates.size > 0
 							) {
-								outer: for (const otherChunk of possibleDuplicates) {
+								for (const otherChunk of possibleDuplicates) {
 									if (otherChunk.hasRuntime() !== chunk.hasRuntime()) continue;
-									if (chunkGraph.getNumberOfEntryModules(chunk) > 0) continue;
-									if (chunkGraph.getNumberOfEntryModules(otherChunk) > 0)
-										continue;
-									if (!runtimeEqual(chunk.runtime, otherChunk.runtime)) {
-										for (const module of chunkGraph.getChunkModulesIterable(
-											chunk
-										)) {
-											const exportsInfo = moduleGraph.getExportsInfo(module);
-											if (
-												!exportsInfo.isEquallyUsed(
-													chunk.runtime,
-													otherChunk.runtime
-												)
-											) {
-												continue outer;
-											}
-										}
-									}
 									// merge them
-									if (chunkGraph.canChunksBeIntegrated(chunk, otherChunk)) {
-										chunkGraph.integrateChunks(chunk, otherChunk);
-										compilation.chunks.delete(otherChunk);
+									if (chunk.integrate(otherChunk, "duplicate")) {
+										chunks.splice(chunks.indexOf(otherChunk), 1);
 									}
 								}
 							}
