@@ -61,7 +61,7 @@ def my_component(input: str, width="100%", height="700", key=None):
     # There's no need to do this in our simple example - but it's an option.
     return component_value
 
-with open("/Users/matotomoya/Downloads/hou-et-al-2019-machine-learning-assisted-development-and-theoretical-consideration-for-the-al2fe3si3-thermoelectric.pdf", 'rb') as fo:
+with open("resources/test.pdf", 'rb') as fo:
     binary = fo.read()
 
 my_component(binary)
