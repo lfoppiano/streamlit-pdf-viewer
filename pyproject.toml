@@ -9,7 +9,7 @@ tag = "true"
 tag_name = "v{new_version}"
 
 [project]
-name = ""
+name = "streamlit-pdf-viewer"
 license = { file = "LICENSE" }
 authors = [
     { name = "Luca Foppiano", email = "lucanoro@duck.com" },
