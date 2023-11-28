@@ -1,15 +1,15 @@
-<template>
-    <div>
-        <div v-if="htmlStringBinary" style="clear: both;">
-            <embed :src="htmlStringBinary" :width="args.width" :height="args.height" type="application/pdf" />
-        </div>
-        <div v-else>
-            no pdf yet
-            {{args.binary.length}}
-            {{htmlStoringBinary}}
-        </div>
-    </div>
-</template>
+<!--<template>-->
+<!--    <div>-->
+<!--        <div v-if="htmlStringBinary" style="clear: both;">-->
+<!--&lt;!&ndash;            <embed :src="htmlStringBinary" :width="args.width" :height="args.height" type="application/pdf" />&ndash;&gt;-->
+<!--        </div>-->
+<!--        <div v-else>-->
+<!--            no pdf yet-->
+<!--            {{args.binary.length}}-->
+<!--            {{htmlStoringBinary}}-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</template>-->
 
 <script>
 import {ref, onMounted, watch} from 'vue';
@@ -63,6 +63,7 @@ export default {
         // props.binaryが変更されたときに呼び出される
         watch(() => props.args?.binary, (newBinary) => {
             if (newBinary) {
+              console.log("bao miao ciao")
                 const binaryDataUrl = `data:application/pdf;base64,${newBinary}`;
                 htmlStringBinary.value = binaryDataUrl;
                 loadPdfs(binaryDataUrl);
