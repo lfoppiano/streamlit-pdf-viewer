@@ -1,4 +1,7 @@
-<!--<template>-->
+<template>
+  <div id="pdfViewer">
+
+  </div>
 <!--    <div>-->
 <!--        <div v-if="htmlStringBinary" style="clear: both;">-->
 <!--&lt;!&ndash;            <embed :src="htmlStringBinary" :width="args.width" :height="args.height" type="application/pdf" />&ndash;&gt;-->
@@ -9,7 +12,7 @@
 <!--            {{htmlStoringBinary}}-->
 <!--        </div>-->
 <!--    </div>-->
-<!--</template>-->
+</template>
 
 <script>
 import {onMounted} from 'vue';
@@ -53,6 +56,7 @@ export default {
                         renderTask.promise.then(function () {
                             console.log('Page rendered');
                         });
+                        console.log(i)
                     }
                 });
             } catch (error) {

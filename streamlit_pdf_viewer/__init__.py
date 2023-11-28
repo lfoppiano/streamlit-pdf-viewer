@@ -18,21 +18,9 @@ else:
 
 
 def pdf_viewer(input: str, width="100%", height="700", key=None):
-    """Create a new instance of "my_component".
-    Parameters
-    ----------
-    name: str
-        The name of the thing we're saying hello to. The component will display
-        the text "Hello, {name}!"
-    key: str or None
-        An optional key that uniquely identifies this component. If this is
-        None, and the component's arguments are changed, the component will
-        be re-mounted in the Streamlit frontend and lose its current state.
-    """
     # "default" is a special argument that specifies the initial return
     # value of the component before the user has interacted with it.
     base64_pdf = base64.b64encode(input).decode('utf-8')
-    print(width)
     component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0)
     # We could modify the value returned from the component if we wanted.
     # There's no need to do this in our simple example - but it's an option.
@@ -42,4 +30,5 @@ def pdf_viewer(input: str, width="100%", height="700", key=None):
 with open("resources/test.pdf", 'rb') as fo:
     binary = fo.read()
 
-pdf_viewer(binary)
+viewer = pdf_viewer(binary, height="700", width="700")
+st.write(viewer)
