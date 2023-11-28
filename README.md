@@ -1,21 +1,20 @@
-# streamlit-pdf-component
+# streamlit-pdf-viewer
 
-Streamlit component that allows you to do X
+Component allowing the visualisation and manipulation of PDF documents in streamlit 
 
 ## Installation instructions
 
 ```sh
-pip install streamlit-custom-component
+pip install streamlit-pdf-viewer
 ```
 
 ## Usage instructions
 
 ```python
 import streamlit as st
+from streamlit_pdf_viewer import pdf_viewer
 
-from my_component import my_component
-
-value = my_component()
+value = st.pdf_viewer(file="file or path")
 
 st.write(value)
 ```
@@ -29,12 +28,12 @@ st.write(value)
 
 ## Starting Development
 
-To initiate the development environment, use the following commands:
+To initialise the development environment, use the following commands:
 
 ```shell
 streamlit run my_component/__init__.py
 
-cd my_component/__init__.py
+cd frontend
 npm run serve
 ```
 
