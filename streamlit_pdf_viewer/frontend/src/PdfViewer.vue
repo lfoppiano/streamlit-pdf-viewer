@@ -12,7 +12,7 @@
 <!--</template>-->
 
 <script>
-import {ref, onMounted, watch} from 'vue';
+import {onMounted} from 'vue';
 import 'pdfjs-dist/build/pdf.worker.entry'
 import {getDocument} from 'pdfjs-dist/build/pdf';
 import { useStreamlit } from "./streamlit"
@@ -22,7 +22,7 @@ export default {
     props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
     setup(props) {
         useStreamlit() // lifecycle hooks for automatic Streamlit resize
-        const htmlStringBinary = ref('');
+        // const htmlStringBinary = ref('');
 
         const loadPdfs = async (url) => {
             try {
@@ -61,28 +61,25 @@ export default {
             }
         };
         // props.binaryが変更されたときに呼び出される
-        watch(() => props.args?.binary, (newBinary) => {
-            if (newBinary) {
-              console.log("bao miao ciao")
-                const binaryDataUrl = `data:application/pdf;base64,${newBinary}`;
-                htmlStringBinary.value = binaryDataUrl;
-                loadPdfs(binaryDataUrl);
-            }
-        }, { immediate: true });
+        // watch(() => props.args?.binary, (newBinary) => {
+        //     if (newBinary) {
+        //       console.log("bao miao ciao")
+        //         const binaryDataUrl = `data:application/pdf;base64,${newBinary}`;
+        //         loadPdfs(binaryDataUrl);
+        //     }
+        // }, { immediate: true });
 
-        onMounted(() => {
+        onMounted( () => {
             if (props.args?.binary) {
                 const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
-                htmlStringBinary.value = binaryDataUrl;
                 loadPdfs(binaryDataUrl);
             }
         });
 
-        return {
-            htmlStringBinary,
-            width: props.width,
-            height: props.height,
-        };
+      return {
+          width: props.width,
+          height: props.height,
+      };
     }
 };
 </script>
