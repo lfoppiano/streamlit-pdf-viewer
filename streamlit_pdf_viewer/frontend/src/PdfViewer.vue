@@ -13,6 +13,7 @@
 
 <script>
 import {ref, onMounted, watch} from 'vue';
+import 'pdfjs-dist/build/pdf.worker.entry'
 import {getDocument} from 'pdfjs-dist/build/pdf';
 import { useStreamlit } from "./streamlit"
 
