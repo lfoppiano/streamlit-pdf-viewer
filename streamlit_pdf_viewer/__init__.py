@@ -33,7 +33,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=N
 
 # viewer = pdf_viewer("resources/test.pdf", height="700", width="700")
 
-with open("resources/test.pdf", 'rb') as fo:
-    binary = fo.read()
+if not _RELEASE:
+    with open("resources/test.pdf", 'rb') as fo:
+        binary = fo.read()
 
-viewer = pdf_viewer(binary, height="700", width="700")
+    viewer = pdf_viewer(binary, height="700", width="700")
