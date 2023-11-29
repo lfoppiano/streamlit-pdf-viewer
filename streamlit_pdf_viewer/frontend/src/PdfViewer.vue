@@ -84,8 +84,8 @@ export default {
     // }, { immediate: true });
 
     onMounted(() => {
-      console.log(props.args?.width)
-      console.log(props.args?.height)
+      // console.log(props.args?.width)
+      // console.log(props.args?.height)
       if (props.args?.binary) {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
         loadPdfs(binaryDataUrl)
@@ -95,10 +95,11 @@ export default {
     });
 
     onUpdated(() => {
-      console.log(props.args?.width)
-      console.log(props.args?.height)
+      // console.log(props.args?.width)
+      // console.log(props.args?.height)
       // After we're updated, tell Streamlit that our height may have changed.
       Streamlit.setFrameHeight(totalHeight)
+      Streamlit.setComponentReady()
     });
 
     return {
