@@ -26,6 +26,9 @@ dynamic = ['version']
 
 [tool.setuptools_scm]
 
+[tool.setuptools]
+py-modules = []
+
 [project.urls]
 Homepage = "https://github.com/lfoppiano/streamlit-pdf-viewer"
 Repository = "https://github.com/lfoppiano/streamlit-pdf-viewer"
