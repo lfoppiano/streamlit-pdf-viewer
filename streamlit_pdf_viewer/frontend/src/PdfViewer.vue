@@ -30,7 +30,7 @@ export default {
         const loadPdfs = async (url) => {
             try {
                 const loadingTask = await getDocument(url);
-                const pdfViewer = document.getElementById('app');
+                const pdfViewer = document.getElementById('pdfViewer');
                 const canvases = pdfViewer?.getElementsByTagName("canvas");
 
                 for (let j = canvases.length - 1; j >= 0; j--) {
@@ -74,6 +74,8 @@ export default {
         // }, { immediate: true });
 
         onMounted( () => {
+            console.log(props.args?.width)
+            console.log(props.args?.height)
             if (props.args?.binary) {
                 const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
                 loadPdfs(binaryDataUrl);
@@ -81,8 +83,8 @@ export default {
         });
 
       return {
-          width: props.width,
-          height: props.height,
+          width: props.args?.width,
+          height: props.args?.height,
       };
     }
 };
