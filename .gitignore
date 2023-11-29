@@ -1,3 +1,4 @@
-.idea/*
-**/frontend/node_modules/*
-**/frontend/.idea/*
+.idea
+streamlit_pdf_viewer/frontend/node_modules
+streamlit_pdf_viewer/frontend/.idea
+venv
