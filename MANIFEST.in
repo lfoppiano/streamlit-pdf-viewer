@@ -1,1 +1,1 @@
-recursive-include my_component/frontend/build *
+recursive-include streamlist_pdf_viewer/frontend/build *
