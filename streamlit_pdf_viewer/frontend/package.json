@@ -1,6 +1,6 @@
 {
-  "name": "streamlit_component_template",
-  "version": "0.1.0",
+  "name": "streamlit_pdf_viewer",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
