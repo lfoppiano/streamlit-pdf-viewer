@@ -2,31 +2,18 @@
   <div id="pdfViewer">
 
   </div>
-  <!--    <div>-->
-  <!--        <div v-if="htmlStringBinary" style="clear: both;">-->
-  <!--&lt;!&ndash;            <embed :src="htmlStringBinary" :width="args.width" :height="args.height" type="application/pdf" />&ndash;&gt;-->
-  <!--        </div>-->
-  <!--        <div v-else>-->
-  <!--            no pdf yet-->
-  <!--            {{args.binary.length}}-->
-  <!--            {{htmlStoringBinary}}-->
-  <!--        </div>-->
-  <!--    </div>-->
 </template>
 
 <script>
 import { onMounted, onUpdated } from "vue"
 import "pdfjs-dist/build/pdf.worker.entry"
 import { getDocument } from "pdfjs-dist/build/pdf"
-import { useStreamlit } from "./streamlit"
 import { Streamlit } from "streamlit-component-lib"
 
 
 export default {
   props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
   setup(props) {
-    // useStreamlit() // lifecycle hooks for automatic Streamlit resize
-    // const htmlStringBinary = ref('');
 
     let totalHeight = 0
     let maxWidth = 0
@@ -74,18 +61,9 @@ export default {
         console.error(error)
       }
     }
-    // props.binaryが変更されたときに呼び出される
-    // watch(() => props.args?.binary, (newBinary) => {
-    //     if (newBinary) {
-    //       console.log("bao miao ciao")
-    //         const binaryDataUrl = `data:application/pdf;base64,${newBinary}`;
-    //         loadPdfs(binaryDataUrl);
-    //     }
-    // }, { immediate: true });
 
     onMounted(() => {
-      // console.log(props.args?.width)
-      // console.log(props.args?.height)
+
       if (props.args?.binary) {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
         loadPdfs(binaryDataUrl)
@@ -95,8 +73,6 @@ export default {
     });
 
     onUpdated(() => {
-      // console.log(props.args?.width)
-      // console.log(props.args?.height)
       // After we're updated, tell Streamlit that our height may have changed.
       Streamlit.setFrameHeight(totalHeight)
       Streamlit.setComponentReady()
