@@ -5,10 +5,10 @@
 </template>
 
 <script>
-import { onMounted, onUpdated } from "vue"
+import {onMounted, onUpdated} from "vue"
 import "pdfjs-dist/build/pdf.worker.entry"
-import { getDocument } from "pdfjs-dist/build/pdf"
-import { Streamlit } from "streamlit-component-lib"
+import {getDocument} from "pdfjs-dist/build/pdf"
+import {Streamlit} from "streamlit-component-lib"
 
 
 export default {
@@ -27,10 +27,10 @@ export default {
           pdfViewer?.removeChild(canvases.item(j))
         }
 
-        loadingTask.promise.then(async function(pdf) {
+        loadingTask.promise.then(async function (pdf) {
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i)
-            const viewport = page.getViewport({ scale: 1 })
+            const viewport = page.getViewport({scale: 1})
             const canvas = document.createElement("canvas")
             const context = canvas.getContext("2d")
             pdfViewer?.append(canvas)
@@ -39,10 +39,10 @@ export default {
             if (canvas.width > maxWidth) {
               maxWidth = canvas.width
             }
-            totalHeight +=  canvas.height
+            totalHeight += canvas.height
 
-            console.log(canvas.height)
-            console.log(canvas.width)
+            // console.log(canvas.height)
+            // console.log(canvas.width)
             canvas.style.display = "block"
 
             const renderContext = {
@@ -50,7 +50,7 @@ export default {
               viewport: viewport,
             }
             const renderTask = page.render(renderContext)
-            renderTask.promise.then(function() {
+            renderTask.promise.then(function () {
               console.log("Page rendered")
             })
             console.log(i)
