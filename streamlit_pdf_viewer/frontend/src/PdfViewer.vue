@@ -1,11 +1,10 @@
 <template>
-  <div id="pdfViewer">
-
+  <div id="pdfViewer" :style="{overflow: 'scroll', height: pdfViewerHeight + 'px'}">
   </div>
 </template>
 
 <script>
-import {onMounted, onUpdated} from "vue"
+import { onMounted, onUpdated, ref } from "vue"
 import "pdfjs-dist/build/pdf.worker.entry"
 import {getDocument} from "pdfjs-dist/build/pdf"
 import {Streamlit} from "streamlit-component-lib"
@@ -15,8 +14,17 @@ export default {
   props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
   setup(props) {
 
-    let totalHeight = 0
-    let maxWidth = 0
+    // let totalHeight = 0
+    // let maxWidth = 0
+
+    const pdfViewerHeight = ref(800) // for debug mode
+    try {
+      pdfViewerHeight.value = window.parent.innerHeight * 0.85
+    } catch (error) {
+      // While debugging, the parent window cannot be retrieved due to CORS constraints, so this error occurs.
+      console.debug(error)
+    }
+
     const loadPdfs = async (url) => {
       try {
         const loadingTask = await getDocument(url)
@@ -36,13 +44,11 @@ export default {
             pdfViewer?.append(canvas)
             canvas.height = viewport.height
             canvas.width = viewport.width
-            if (canvas.width > maxWidth) {
-              maxWidth = canvas.width
-            }
-            totalHeight += canvas.height
+            // if (canvas.width > maxWidth) {
+            //   maxWidth = canvas.width
+            // }
+            // totalHeight = canvas.height
 
-            // console.log(canvas.height)
-            // console.log(canvas.width)
             canvas.style.display = "block"
 
             const renderContext = {
@@ -63,24 +69,25 @@ export default {
     }
 
     onMounted(() => {
+      console.debug("Mounted")
 
       if (props.args?.binary) {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
         loadPdfs(binaryDataUrl)
       }
-      Streamlit.setFrameHeight(totalHeight)
+      Streamlit.setFrameHeight(pdfViewerHeight.value)
       Streamlit.setComponentReady()
     });
 
     onUpdated(() => {
+      console.debug('Updated')
       // After we're updated, tell Streamlit that our height may have changed.
-      Streamlit.setFrameHeight(totalHeight)
-      Streamlit.setComponentReady()
+      // Streamlit.setFrameHeight(pdfViewerHeight.value)
+      // Streamlit.setComponentReady()
     });
 
     return {
-      width: props.args?.width,
-      height: props.args?.height,
+      pdfViewerHeight,
     }
   },
 }
