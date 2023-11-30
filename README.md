@@ -20,13 +20,9 @@ value = pdf_viewer("str, path or bytes")
 
 ## Current status
 
-
-
 https://github.com/lfoppiano/streamlit-pdf-viewer/assets/15426/3656eb6d-9950-4dd4-ada4-865c79a2bb09
 
-
-
-## For Developers
+## Developers notes
 
 ### Environment 
 - Python >= 3.8
@@ -65,3 +61,14 @@ Ensure you're in the correct directory before running these commands.
     ```shell
     pip install -e {path of component}
     ```
+
+### Release 
+
+```shell 
+bump-my-version bump patch | minor | major
+```
+
+```shell
+git push
+git push --tags 
+```
