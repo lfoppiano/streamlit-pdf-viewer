@@ -6,3 +6,4 @@ dist
 /frontend/dist
 streamlit_pdf_viewer/frontend/package-lock.json
 streamlit_pdf_viewer.egg-info
+streamlit_pdf_viewer/__pycache__/
