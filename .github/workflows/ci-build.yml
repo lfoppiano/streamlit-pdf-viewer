@@ -6,9 +6,6 @@ concurrency:
   group: unstable
 #  cancel-in-progress: true
 
-env:
-  NODE_OPTIONS: --openssl-legacy-provider
-
 
 jobs:
   build:
