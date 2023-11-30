@@ -9,14 +9,16 @@ _RELEASE = False
 
 if not _RELEASE:
     _component_func = components.declare_component(
-        "pdf_viewer",
+        "streamlit_pdf_viewer",
         url="http://localhost:3001",
     )
 else:
     parent_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.join(parent_dir, "frontend/dist")
     _component_func = components.declare_component(
-        "pdf_viewer", path=build_dir)
+        "streamlit_pdf_viewer",
+        path=build_dir
+    )
 
 
 def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=None):
