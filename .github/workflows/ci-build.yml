@@ -6,6 +6,9 @@ concurrency:
   group: unstable
 #  cancel-in-progress: true
 
+env:
+  NODE_OPTIONS: --openssl-legacy-provider
+
 
 jobs:
   build:
@@ -27,9 +30,10 @@ jobs:
           node-version: ${{matrix.node-version}}
       - name: build frontend
         run: |
-            cd streamlit_pdf_viewer/frontend/
-            npm install
-            npm run build
+          export NODE_OPTIONS=--openssl-legacy-provider
+          cd streamlit_pdf_viewer/frontend/
+          npm install
+          npm run build
       - name: Cleanup more disk space
         run: sudo rm -rf /usr/share/dotnet && sudo rm -rf /opt/ghc && sudo rm -rf "/usr/local/share/boost" && sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Install python dependencies
