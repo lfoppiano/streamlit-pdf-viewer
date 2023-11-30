@@ -1,1 +1,1 @@
-recursive-include streamlist_pdf_viewer/frontend/build *
+recursive-include streamlit_pdf_viewer/frontend/dist *
