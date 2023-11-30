@@ -14,10 +14,16 @@ pip install streamlit-pdf-viewer
 import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 
-value = st.pdf_viewer(file="file or path")
-
-st.write(value)
+value = pdf_viewer("str, path or bytes")
 ```
+
+
+## Current status
+
+
+
+https://github.com/lfoppiano/streamlit-pdf-viewer/assets/15426/3656eb6d-9950-4dd4-ada4-865c79a2bb09
+
 
 
 ## For Developers
