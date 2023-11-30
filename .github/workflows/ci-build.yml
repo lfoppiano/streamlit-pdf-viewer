@@ -14,7 +14,6 @@ jobs:
       matrix:
         python-version: [ 3.7, 3.8, 3.9 ]
         node-version: [ 18 ]
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -27,7 +26,6 @@ jobs:
           node-version: ${{matrix.node-version}}
       - name: build frontend
         run: |
-          export NODE_OPTIONS=--openssl-legacy-provider
           cd streamlit_pdf_viewer/frontend/
           npm install
           npm run build
