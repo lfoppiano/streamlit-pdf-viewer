@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.bumpversion]
@@ -22,12 +22,18 @@ maintainers = [
 description = "Streamlit component for PDF visualisation and manipulation"
 readme = "README.md"
 
+keywords = ["pdf", "viewer", "streamlit", "documents"]
+
 dynamic = ['version']
 
 [tool.setuptools_scm]
 
 [tool.setuptools]
+include-package-data = true
 py-modules = []
+
+[tool.setuptools.packages]
+find = {namespaces = false}
 
 [project.urls]
 Homepage = "https://github.com/lfoppiano/streamlit-pdf-viewer"
