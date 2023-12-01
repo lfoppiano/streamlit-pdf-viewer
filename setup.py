@@ -5,7 +5,8 @@ import setuptools
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 bump_version = (this_directory / ".bumpversion.toml").read_text()
-version = bump_version.split("\n")[0].split(" = ")[1].replace("\"", "")
+current_version_line = [line for line in bump_version.split('\n') if 'current_version' in line][0]
+version = current_version_line.split('=')[1].strip().strip('"')
 
 setuptools.setup(
     name="streamlit-pdf-viewer",
