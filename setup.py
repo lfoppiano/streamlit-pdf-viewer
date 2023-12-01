@@ -19,7 +19,6 @@ setuptools.setup(
     url="https://github.com/lfoppiano/streamlit-pdf-viewer",
     packages=setuptools.find_packages(),
     include_package_data=True,
-    classifiers=["rag", "streamlit-component", "pdf-viewer", "documents"],
     python_requires=">=3.7",
     install_requires=[
         "streamlit >= 0.63"
