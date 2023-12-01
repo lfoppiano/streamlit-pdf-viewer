@@ -44,6 +44,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build Python backend
         run: | 
+          pip install build 
           python -m build
 #    - name: Test with pytest
 #      run: |
