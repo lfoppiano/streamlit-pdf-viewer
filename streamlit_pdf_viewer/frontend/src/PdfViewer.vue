@@ -2,16 +2,7 @@
   <div id="pdfViewer">
     <div id="pdfAnnotations" v-if="args.annotations">
       <div v-for="(annotation, index) in args.annotations" :key="index">
-        <div :style="{
-            'position': 'absolute',
-            'left': `${annotation.x}px`,
-            'top': `${getPdfsHeight(annotation.page) + annotation.y}px`,
-            'width': `${annotation.width}px`,
-            'height': `${annotation.height}px`,
-            'outline': '2px solid',
-            'outline-color': annotation.color,
-            'cursor': 'pointer'
-        }" :id="index"></div>
+        <div :style="getAnnotationStyle(annotation)" :id="index"></div>
       </div>
     </div>
   </div>
@@ -31,6 +22,25 @@ export default {
     let totalHeight = 0
     let pdfHeight = 0
     let maxWidth = 0
+
+    const getPdfsHeight = (page, ratio = 1) => {
+      let height = 0
+      for (let i = 1; i < page; i++) {
+        height += Math.floor(pdfHeight * ratio)
+      }
+      return height
+    }
+
+    const getAnnotationStyle = (annotation) => ({
+      position: 'absolute',
+      left: `${annotation.x}px`,
+      top: `${getPdfsHeight(annotation.page) + annotation.y}px`,
+      width: `${annotation.width}px`,
+      height: `${annotation.height}px`,
+      outline: '2px solid',
+      outlineColor: annotation.color,
+      cursor: 'pointer'
+    });
     const loadPdfs = async (url) => {
       try {
         const loadingTask = await getDocument(url)
@@ -76,13 +86,6 @@ export default {
       }
     }
 
-    const getPdfsHeight = (page, ratio = 1) => {
-      let height = 0
-      for (let i = 1; i < page; i++) {
-        height += Math.floor(pdfHeight * ratio)
-      }
-      return height
-    }
 
     onMounted(() => {
 
@@ -101,7 +104,8 @@ export default {
     });
 
     return {
-      getPdfsHeight
+      getPdfsHeight,
+      getAnnotationStyle
     }
   },
 }
