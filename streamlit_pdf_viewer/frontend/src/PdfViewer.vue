@@ -1,5 +1,5 @@
 <template>
-  <div id="pdfViewer">
+  <div id="pdfViewer" :style="pdfViewerStyle">
     <div id="pdfAnnotations" v-if="args.annotations">
       <div v-for="(annotation, index) in args.annotations" :key="index">
         <div :style="getAnnotationStyle(annotation)" :id="index"></div>
@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import {onMounted, onUpdated, ref} from "vue"
+import {onMounted, onUpdated} from "vue"
 import "pdfjs-dist/build/pdf.worker.entry"
 import {getDocument} from "pdfjs-dist/build/pdf"
 import {Streamlit} from "streamlit-component-lib"
@@ -18,10 +18,10 @@ import {Streamlit} from "streamlit-component-lib"
 export default {
   props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
   setup(props) {
-    console.log(props.args)
     let totalHeight = 0
     let pdfHeight = 0
     let maxWidth = 0
+    const pageScales = []
 
     const getPdfsHeight = (page, ratio = 1) => {
       let height = 0
@@ -30,17 +30,23 @@ export default {
       }
       return height
     }
+    const pdfViewerStyle = {
+      width: `${props.args.width}px`
+    }
 
-    const getAnnotationStyle = (annotation) => ({
-      position: 'absolute',
-      left: `${annotation.x}px`,
-      top: `${getPdfsHeight(annotation.page) + annotation.y}px`,
-      width: `${annotation.width}px`,
-      height: `${annotation.height}px`,
-      outline: '2px solid',
-      outlineColor: annotation.color,
-      cursor: 'pointer'
-    });
+    const getAnnotationStyle = (annoObj) => {
+      const scale = pageScales[annoObj.page]
+      return ({
+        position: 'absolute',
+        left: `${annoObj.x * scale}px`,
+        top: `${getPdfsHeight(annoObj.page) + annoObj.y*scale}px`,
+        width: `${annoObj.width*scale}px`,
+        height: `${annoObj.height*scale}px`,
+        outline: `${2*scale}px solid`,
+        outlineColor: annoObj.color,
+        cursor: 'pointer'
+      });
+    }
     const loadPdfs = async (url) => {
       try {
         const loadingTask = await getDocument(url)
@@ -55,7 +61,10 @@ export default {
 
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i)
-            const viewport = page.getViewport({scale: 1})
+            const actualViewport = page.getViewport({scale: 1})
+            const scale = props.args.width / actualViewport.width
+            pageScales.push(scale)
+            const viewport = page.getViewport({scale})
             const canvas = document.createElement("canvas")
             const context = canvas.getContext("2d")
             pdfViewer?.append(canvas)
@@ -102,7 +111,8 @@ export default {
 
     return {
       getPdfsHeight,
-      getAnnotationStyle
+      getAnnotationStyle,
+      pdfViewerStyle
     }
   },
 }
