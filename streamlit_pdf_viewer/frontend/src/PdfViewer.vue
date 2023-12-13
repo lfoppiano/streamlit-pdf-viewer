@@ -1,11 +1,24 @@
 <template>
   <div id="pdfViewer">
-
+    <div id="pdfAnnotations" v-if="args.annotations">
+      <div v-for="(annotation, index) in args.annotations" :key="index">
+        <div :style="{
+            'position': 'absolute',
+            'left': `${annotation.x}px`,
+            'top': `${getPdfsHeight(annotation.page) + annotation.y}px`,
+            'width': `${annotation.width}px`,
+            'height': `${annotation.height}px`,
+            'outline': '2px solid',
+            'outline-color': annotation.color,
+            'cursor': 'pointer'
+        }" :id="index"></div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import {onMounted, onUpdated} from "vue"
+import {onMounted, onUpdated, ref} from "vue"
 import "pdfjs-dist/build/pdf.worker.entry"
 import {getDocument} from "pdfjs-dist/build/pdf"
 import {Streamlit} from "streamlit-component-lib"
@@ -14,8 +27,9 @@ import {Streamlit} from "streamlit-component-lib"
 export default {
   props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
   setup(props) {
-
+    console.log(props.args)
     let totalHeight = 0
+    let pdfHeight = 0
     let maxWidth = 0
     const loadPdfs = async (url) => {
       try {
@@ -28,6 +42,7 @@ export default {
         }
 
         loadingTask.promise.then(async function (pdf) {
+
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i)
             const viewport = page.getViewport({scale: 1})
@@ -40,9 +55,8 @@ export default {
               maxWidth = canvas.width
             }
             totalHeight += canvas.height
+            pdfHeight = canvas.height
 
-            // console.log(canvas.height)
-            // console.log(canvas.width)
             canvas.style.display = "block"
 
             const renderContext = {
@@ -62,6 +76,14 @@ export default {
       }
     }
 
+    const getPdfsHeight = (page, ratio = 1) => {
+      let height = 0
+      for (let i = 1; i < page; i++) {
+        height += Math.floor(pdfHeight * ratio)
+      }
+      return height
+    }
+
     onMounted(() => {
 
       if (props.args?.binary) {
@@ -79,8 +101,7 @@ export default {
     });
 
     return {
-      width: props.args?.width,
-      height: props.args?.height,
+      getPdfsHeight
     }
   },
 }

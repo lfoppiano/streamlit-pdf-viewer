@@ -21,7 +21,7 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=None):
+def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=None, annotations=[]):
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
@@ -29,7 +29,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=N
         binary = input
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
-    component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0)
+    component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0,
+                                      annotations=annotations)
     return component_value
 
 
@@ -39,4 +40,19 @@ if not _RELEASE:
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
 
-    viewer = pdf_viewer(binary, height="700", width="700")
+    viewer = pdf_viewer(binary, height="700", width="700", annotations=[
+        {
+            "page": 1,
+            "x": 100,
+            "y": 200,
+            "height": 10,
+            "width": 100,
+            "color": "blue",
+        },{
+            "page": 2,
+            "x": 100,
+            "y": 200,
+            "height": 10,
+            "width": 100,
+            "color": "blue",
+        }])
