@@ -88,11 +88,8 @@ export default {
 
 
     onMounted(() => {
-
-      if (props.args?.binary) {
-        const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
-        loadPdfs(binaryDataUrl)
-      }
+      const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
+      loadPdfs(binaryDataUrl)
       Streamlit.setFrameHeight(totalHeight)
       Streamlit.setComponentReady()
     });
