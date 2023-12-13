@@ -40,19 +40,19 @@ if not _RELEASE:
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
 
-    viewer = pdf_viewer(binary, height="700", width="700", annotations=[
+    viewer = pdf_viewer(binary, height="700", width="500", annotations=[
         {
             "page": 1,
-            "x": 100,
-            "y": 200,
-            "height": 10,
-            "width": 100,
-            "color": "blue",
+            "x": 220,
+            "y": 155,
+            "height": 22,
+            "width": 65,
+            "color": "red",
         },{
             "page": 2,
-            "x": 100,
-            "y": 200,
-            "height": 10,
-            "width": 100,
-            "color": "blue",
+            "x": 198,
+            "y": 280,
+            "height": 7,
+            "width": 30,
+            "color": "orange",
         }])
