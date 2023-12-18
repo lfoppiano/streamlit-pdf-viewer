@@ -2,6 +2,8 @@
 
 Component allowing the visualisation and manipulation of PDF documents in streamlit 
 
+**Work in progress** 
+
 ## Installation instructions
 
 ```sh
@@ -20,7 +22,13 @@ value = pdf_viewer("str, path or bytes")
 
 ## Current status
 
-https://github.com/lfoppiano/streamlit-pdf-viewer/assets/15426/3656eb6d-9950-4dd4-ada4-865c79a2bb09
+We are early in the development, looking for contributors. 
+Currently, it has been tested on Chrome and Firefox.
+
+![img.png](img.png)
+
+You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/). 
+
 
 ## Developers notes
 
