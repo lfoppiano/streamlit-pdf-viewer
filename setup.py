@@ -11,8 +11,8 @@ version = current_version_line.split('=')[1].strip().strip('"')
 setuptools.setup(
     name="streamlit-pdf-viewer",
     version=version,
-    author="Luca Foppiano",
-    author_email="lucanoro@duck.com",
+    author="Luca Foppiano, Tomoya Mato",
+    author_email="lucanoro@duck.com, tomoya.matou@gmail.com",
     description="Streamlit component for PDF visualisation and manipulation",
     long_description=long_description,
     long_description_content_type="text/markdown",
