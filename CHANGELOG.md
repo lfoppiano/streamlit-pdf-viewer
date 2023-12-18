@@ -9,9 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-+ Fix default parameters that were crashing the browser 
-
-
++ Fix default parameters that were crashing the browser
++ Preparing for repository publication
 
 ## [0.0.1] 
 
