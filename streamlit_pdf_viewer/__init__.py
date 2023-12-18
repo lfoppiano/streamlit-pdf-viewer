@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Union
 
 import streamlit.components.v1 as components
+import json
 
 _RELEASE = True
 
@@ -21,7 +22,7 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=None):
+def pdf_viewer(input: Union[str, Path, bytes], width="700", height="800", key=None, annotations=[]):
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
@@ -29,14 +30,16 @@ def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=N
         binary = input
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
-    component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0)
+    component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0,
+                                      annotations=annotations)
     return component_value
 
-
-# viewer = pdf_viewer("resources/test.pdf", height="700", width="700")
 
 if not _RELEASE:
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
 
-    viewer = pdf_viewer(binary, height="700", width="700")
+    with open("resources/annotations.json", 'rb') as fo:
+        annotations = json.loads(fo.read())
+
+    viewer = pdf_viewer(binary, height="700", width="800", annotations=annotations)

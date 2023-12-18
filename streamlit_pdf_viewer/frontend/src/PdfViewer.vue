@@ -1,6 +1,10 @@
 <template>
-  <div id="pdfViewer">
-
+  <div id="pdfViewer" :style="pdfViewerStyle">
+    <div id="pdfAnnotations" v-if="args.annotations">
+      <div v-for="(annotation, index) in args.annotations" :key="index">
+        <div :style="getAnnotationStyle(annotation)" :id="index"></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -14,9 +18,35 @@ import {Streamlit} from "streamlit-component-lib"
 export default {
   props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
   setup(props) {
-
     let totalHeight = 0
+    let pdfHeight = 0
     let maxWidth = 0
+    const pageScales = []
+
+    const getPdfsHeight = (page, ratio = 1) => {
+      let height = 0
+      for (let i = 1; i < page; i++) {
+        height += Math.floor(pdfHeight * ratio)
+      }
+      return height
+    }
+    const pdfViewerStyle = {
+      width: `${props.args.width}px`
+    }
+
+    const getAnnotationStyle = (annoObj) => {
+      const scale = pageScales[annoObj.page]
+      return ({
+        position: 'absolute',
+        left: `${annoObj.x * scale}px`,
+        top: `${getPdfsHeight(annoObj.page) + annoObj.y*scale}px`,
+        width: `${annoObj.width*scale}px`,
+        height: `${annoObj.height*scale}px`,
+        outline: `${2*scale}px solid`,
+        outlineColor: annoObj.color,
+        cursor: 'pointer'
+      });
+    }
     const loadPdfs = async (url) => {
       try {
         const loadingTask = await getDocument(url)
@@ -28,9 +58,13 @@ export default {
         }
 
         loadingTask.promise.then(async function (pdf) {
+
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i)
-            const viewport = page.getViewport({scale: 1})
+            const actualViewport = page.getViewport({scale: 1})
+            const scale = props.args.width / actualViewport.width
+            pageScales.push(scale)
+            const viewport = page.getViewport({scale})
             const canvas = document.createElement("canvas")
             const context = canvas.getContext("2d")
             pdfViewer?.append(canvas)
@@ -40,9 +74,8 @@ export default {
               maxWidth = canvas.width
             }
             totalHeight += canvas.height
+            pdfHeight = canvas.height
 
-            // console.log(canvas.height)
-            // console.log(canvas.width)
             canvas.style.display = "block"
 
             const renderContext = {
@@ -62,12 +95,10 @@ export default {
       }
     }
 
-    onMounted(() => {
 
-      if (props.args?.binary) {
-        const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
-        loadPdfs(binaryDataUrl)
-      }
+    onMounted(() => {
+      const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
+      loadPdfs(binaryDataUrl)
       Streamlit.setFrameHeight(totalHeight)
       Streamlit.setComponentReady()
     });
@@ -79,8 +110,9 @@ export default {
     });
 
     return {
-      width: props.args?.width,
-      height: props.args?.height,
+      getPdfsHeight,
+      getAnnotationStyle,
+      pdfViewerStyle
     }
   },
 }
