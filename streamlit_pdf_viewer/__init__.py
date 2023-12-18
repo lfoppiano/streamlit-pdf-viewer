@@ -22,7 +22,7 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width="100%", height="700", key=None, annotations=[]):
+def pdf_viewer(input: Union[str, Path, bytes], width="700", height="800", key=None, annotations=[]):
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
