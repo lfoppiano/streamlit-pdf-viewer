@@ -7,7 +7,7 @@ Component allowing the visualisation and manipulation of PDF documents in stream
 We are early in the development, looking for contributors. 
 Currently, it has been tested on Chrome and Firefox.
 
-![img.png](img.png)
+![screenshot.png](docs/screenshot.png)
 
 You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/). 
 
