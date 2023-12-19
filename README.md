@@ -2,25 +2,7 @@
 
 Component allowing the visualisation and manipulation of PDF documents in streamlit 
 
-**Work in progress** 
-
-## Installation instructions
-
-```sh
-pip install streamlit-pdf-viewer
-```
-
-## Usage instructions
-
-```python
-import streamlit as st
-from streamlit_pdf_viewer import pdf_viewer
-
-value = pdf_viewer("str, path or bytes")
-```
-
-
-## Current status
+**Work in progress**
 
 We are early in the development, looking for contributors. 
 Currently, it has been tested on Chrome and Firefox.
@@ -28,6 +10,22 @@ Currently, it has been tested on Chrome and Firefox.
 ![img.png](img.png)
 
 You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/). 
+
+## Getting started
+
+```sh
+pip install streamlit-pdf-viewer
+```
+
+In your streamlit application, you can use it as: 
+
+```python
+import streamlit as st
+from streamlit_pdf_viewer import pdf_viewer
+
+pdf_viewer("str, path or bytes")
+```
+
 
 
 ## Developers notes
