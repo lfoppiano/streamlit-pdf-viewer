@@ -1,8 +1,10 @@
 <template>
-  <div id="pdfViewer" :style="pdfViewerStyle">
-    <div id="pdfAnnotations" v-if="args.annotations">
-      <div v-for="(annotation, index) in args.annotations" :key="index">
-        <div :style="getAnnotationStyle(annotation)" :id="index"></div>
+  <div id="pdfContainer" :style="pdfContainerStyle">
+    <div id="pdfViewer" :style="pdfViewerStyle">
+      <div id="pdfAnnotations" v-if="args.annotations">
+        <div v-for="(annotation, index) in args.annotations" :key="index" :style="getPageStyle">
+          <div :style="getAnnotationStyle(annotation)" :id="index"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -22,17 +24,29 @@ export default {
     let pdfHeight = 0
     let maxWidth = 0
     const pageScales = []
+    const pageHeights = []
 
-    const getPdfsHeight = (page, ratio) => {
+    const getPdfsHeight = (page) => {
+      const pageIndex = page - 1
       let height = 0
-      for (let i = 1; i < page; i++) {
-        height += Math.floor(pdfHeight * ratio)
-      }
+      for (let i = 0; i < pageIndex; i++) {
+        height += Math.floor(pageHeights[i] * pageScales[i])}
       return height
     }
-    const pdfViewerStyle = {
-      width: `${props.args.width}px`
+    const pdfContainerStyle = {
+      width: `${props.args.width}px`,
+      height: `${props.args.height}px`,
+      overflow: 'auto',
     }
+
+    const pdfViewerStyle = {
+      position: 'relative',
+    };
+
+    const getPageStyle = {
+      position: 'relative',
+    };
+
 
     const getAnnotationStyle = (annoObj) => {
       const pageScalesIndex = annoObj.page - 1
@@ -40,7 +54,7 @@ export default {
       return ({
         position: 'absolute',
         left: `${annoObj.x * scale}px`,
-        top: `${getPdfsHeight(annoObj.page, scale) + annoObj.y * scale}px`,
+        top: `${getPdfsHeight(annoObj.page) + annoObj.y * scale}px`,
         width: `${annoObj.width * scale}px`,
         height: `${annoObj.height * scale}px`,
         outline: `${2 * scale}px solid`,
@@ -65,6 +79,7 @@ export default {
             const actualViewport = page.getViewport({scale: 1})
             const scale = props.args.width / actualViewport.width
             pageScales.push(scale)
+            pageHeights.push(actualViewport.height)
             const viewport = page.getViewport({scale})
             const canvas = document.createElement("canvas")
             const context = canvas.getContext("2d")
@@ -96,25 +111,34 @@ export default {
       }
     }
 
-
     onMounted(() => {
       const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
       loadPdfs(binaryDataUrl)
-      Streamlit.setFrameHeight(totalHeight)
+      if (props.args.height) {
+        Streamlit.setFrameHeight(props.args.height)
+      } else {
+        Streamlit.setFrameHeight(totalHeight)
+      }
       Streamlit.setComponentReady()
     });
 
     onUpdated(() => {
       // After we're updated, tell Streamlit that our height may have changed.
-      Streamlit.setFrameHeight(totalHeight)
+      if (props.args.height) {
+        Streamlit.setFrameHeight(props.args.height)
+      } else {
+        Streamlit.setFrameHeight(totalHeight)
+      }
       Streamlit.setComponentReady()
     });
-
 
     return {
       getPdfsHeight,
       getAnnotationStyle,
-      pdfViewerStyle
+      pdfContainerStyle,
+      pdfViewerStyle,
+      getPageStyle,
+      pageScales
     }
   },
 }
