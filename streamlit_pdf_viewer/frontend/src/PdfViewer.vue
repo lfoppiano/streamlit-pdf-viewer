@@ -1,7 +1,7 @@
 <template>
   <div id="pdfViewer" :style="pdfViewerStyle">
-    <div id="pdfAnnotations" v-if="annotations">
-      <div v-for="(annotation, index) in annotations" :key="index">
+    <div id="pdfAnnotations" v-if="args.annotations">
+      <div v-for="(annotation, index) in args.annotations" :key="index">
         <div :style="getAnnotationStyle(annotation)" :id="index"></div>
       </div>
     </div>
@@ -110,13 +110,11 @@ export default {
       Streamlit.setComponentReady()
     });
 
-    const annotations = props.args.annotations
 
     return {
       getPdfsHeight,
       getAnnotationStyle,
-      pdfViewerStyle,
-      annotations
+      pdfViewerStyle
     }
   },
 }
