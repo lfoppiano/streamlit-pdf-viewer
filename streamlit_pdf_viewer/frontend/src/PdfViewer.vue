@@ -1,7 +1,7 @@
 <template>
   <div id="pdfViewer" :style="pdfViewerStyle">
-    <div id="pdfAnnotations" v-if="args.annotations">
-      <div v-for="(annotation, index) in args.annotations" :key="index">
+    <div id="pdfAnnotations" v-if="annotations">
+      <div v-for="(annotation, index) in annotations" :key="index">
         <div :style="getAnnotationStyle(annotation)" :id="index"></div>
       </div>
     </div>
@@ -23,7 +23,7 @@ export default {
     let maxWidth = 0
     const pageScales = []
 
-    const getPdfsHeight = (page, ratio = 1) => {
+    const getPdfsHeight = (page, ratio) => {
       let height = 0
       for (let i = 1; i < page; i++) {
         height += Math.floor(pdfHeight * ratio)
@@ -35,14 +35,15 @@ export default {
     }
 
     const getAnnotationStyle = (annoObj) => {
-      const scale = pageScales[annoObj.page]
+      const pageScalesIndex = annoObj.page - 1
+      const scale = pageScales[pageScalesIndex]
       return ({
         position: 'absolute',
         left: `${annoObj.x * scale}px`,
-        top: `${getPdfsHeight(annoObj.page) + annoObj.y*scale}px`,
-        width: `${annoObj.width*scale}px`,
-        height: `${annoObj.height*scale}px`,
-        outline: `${2*scale}px solid`,
+        top: `${getPdfsHeight(annoObj.page, scale) + annoObj.y * scale}px`,
+        width: `${annoObj.width * scale}px`,
+        height: `${annoObj.height * scale}px`,
+        outline: `${2 * scale}px solid`,
         outlineColor: annoObj.color,
         cursor: 'pointer'
       });
@@ -109,10 +110,13 @@ export default {
       Streamlit.setComponentReady()
     });
 
+    const annotations = props.args.annotations
+
     return {
       getPdfsHeight,
       getAnnotationStyle,
-      pdfViewerStyle
+      pdfViewerStyle,
+      annotations
     }
   },
 }
