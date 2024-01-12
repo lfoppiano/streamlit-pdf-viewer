@@ -21,7 +21,6 @@ export default {
   props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
   setup(props) {
     let totalHeight = 0
-    let pdfHeight = 0
     let maxWidth = 0
     const pageScales = []
     const pageHeights = []
@@ -90,7 +89,6 @@ export default {
               maxWidth = canvas.width
             }
             totalHeight += canvas.height
-            pdfHeight = canvas.height
 
             canvas.style.display = "block"
 
