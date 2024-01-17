@@ -40,7 +40,7 @@ export default {
       const pageIndex = page - 1;
       let height = 0;
       for (let i = 0; i < pageIndex; i++) {
-        height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + pageMargin; // Add margin for each page
+        height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + props.args.page_margin; // Add margin for each page
       }
       return height;
     };
@@ -73,7 +73,7 @@ export default {
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       canvas.style.display = "block";
-      canvas.style.marginBottom = `${pageMargin}px`;
+      canvas.style.marginBottom = `${props.args.page_margin}px`;
       return canvas;
     };
 
@@ -103,11 +103,11 @@ export default {
           maxWidth.value = canvas.width;
         }
         totalHeight.value += canvas.height;
-        totalHeight.value += pageMargin;
+        totalHeight.value += props.args.page_margin;
         await renderPage(page, canvas);
       }
       // Subtract the margin for the last page as it's not needed
-      totalHeight.value -= pageMargin;
+      totalHeight.value -= props.args.page_margin;
     };
 
 

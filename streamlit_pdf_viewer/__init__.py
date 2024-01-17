@@ -22,10 +22,23 @@ else:
     )
 
 
-# pdf_viewer function to display a PDF file in a Streamlit app.
-# The 'height' parameter accepts a numeric value that specifies the height in pixels.
-# If 'height' is not provided, the PDF viewer will display without overflow.
-def pdf_viewer(input: Union[str, Path, bytes], width="700", height=None, key=None, annotations=[]):
+def pdf_viewer(input: Union[str, Path, bytes], width="700", height=None, key=None, annotations=[], page_margin=None):
+    """
+    pdf_viewer function to display a PDF file in a Streamlit app.
+
+    :param input: The source of the PDF file. Accepts a file path, URL, or binary data.
+    :param width: Width of the PDF viewer in pixels. Defaults to 700 pixels.
+    :param height: Height of the PDF viewer in pixels. If not provided, the viewer show the whole content.
+    :param key: An optional key that uniquely identifies this component. Used to preserve state in Streamlit apps.
+    :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
+    :param page_margin: The margin (in pixels) between each page of the PDF. It adjusts the spacing between pages.
+                        If not provided, pages will be displayed without additional spacing.
+
+    The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
+    and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
+
+    Returns the value of the selected component (if any).
+    """
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
@@ -34,7 +47,7 @@ def pdf_viewer(input: Union[str, Path, bytes], width="700", height=None, key=Non
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
     component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0,
-                                      annotations=annotations)
+                                      annotations=annotations, page_margin=page_margin)
     return component_value
 
 
