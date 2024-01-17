@@ -22,8 +22,8 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width="700", height=None, key=None, annotations=[], page_margin=2,
-               annotation_outline_size=1):
+def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None, annotations=[],
+               page_margin=2, annotation_outline_size=1):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
 
@@ -42,6 +42,13 @@ def pdf_viewer(input: Union[str, Path, bytes], width="700", height=None, key=Non
 
     Returns the value of the selected component (if any).
     """
+
+    # Validate width and height parameters
+    if not isinstance(width, int):
+        raise TypeError("Width must be an integer")
+    if height is not None and not isinstance(height, int):
+        raise TypeError("Height must be an integer or None")
+
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
