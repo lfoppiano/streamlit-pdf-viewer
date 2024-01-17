@@ -54,7 +54,7 @@ export default {
         top: `${calculatePdfsHeight(annoObj.page) + annoObj.y * scale}px`,
         width: `${annoObj.width * scale}px`,
         height: `${annoObj.height * scale}px`,
-        outline: `${2 * scale}px solid`,
+        outline: `${props.args.annotation_outline_size * scale}px solid`,
         outlineColor: annoObj.color,
         cursor: 'pointer'
       };
