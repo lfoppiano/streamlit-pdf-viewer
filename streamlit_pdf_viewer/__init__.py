@@ -22,7 +22,10 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width="700", height="800", key=None, annotations=[]):
+# pdf_viewer function to display a PDF file in a Streamlit app.
+# The 'height' parameter accepts a numeric value that specifies the height in pixels.
+# If 'height' is not provided, the PDF viewer will display without overflow.
+def pdf_viewer(input: Union[str, Path, bytes], width="700", height=None, key=None, annotations=[]):
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
