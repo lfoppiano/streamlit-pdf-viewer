@@ -24,10 +24,12 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
+    const pageMargin = 2; // Set the margin between PDF pages to 2 pixels
+
 
     const pdfContainerStyle = computed(() => ({
       width: `${props.args.width}px`,
-      height: `${props.args.height}px`,
+      height: props.args.height ? `${props.args.height}px` : 'auto',
       overflow: 'auto',
     }));
 
@@ -38,10 +40,11 @@ export default {
       const pageIndex = page - 1;
       let height = 0;
       for (let i = 0; i < pageIndex; i++) {
-        height += Math.floor(pageHeights.value[i] * pageScales.value[i]);
+        height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + pageMargin; // Add margin for each page
       }
       return height;
     };
+
 
     const getAnnotationStyle = (annoObj) => {
       const scale = pageScales.value[annoObj.page - 1];
@@ -67,12 +70,13 @@ export default {
     const createCanvasForPage = (page, scale, rotation) => {
       const viewport = page.getViewport({scale, rotation});
       const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       canvas.style.display = "block";
+      canvas.style.marginBottom = `${pageMargin}px`;
       return canvas;
     };
+
 
     const renderPage = async (page, canvas) => {
       const renderContext = {
@@ -99,8 +103,11 @@ export default {
           maxWidth.value = canvas.width;
         }
         totalHeight.value += canvas.height;
+        totalHeight.value += pageMargin;
         await renderPage(page, canvas);
       }
+      // Subtract the margin for the last page as it's not needed
+      totalHeight.value -= pageMargin;
     };
 
 
