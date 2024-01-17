@@ -3,7 +3,7 @@
     <div id="pdfViewer" :style="pdfViewerStyle">
       <div id="pdfAnnotations" v-if="args.annotations">
         <div v-for="(annotation, index) in args.annotations" :key="index" :style="getPageStyle">
-          <div :style="getAnnotationStyle(annotation)" :id="index"></div>
+          <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
         </div>
       </div>
     </div>
@@ -11,133 +11,137 @@
 </template>
 
 <script>
-import {onMounted, onUpdated} from "vue"
-import "pdfjs-dist/build/pdf.worker.entry"
-import {getDocument} from "pdfjs-dist/build/pdf"
-import {Streamlit} from "streamlit-component-lib"
-
+import {onMounted, onUpdated, computed, ref} from "vue";
+import "pdfjs-dist/build/pdf.worker.entry";
+import {getDocument} from "pdfjs-dist/build/pdf";
+import {Streamlit} from "streamlit-component-lib";
 
 export default {
-  props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
-  setup(props) {
-    let totalHeight = 0
-    let maxWidth = 0
-    const pageScales = []
-    const pageHeights = []
+  props: ["args"],
 
-    const getPdfsHeight = (page) => {
-      const pageIndex = page - 1
-      let height = 0
-      for (let i = 0; i < pageIndex; i++) {
-        height += Math.floor(pageHeights[i] * pageScales[i])}
-      return height
-    }
-    const pdfContainerStyle = {
+  setup(props) {
+    const totalHeight = ref(0);
+    const maxWidth = ref(0);
+    const pageScales = ref([]);
+    const pageHeights = ref([]);
+
+    const pdfContainerStyle = computed(() => ({
       width: `${props.args.width}px`,
       height: `${props.args.height}px`,
       overflow: 'auto',
-    }
+    }));
 
-    const pdfViewerStyle = {
-      position: 'relative',
+    const pdfViewerStyle = {position: 'relative'};
+    const getPageStyle = {position: 'relative'};
+
+    const calculatePdfsHeight = (page) => {
+      const pageIndex = page - 1;
+      let height = 0;
+      for (let i = 0; i < pageIndex; i++) {
+        height += Math.floor(pageHeights.value[i] * pageScales.value[i]);
+      }
+      return height;
     };
-
-    const getPageStyle = {
-      position: 'relative',
-    };
-
 
     const getAnnotationStyle = (annoObj) => {
-      const pageScalesIndex = annoObj.page - 1
-      const scale = pageScales[pageScalesIndex]
-      return ({
+      const scale = pageScales.value[annoObj.page - 1];
+      return {
         position: 'absolute',
         left: `${annoObj.x * scale}px`,
-        top: `${getPdfsHeight(annoObj.page) + annoObj.y * scale}px`,
+        top: `${calculatePdfsHeight(annoObj.page) + annoObj.y * scale}px`,
         width: `${annoObj.width * scale}px`,
         height: `${annoObj.height * scale}px`,
         outline: `${2 * scale}px solid`,
         outlineColor: annoObj.color,
         cursor: 'pointer'
-      });
-    }
+      };
+    };
+
+    const clearExistingCanvases = (pdfViewer) => {
+      const canvases = pdfViewer?.getElementsByTagName("canvas");
+      for (let j = canvases.length - 1; j >= 0; j--) {
+        pdfViewer?.removeChild(canvases.item(j));
+      }
+    };
+
+    const createCanvasForPage = (page, scale, rotation) => {
+      const viewport = page.getViewport({scale, rotation});
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      canvas.style.display = "block";
+      return canvas;
+    };
+
+    const renderPage = async (page, canvas) => {
+      const renderContext = {
+        canvasContext: canvas.getContext("2d"),
+        viewport: page.getViewport({scale: pageScales.value[page._pageIndex], rotation: page.rotate}),
+      };
+      const renderTask = page.render(renderContext);
+      await renderTask.promise;
+    };
+
+    const renderPdfPages = async (pdf, pdfViewer) => {
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const rotation = page.rotate;
+        const actualViewport = page.getViewport({scale: 1.0, rotation: rotation});
+        const scale = props.args.width / actualViewport.width;
+        pageScales.value.push(scale);
+        pageHeights.value.push(actualViewport.height);
+
+        const canvas = createCanvasForPage(page, scale, rotation);
+        pdfViewer?.append(canvas);
+
+        if (canvas.width > maxWidth.value) {
+          maxWidth.value = canvas.width;
+        }
+        totalHeight.value += canvas.height;
+        await renderPage(page, canvas);
+      }
+    };
+
+
+    const alertError = (error) => {
+      window.alert(error.message);
+      console.error(error);
+    };
+
     const loadPdfs = async (url) => {
       try {
-        const loadingTask = await getDocument(url)
-        const pdfViewer = document.getElementById("pdfViewer")
-        const canvases = pdfViewer?.getElementsByTagName("canvas")
+        const loadingTask = await getDocument(url);
+        const pdfViewer = document.getElementById("pdfViewer");
+        clearExistingCanvases(pdfViewer);
 
-        for (let j = canvases.length - 1; j >= 0; j--) {
-          pdfViewer?.removeChild(canvases.item(j))
-        }
-
-        loadingTask.promise.then(async function (pdf) {
-
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i)
-            const actualViewport = page.getViewport({scale: 1})
-            const scale = props.args.width / actualViewport.width
-            pageScales.push(scale)
-            pageHeights.push(actualViewport.height)
-            const viewport = page.getViewport({scale})
-            const canvas = document.createElement("canvas")
-            const context = canvas.getContext("2d")
-            pdfViewer?.append(canvas)
-            canvas.height = viewport.height
-            canvas.width = viewport.width
-            if (canvas.width > maxWidth) {
-              maxWidth = canvas.width
-            }
-            totalHeight += canvas.height
-
-            canvas.style.display = "block"
-
-            const renderContext = {
-              canvasContext: context,
-              viewport: viewport,
-            }
-            const renderTask = page.render(renderContext)
-            renderTask.promise.then(function () {
-              console.log("Page rendered")
-            })
-            console.log(i)
-          }
-        })
+        const pdf = await loadingTask.promise;
+        await renderPdfPages(pdf, pdfViewer);
       } catch (error) {
-        window.alert(error.message)
-        console.error(error)
+        alertError(error);
       }
-    }
+    };
+
+
+    const setFrameHeight = () => {
+      Streamlit.setFrameHeight(props.args.height || totalHeight.value);
+      Streamlit.setComponentReady();
+    };
 
     onMounted(() => {
-      const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`
-      loadPdfs(binaryDataUrl)
-      if (props.args.height) {
-        Streamlit.setFrameHeight(props.args.height)
-      } else {
-        Streamlit.setFrameHeight(totalHeight)
-      }
-      Streamlit.setComponentReady()
+      const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
+      loadPdfs(binaryDataUrl);
+      setFrameHeight();
     });
 
-    onUpdated(() => {
-      // After we're updated, tell Streamlit that our height may have changed.
-      if (props.args.height) {
-        Streamlit.setFrameHeight(props.args.height)
-      } else {
-        Streamlit.setFrameHeight(totalHeight)
-      }
-      Streamlit.setComponentReady()
-    });
+    onUpdated(setFrameHeight);
 
     return {
-      getPdfsHeight,
       getAnnotationStyle,
       pdfContainerStyle,
       pdfViewerStyle,
-      getPageStyle,
-      pageScales
-    }
+      getPageStyle
+    };
   },
-}
+};
 </script>
