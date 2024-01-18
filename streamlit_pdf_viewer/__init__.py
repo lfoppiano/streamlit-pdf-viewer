@@ -22,8 +22,11 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None, annotations=[],
-               page_margin=2, annotation_outline_size=1):
+def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None,
+               annotations=(),
+               pages_vertical_spacing=2,
+               annotation_outline_size=1
+               ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
 
@@ -32,10 +35,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
     :param height: Height of the PDF viewer in pixels. If not provided, the viewer show the whole content.
     :param key: An optional key that uniquely identifies this component. Used to preserve state in Streamlit apps.
     :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
-    :param page_margin: The margin (in pixels) between each page of the PDF. It adjusts the spacing between pages.
-                        Defaults to 2 pixels.
-    :param annotation_outline_size: Size of the outline around each annotation in pixels.
-                        Defaults to 1 pixel.
+    :param pages_vertical_spacing: The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.
+    :param annotation_outline_size: Size of the outline around each annotation in pixels. Defaults to 1 pixel.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -57,7 +58,7 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
     component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0,
-                                      annotations=annotations, page_margin=page_margin,
+                                      annotations=annotations, pages_vertical_spacing=pages_vertical_spacing,
                                       annotation_outline_size=annotation_outline_size)
     return component_value
 
