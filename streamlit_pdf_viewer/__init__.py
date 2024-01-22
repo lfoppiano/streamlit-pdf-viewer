@@ -6,7 +6,7 @@ from typing import Union
 import streamlit.components.v1 as components
 import json
 
-_RELEASE = False
+_RELEASE = True
 
 if not _RELEASE:
     _component_func = components.declare_component(
@@ -87,6 +87,5 @@ if not _RELEASE:
         binary,
         height=700,
         width=800,
-        annotations=annotations,
-        rendering="legacy_embed"
+        annotations=annotations
     )
