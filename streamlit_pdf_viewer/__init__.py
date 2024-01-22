@@ -6,7 +6,7 @@ from typing import Union
 import streamlit.components.v1 as components
 import json
 
-_RELEASE = True
+_RELEASE = False
 
 if not _RELEASE:
     _component_func = components.declare_component(
@@ -24,8 +24,9 @@ else:
 
 def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None,
                annotations=(),
-               pages_vertical_spacing=2,
-               annotation_outline_size=1
+               pages_vertical_spacing: int = 2,
+               annotation_outline_size: int = 1,
+               rendering: str = "unwrap"
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -37,6 +38,10 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
     :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
     :param pages_vertical_spacing: The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.
     :param annotation_outline_size: Size of the outline around each annotation in pixels. Defaults to 1 pixel.
+    :param rendering: Type of rendering. The default is "unwrap", which unwrap the PDF. Other values are
+    "legacy_iframe" and "legacy_embed" which uses the legacy approach for showing PDF document with streamlit.
+    These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still
+    working to implement for the "unwrap" method.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -57,9 +62,17 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
         binary = input
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
-    component_value = _component_func(binary=base64_pdf, width=width, height=height, key=key, default=0,
-                                      annotations=annotations, pages_vertical_spacing=pages_vertical_spacing,
-                                      annotation_outline_size=annotation_outline_size)
+    component_value = _component_func(
+        binary=base64_pdf,
+        width=width,
+        height=height,
+        key=key,
+        default=0,
+        annotations=annotations,
+        pages_vertical_spacing=pages_vertical_spacing,
+        annotation_outline_size=annotation_outline_size,
+        rendering=rendering
+    )
     return component_value
 
 
@@ -70,4 +83,10 @@ if not _RELEASE:
     with open("resources/annotations.json", 'rb') as fo:
         annotations = json.loads(fo.read())
 
-    viewer = pdf_viewer(binary, height="700", width="800", annotations=annotations)
+    viewer = pdf_viewer(
+        binary,
+        height=700,
+        width=800,
+        annotations=annotations,
+        rendering="legacy_embed"
+    )
