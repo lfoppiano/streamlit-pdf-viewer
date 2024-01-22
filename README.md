@@ -34,12 +34,12 @@ In the following table the list of parameters that can be provided to the `pdf_v
 | name                    | description                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | input                   | The source of the PDF file. Accepts a file path, URL, or binary data.                                                                                                                                                                                                                                                                                                                                                         |
-| width                   | Width of the PDF viewer in pixels. Defaults to 700 pixels.                                                                                                                                                                                                                                                                                                                                                                    |
-| height                  | Height of the PDF viewer in pixels. If not provided, the viewer show the whole content.                                                                                                                                                                                                                                                                                                                                       |
+| width                   | Width of the PDF viewer in pixels. It defaults to 700 pixels.                                                                                                                                                                                                                                                                                                                                                                    |
+| height                  | Height of the PDF viewer in pixels. If not provided, the viewer shows the whole content.                                                                                                                                                                                                                                                                                                                                       |
 | annotations             | A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.                                                                                                                                                                                                                                                                                                                                      |
 | pages_vertical_spacing  | The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.                                                                                                                                                                                                                                                                                                                                            |
 | annotation_outline_size | Size of the outline around each annotation in pixels. Defaults to 1 pixel.                                                                                                                                                                                                                                                                                                                                                    |
-| rendering               | Type of rendering. Default value "unwrap", which unwrap the PDF with pdf.js. Other values are "legacy_iframe" and "legacy_embed" which uses the legacy approach of injecting the document into an `<embed>` or `<iframe>`. These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still working to implement for the "unwrap" method. |
+| rendering               | Type of rendering. The default value "unwrap", which unwraps the PDF with pdf.js, and supports the visualisation of annotations. Other values are "legacy_iframe" and "legacy_embed" which use the legacy approach of injecting the document into an `<embed>` or `<iframe>`. These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still working to implement for the "unwrap" method. **NOTE**: Annotations are ignored for both 'legacy_iframe' and 'legacy_embed'. |
 
 ## Developers notes
 
@@ -51,7 +51,7 @@ In the following table the list of parameters that can be provided to the `pdf_v
 
 ### Configure environment for development
 
-First make sure that _RELEASE = False in `streamlit_pdf_viewer/__init__.py`. To run the component in development mode, use the following commands:
+First, make sure that _RELEASE = False in `streamlit_pdf_viewer/__init__.py`. To run the component in development mode, use the following commands:
 
 ```shell
 streamlit run my_component/__init__.py
@@ -60,7 +60,7 @@ cd frontend
 npm run serve
 ```
 
-These commands will start the Streamlit application and serve the Node.js component, respectively. Ensure you're in the correct directory before running these commands.
+These commands will start the Streamlit application and serve the Node.js component. Please make sure you're in the correct directory before running these commands.
 
 ### Integrate into a streamlit application
 
