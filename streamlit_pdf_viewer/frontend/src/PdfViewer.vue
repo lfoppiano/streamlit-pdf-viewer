@@ -35,7 +35,6 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
-    const pageMargin = 2; // Set the margin between PDF pages to 2 pixels
 
 
     const pdfContainerStyle = computed(() => ({
