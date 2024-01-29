@@ -1,11 +1,22 @@
 <template>
   <div id="pdfContainer" :style="pdfContainerStyle">
-    <div id="pdfViewer" :style="pdfViewerStyle">
-      <div id="pdfAnnotations" v-if="args.annotations">
-        <div v-for="(annotation, index) in args.annotations" :key="index" :style="getPageStyle">
-          <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
+    <div v-if="args.rendering==='unwrap'">
+      <div id="pdfViewer" :style="pdfViewerStyle">
+        <div id="pdfAnnotations" v-if="args.annotations">
+          <div v-for="(annotation, index) in args.annotations" :key="index" :style="getPageStyle">
+            <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
+          </div>
         </div>
       </div>
+    </div>
+    <div v-else-if="args.rendering==='legacy_embed'">
+      <embed :src="`data:application/pdf;base64,${args.binary}`" width="100%" height="700" type="application/pdf"/>
+    </div>
+    <div v-else-if="args.rendering==='legacy_iframe'">
+      <embed :src="`data:application/pdf;base64,${args.binary}`" width="100%" height="700" type="application/pdf"/>
+    </div>
+    <div v-else>
+      Error rendering option.
     </div>
   </div>
 </template>
@@ -24,7 +35,6 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
-    const pageMargin = 2; // Set the margin between PDF pages to 2 pixels
 
 
     const pdfContainerStyle = computed(() => ({
@@ -137,7 +147,9 @@ export default {
 
     onMounted(() => {
       const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
-      loadPdfs(binaryDataUrl);
+      if (props.args.rendering === "unwrap") {
+        loadPdfs(binaryDataUrl);
+      }
       setFrameHeight();
     });
 
