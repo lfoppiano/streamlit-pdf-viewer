@@ -1,14 +1,13 @@
 # streamlit-pdf-viewer
 
-Component allowing the visualisation and manipulation of PDF documents in streamlit
+Streamlit component that allows the visualisation and enrichment of PDF documents
 
-**Work in progress**
+**Work in progress**: We are early in the development, and we appreciate new contributors. 
 
-We are early in the development, looking for contributors. Currently, it has been tested on Chrome and Firefox.
+Currently, it has been tested on Chrome and Firefox.
+You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
 
 ![screenshot.png](docs/screenshot.png)
-
-You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
 
 ## Getting started
 
