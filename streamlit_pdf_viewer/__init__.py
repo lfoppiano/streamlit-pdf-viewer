@@ -1,7 +1,7 @@
 import base64
 import os
 from pathlib import Path
-from typing import Union
+from typing import Union, List, Optional
 
 import streamlit.components.v1 as components
 import json
@@ -26,7 +26,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
                annotations=(),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
-               rendering: str = "unwrap"
+               rendering: str = "unwrap",
+               pages_to_render: Optional[List[int]] = None
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -39,6 +40,7 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
     :param pages_vertical_spacing: The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.
     :param annotation_outline_size: Size of the outline around each annotation in pixels. Defaults to 1 pixel.
     :param rendering: Type of rendering. The default is "unwrap", which unwrap the PDF. Other values are
+    :param pages_to_render: Optional list of page numbers to render. If None, all pages are rendered. This allows for selective rendering of pages in the PDF.
     "legacy_iframe" and "legacy_embed" which uses the legacy approach for showing PDF document with streamlit.
     These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still
     working to implement for the "unwrap" method.
@@ -54,6 +56,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
         raise TypeError("Width must be an integer")
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
+    if pages_to_render is not None and not all(isinstance(page, int) for page in pages_to_render):
+        raise TypeError("pages_to_render must be a list of integers or None")
 
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
@@ -71,7 +75,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
         annotations=annotations,
         pages_vertical_spacing=pages_vertical_spacing,
         annotation_outline_size=annotation_outline_size,
-        rendering=rendering
+        rendering=rendering,
+        pages_to_render=pages_to_render
     )
     return component_value
 

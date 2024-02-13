@@ -3,7 +3,7 @@
     <div v-if="args.rendering==='unwrap'">
       <div id="pdfViewer" :style="pdfViewerStyle">
         <div id="pdfAnnotations" v-if="args.annotations">
-          <div v-for="(annotation, index) in args.annotations" :key="index" :style="getPageStyle">
+          <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
             <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
           </div>
         </div>
@@ -36,6 +36,17 @@ export default {
     const pageScales = ref([]);
     const pageHeights = ref([]);
 
+    const isRenderingAllPages = props.args.pages_to_render.length === 0;
+
+    const filteredAnnotations = computed(() => {
+      if (isRenderingAllPages) {
+        return props.args.annotations;
+      }
+      const filteredAnnotations = props.args.annotations.filter(anno =>{
+        return props.args.pages_to_render.includes(Number(anno.page))
+      })
+      return filteredAnnotations;
+    });
 
     const pdfContainerStyle = computed(() => ({
       width: `${props.args.width}px`,
@@ -47,14 +58,20 @@ export default {
     const getPageStyle = {position: 'relative'};
 
     const calculatePdfsHeight = (page) => {
-      const pageIndex = page - 1;
       let height = 0;
-      for (let i = 0; i < pageIndex; i++) {
-        height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + props.args.pages_vertical_spacing; // Add margin for each page
+      if (isRenderingAllPages) {
+        for (let i = 0; i < page - 1; i++) {
+          height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + props.args.pages_vertical_spacing; // Add margin for each page
+        }
+      } else {
+        for (let i = 0; i < pageHeights.value.length; i++) {
+          if (props.args.pages_to_render.includes(i + 1) && i < page - 1) {
+            height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + props.args.pages_vertical_spacing;
+          }
+        }
       }
       return height;
     };
-
 
     const getAnnotationStyle = (annoObj) => {
       const scale = pageScales.value[annoObj.page - 1];
@@ -97,7 +114,14 @@ export default {
       await renderTask.promise;
     };
 
-    const renderPdfPages = async (pdf, pdfViewer) => {
+    const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {
+      if (pagesToRender.length === 0) {
+        pagesToRender = []
+        for (let i = 0; i < pdf.numPages; i++) {
+          pagesToRender.push(i + 1);
+        }
+      }
+
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const rotation = page.rotate;
@@ -105,21 +129,22 @@ export default {
         const scale = props.args.width / actualViewport.width;
         pageScales.value.push(scale);
         pageHeights.value.push(actualViewport.height);
-
-        const canvas = createCanvasForPage(page, scale, rotation);
-        pdfViewer?.append(canvas);
-
-        if (canvas.width > maxWidth.value) {
-          maxWidth.value = canvas.width;
+        if (pagesToRender.includes(i)) {
+          const canvas = createCanvasForPage(page, scale, rotation);
+          pdfViewer?.append(canvas);
+          if (canvas.width > maxWidth.value) {
+            maxWidth.value = canvas.width;
+          }
+          totalHeight.value += canvas.height;
+          totalHeight.value += props.args.pages_vertical_spacing;
+          await renderPage(page, canvas);
         }
-        totalHeight.value += canvas.height;
-        totalHeight.value += props.args.pages_vertical_spacing;
-        await renderPage(page, canvas);
       }
       // Subtract the margin for the last page as it's not needed
-      totalHeight.value -= props.args.pages_vertical_spacing;
+      if (pagesToRender.length > 0) {
+        totalHeight.value -= props.args.pages_vertical_spacing;
+      }
     };
-
 
     const alertError = (error) => {
       window.alert(error.message);
@@ -133,7 +158,7 @@ export default {
         clearExistingCanvases(pdfViewer);
 
         const pdf = await loadingTask.promise;
-        await renderPdfPages(pdf, pdfViewer);
+        await renderPdfPages(pdf, pdfViewer, props.args.pages_to_render);
       } catch (error) {
         alertError(error);
       }
@@ -156,6 +181,7 @@ export default {
     onUpdated(setFrameHeight);
 
     return {
+      filteredAnnotations,
       getAnnotationStyle,
       pdfContainerStyle,
       pdfViewerStyle,
