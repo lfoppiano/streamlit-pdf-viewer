@@ -46,7 +46,7 @@ In the following table the list of parameters that can be provided to the `pdf_v
 
 - Python >= 3.8
 - Node.js >= 16
-- Streamlit 1.28.2
+- Streamlit >= 1.28.2
 
 ### Configure environment for development
 
