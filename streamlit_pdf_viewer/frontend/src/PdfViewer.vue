@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {onMounted, onUpdated, computed, ref} from "vue";
+import {nextTick, onMounted, onUpdated, computed, ref} from "vue";
 import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
@@ -42,7 +42,7 @@ export default {
       if (isRenderingAllPages) {
         return props.args.annotations;
       }
-      const filteredAnnotations = props.args.annotations.filter(anno =>{
+      const filteredAnnotations = props.args.annotations.filter(anno => {
         return props.args.pages_to_render.includes(Number(anno.page))
       })
       return filteredAnnotations;
@@ -178,7 +178,12 @@ export default {
       setFrameHeight();
     });
 
-    onUpdated(setFrameHeight);
+    onUpdated(() => {
+      nextTick(() => {
+        setFrameHeight();
+      });
+    });
+
 
     return {
       filteredAnnotations,
