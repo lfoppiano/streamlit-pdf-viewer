@@ -23,11 +23,11 @@ else:
 
 
 def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None,
-               annotations=(),
+               annotations: list = (),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
                rendering: str = "unwrap",
-               pages_to_render: Optional[List[int]] = None
+               pages_to_render: List[int] = ()
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -56,8 +56,8 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
         raise TypeError("Width must be an integer")
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
-    if pages_to_render is not None and not all(isinstance(page, int) for page in pages_to_render):
-        raise TypeError("pages_to_render must be a list of integers or None")
+    if not all(isinstance(page, int) for page in pages_to_render):
+        raise TypeError("pages_to_render must be a list of integers")
 
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
