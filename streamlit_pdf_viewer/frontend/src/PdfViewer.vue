@@ -167,7 +167,7 @@ export default {
 
     const setFrameHeight = () => {
       Streamlit.setFrameHeight(props.args.height || totalHeight.value);
-      Streamlit.setComponentReady();
+      // Streamlit.setComponentReady();
     };
 
     onMounted(() => {
@@ -179,9 +179,8 @@ export default {
     });
 
     onUpdated(() => {
-      nextTick(() => {
-        setFrameHeight();
-      });
+      console.info('onMounted') // to check if onUpdated method executed infinitely #28
+      setFrameHeight();
     });
 
 
