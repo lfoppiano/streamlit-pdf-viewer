@@ -53,7 +53,7 @@ In the following table the list of parameters that can be provided to the `pdf_v
 First, make sure that _RELEASE = False in `streamlit_pdf_viewer/__init__.py`. To run the component in development mode, use the following commands:
 
 ```shell
-streamlit run my_component/__init__.py
+streamlit run streamlit_pdf_viewer/__init__.py
 
 cd frontend
 npm run serve
