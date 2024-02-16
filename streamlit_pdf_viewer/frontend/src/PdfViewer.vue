@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {nextTick, onMounted, onUpdated, computed, ref} from "vue";
+import { onMounted, onUpdated, computed, ref} from "vue";
 import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
@@ -179,7 +179,6 @@ export default {
     });
 
     onUpdated(() => {
-      console.info('onMounted') // to check if onUpdated method executed infinitely #28
       setFrameHeight();
     });
 
