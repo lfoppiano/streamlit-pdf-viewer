@@ -12,7 +12,6 @@ from tempfile import TemporaryFile
 
 import requests
 
-
 LOGGER = logging.getLogger(__file__)
 
 

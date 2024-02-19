@@ -2,7 +2,7 @@ import os
 
 import streamlit as st
 
-from e2e.test_template import ROOT_DIRECTORY
+from tests.test_template import ROOT_DIRECTORY
 from streamlit_pdf_viewer import pdf_viewer
 
 # Add some test code to play with the component while it's in development.

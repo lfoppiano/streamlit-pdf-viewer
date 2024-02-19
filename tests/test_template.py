@@ -5,7 +5,7 @@ import pytest
 
 from playwright.sync_api import Page, expect
 
-from e2e_utils import StreamlitRunner
+from tests.e2e_utils import StreamlitRunner
 
 ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "streamlit_pdf_viewer", "example.py")
@@ -13,7 +13,7 @@ BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "streamlit_pdf_viewer", "examp
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
-    with StreamlitRunner(BASIC_EXAMPLE_FILE) as runner:
+    with StreamlitRunner(Path(BASIC_EXAMPLE_FILE)) as runner:
         yield runner
 
 
