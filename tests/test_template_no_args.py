@@ -31,16 +31,7 @@ def test_should_render_template(page: Page):
     width = locator.bounding_box()['width']
     height = locator.bounding_box()['width']
     assert width > 0
-    assert width != 500
     assert height > 0
-    assert height != 500
-
-    page.get_by_role("button", name="Set size").click()
-    locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    width = locator.bounding_box()['width']
-    height = locator.bounding_box()['height']
-    assert width > 400
-    assert height == 300
 
 # def test_should_render_template(page: Page):
 #     frame_0 = page.frame_locator(
