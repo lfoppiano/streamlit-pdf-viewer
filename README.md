@@ -34,11 +34,32 @@ In the following table the list of parameters that can be provided to the `pdf_v
 | input                   | The source of the PDF file. Accepts a file path, URL, or binary data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | width                   | Width of the PDF viewer in pixels. It defaults to 700 pixels.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | height                  | Height of the PDF viewer in pixels. If not provided, the viewer shows the whole content.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| annotations             | A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| annotations             | A list of annotations to be overlaid on the PDF. Format is described here.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | pages_vertical_spacing  | The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | annotation_outline_size | Size of the outline around each annotation in pixels. Defaults to 1 pixel.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | rendering               | Type of rendering: `unwrap` (default), `legacy_iframe`, or `legacy_embed`. The default value, `unwrap` shows the PDF document using pdf.js, and supports the visualisation of annotations. Other values are `legacy_iframe` and `legacy_embed` which use the legacy approach of injecting the document into an `<embed>` or `<iframe>`. These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still working to implement in this component. **NOTE**: Annotations are ignored for both 'legacy_iframe' and 'legacy_embed'. |
 | pages_to_render         | Filter the rendering to a specific set of pages. By default all pages are rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+
+### Annotation format 
+The annotations format has been derived from the [Grobid's coordinate formats](https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/), which are described as a list of "bounding boxes".
+The annotations are expressed as a dictionary of six elements, the page, x and y indicate the top left point. The color can be expressed following the html CSS convention. 
+
+Here an example: 
+
+```json
+[
+   {
+      "page": 1,
+      "x": 220,
+      "y": 155,
+      "height": 22,
+      "width": 65,
+      "color": "red"
+   },
+[...]
+```
+
+The example shown in our screenshot can be found [here](resources/annotations.json).
 
 ## Developers notes
 
