@@ -8,7 +8,7 @@ from playwright.sync_api import Page, expect
 from tests.e2e_utils import StreamlitRunner
 
 ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
-BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "streamlit_pdf_viewer", "example.py")
+BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "example.py")
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -28,8 +28,18 @@ def test_should_render_template(page: Page):
     expect(page.get_by_text("Test PDF Viewer")).to_be_visible()
 
     locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    init_frame_width = locator.bounding_box()['width']
-    assert init_frame_width > 0
+    width = locator.bounding_box()['width']
+    height = locator.bounding_box()['width']
+    assert width > 0
+    assert width != 500
+    assert height == 0
+
+    page.get_by_role("button", name="Set size").click()
+    locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    width = locator.bounding_box()['width']
+    height = locator.bounding_box()['height']
+    # assert width == 400
+    assert height == 400
 
 # def test_should_render_template(page: Page):
 #     frame_0 = page.frame_locator(
