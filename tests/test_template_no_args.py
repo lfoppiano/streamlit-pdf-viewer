@@ -8,7 +8,7 @@ from playwright.sync_api import Page, expect
 from tests.e2e_utils import StreamlitRunner
 
 ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
-BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "example.py")
+BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "example_no_args.py")
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -32,6 +32,15 @@ def test_should_render_template(page: Page):
     height = locator.bounding_box()['width']
     assert width > 0
     assert height > 0
+
+
+def test_should_render_template_check_container_size(page: Page):
+    container_locator = page.locator('div[id="pdfContainer"]').nth(0)
+
+    # expect(container_locator.is_visible())
+    b_box = container_locator.bounding_box()
+    expect(b_box['width'] == 700)
+    expect(b_box['height'] > 0)
 
 # def test_should_render_template(page: Page):
 #     frame_0 = page.frame_locator(
