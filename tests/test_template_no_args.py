@@ -25,9 +25,11 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_template(page: Page):
-    expect(page.get_by_text("Test PDF Viewer")).to_be_visible()
+    expect(page.get_by_text("Test PDF Viewer with no arguments")).to_be_visible()
 
     locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    expect(locator).to_be_visible()
+
     width = locator.bounding_box()['width']
     height = locator.bounding_box()['width']
     assert width > 0
@@ -35,12 +37,17 @@ def test_should_render_template(page: Page):
 
 
 def test_should_render_template_check_container_size(page: Page):
-    container_locator = page.locator('div[id="pdfContainer"]').nth(0)
+    expect(page.get_by_text("Test PDF Viewer with no arguments")).to_be_visible()
 
-    # expect(container_locator.is_visible())
+    container_locator = page.locator('div[id="pdfContainer"]').nth(0)
+    expect(container_locator.is_visible())
+
     b_box = container_locator.bounding_box()
     expect(b_box['width'] == 700)
     expect(b_box['height'] > 0)
+
+    annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
+    expect(annotations_locator).to_be_hidden()
 
 # def test_should_render_template(page: Page):
 #     frame_0 = page.frame_locator(
