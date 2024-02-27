@@ -49,7 +49,7 @@ def test_should_render_template_check_container_size(page: Page):
     b_box = pdf_container.bounding_box()
     assert b_box['width'] == 700
     assert b_box['height'] > 0
-           
+
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
     expect(annotations_locator).to_be_hidden()
 

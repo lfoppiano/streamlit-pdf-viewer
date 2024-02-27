@@ -27,6 +27,7 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 def test_should_render_template(page: Page):
     expect(page.get_by_text("Test PDF Viewer with arguments")).to_be_visible()
+    page.get_by_role("img", name="Running...").is_hidden()
 
     locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     expect(locator).to_be_visible()
@@ -34,13 +35,13 @@ def test_should_render_template(page: Page):
     width = locator.bounding_box()['width']
     height = locator.bounding_box()['height']
     assert width > 0
-    # assert height > 0
+    assert height > 0
     # The height and width are not uniform against different python and node versions
 
 
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with arguments")).to_be_visible()
-    sleep(1)
+    page.get_by_role("img", name="Running...").is_hidden()
 
     # page.wait_for_selector('div[id="pdfContainer"]')
     # page.wait_for_load_state("load")
