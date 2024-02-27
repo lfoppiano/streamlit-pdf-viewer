@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from time import sleep
 
 import pytest
 
@@ -26,7 +27,8 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 def test_should_render_template(page: Page):
     expect(page.get_by_text("Test PDF Viewer with no arguments")).to_be_visible()
-
+    sleep(1)
+    page.get_by_role("img", name="Running...").is_hidden()
     locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     expect(locator).to_be_visible()
 
@@ -40,7 +42,7 @@ def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with no arguments")).to_be_visible()
 
     container_locator = page.locator('div[id="pdfContainer"]').nth(0)
-    expect(container_locator.is_visible())
+    expect(container_locator).to_be_visible()
 
     b_box = container_locator.bounding_box()
     expect(b_box['width'] == 700)
