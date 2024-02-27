@@ -167,7 +167,6 @@ export default {
 
     const setFrameHeight = () => {
       Streamlit.setFrameHeight(props.args.height || totalHeight.value);
-      // Streamlit.setComponentReady();
     };
 
     onMounted(() => {
@@ -176,9 +175,11 @@ export default {
         loadPdfs(binaryDataUrl);
       }
       setFrameHeight();
+      Streamlit.setComponentReady();
     });
 
     onUpdated(() => {
+      // console.log("onUpdated")
       setFrameHeight();
     });
 
