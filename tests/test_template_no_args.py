@@ -34,8 +34,8 @@ def test_should_render_template(page: Page):
 
     width = pdf_container.bounding_box()['width']
     height = pdf_container.bounding_box()['width']
-    assert width > 0
-    assert height > 0
+    assert width == 700
+    assert height == 700
 
 
 def test_should_render_template_check_container_size(page: Page):

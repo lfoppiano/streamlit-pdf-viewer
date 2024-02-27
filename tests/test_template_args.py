@@ -34,8 +34,8 @@ def test_should_render_template(page: Page):
 
     width = locator.bounding_box()['width']
     height = locator.bounding_box()['height']
-    assert width > 0
-    assert height > 0
+    assert width == 704
+    assert height == 300
     # The height and width are not uniform against different python and node versions
 
 
@@ -48,9 +48,9 @@ def test_should_render_template_check_container_size(page: Page):
     # page.wait_for_load_state("domcontentloaded")
 
     iframe = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    container_locator = iframe.locator('div[id="pdfContainer"]')
+    container_locator = iframe.locator('div[id="pdfContainer"]').nth(0)
 
-    assert container_locator.is_visible() is True
+    expect(container_locator).to_be_visible()
     b_box = container_locator.bounding_box()
     assert b_box['width'] == 400
     assert b_box['height'] == 300
