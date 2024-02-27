@@ -22,7 +22,10 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None,
+def pdf_viewer(input: Union[str, Path, bytes], 
+               width: int = 700, 
+               height: int = None, 
+               key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
