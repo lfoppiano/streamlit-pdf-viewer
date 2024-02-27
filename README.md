@@ -5,9 +5,9 @@ Tested on Chrome and Firefox. You can see an [application](https://github.com/lf
 
 <img src="https://github.com/lfoppiano/streamlit-pdf-viewer/raw/main/docs/screenshot.png" width=500 align="right" />
 
-**Work in progress**: We are early in the development, and we appreciate new contributors.
-
-**NOTE**: If with version 0.0.8 [the PDF is not shown](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/37), please use 0.0.7. 
+### Work in progress 
+We are early in the development, and we appreciate new contributors.
+> If with version 0.0.8 [the PDF is not shown](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/37), please use 0.0.7. 
 
 ## Getting started
 
