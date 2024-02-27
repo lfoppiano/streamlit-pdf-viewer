@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from time import sleep
 
 import pytest
 
@@ -39,9 +40,16 @@ def test_should_render_template(page: Page):
 
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with arguments")).to_be_visible()
-    container_locator = page.locator('div[id="pdfContainer"]').nth(0)
+    sleep(1)
 
-    expect(container_locator.is_visible())
+    # page.wait_for_selector('div[id="pdfContainer"]')
+    # page.wait_for_load_state("load")
+    # page.wait_for_load_state("domcontentloaded")
+
+    iframe = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    container_locator = iframe.locator('div[id="pdfContainer"]')
+
+    assert container_locator.is_visible() is True
     b_box = container_locator.bounding_box()
-    expect(b_box['width'] == 400)
-    expect(b_box['height'] == 300)
+    assert b_box['width'] == 400
+    assert b_box['height'] == 300
