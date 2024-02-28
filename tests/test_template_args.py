@@ -25,32 +25,31 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     page.get_by_role("img", name="Running...").is_hidden()
 
 
-def test_should_render_template(page: Page):
-    expect(page.get_by_text("Test PDF Viewer with arguments")).to_be_visible()
-    page.get_by_role("img", name="Running...").is_hidden()
-
-    locator = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    expect(locator).to_be_visible()
-
-    width = locator.bounding_box()['width']
-    height = locator.bounding_box()['height']
-    assert width == 704
-    assert height == 300
-    # The height and width are not uniform against different python and node versions
-
-
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with arguments")).to_be_visible()
-    page.get_by_role("img", name="Running...").is_hidden()
 
-    # page.wait_for_selector('div[id="pdfContainer"]')
-    # page.wait_for_load_state("load")
-    # page.wait_for_load_state("domcontentloaded")
+    iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    expect(iframe_component).to_be_visible()
 
-    iframe = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    container_locator = iframe.locator('div[id="pdfContainer"]').nth(0)
+    iframe_box = iframe_component.bounding_box()
+    assert iframe_box['width'] > 0
+    assert iframe_box['height'] > 0
 
-    expect(container_locator).to_be_visible()
-    b_box = container_locator.bounding_box()
+    iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
+    expect(pdf_container).to_be_visible()
+
+    b_box = pdf_container.bounding_box()
     assert b_box['width'] == 400
     assert b_box['height'] == 300
+
+    pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
+    expect(pdf_viewer).to_be_visible()
+
+    canvas_list = pdf_viewer.locator("canvas").all()
+    assert len(canvas_list) == 8
+    for canvas in canvas_list:
+        expect(canvas).to_be_visible()
+
+    annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
+    expect(annotations_locator).to_be_hidden()
