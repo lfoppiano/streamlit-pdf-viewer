@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Union, List, Optional
 
 import streamlit.components.v1 as components
+from streamlit_js_eval import streamlit_js_eval
 import json
 
 _RELEASE = True
@@ -21,8 +22,19 @@ else:
         path=build_dir
     )
 
+def get_screen_width():
+    async_js_code = """
+    new Promise(resolve => {
+        if (document.readyState === "complete") {
+            resolve(window.innerWidth);
+        } else {
+            window.addEventListener("load", () => resolve(window.innerWidth));
+        }
+    })
+    """
+    return streamlit_js_eval(js_expressions=async_js_code)
 
-def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = None, key=None,
+def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "40%", height: int = None, key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
@@ -51,9 +63,13 @@ def pdf_viewer(input: Union[str, Path, bytes], width: int = 700, height: int = N
     Returns the value of the selected component (if any).
     """
 
-    # Validate width and height parameters
-    if not isinstance(width, int):
-        raise TypeError("Width must be an integer")
+    if isinstance(width, str) and width.endswith('%'):
+        screen_width = get_screen_width()
+        percentage = float(width[:-1]) / 100
+        width = int(screen_width * percentage)
+    elif not isinstance(width, int):
+        raise TypeError("Width must be an integer or a percentage string (e.g., '70%' or 700)")
+
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
     if not all(isinstance(page, int) for page in pages_to_render):
