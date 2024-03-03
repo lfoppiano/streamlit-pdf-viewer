@@ -9,7 +9,7 @@ from playwright.sync_api import Page, expect
 from tests.e2e_utils import StreamlitRunner
 
 ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
-BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_no_args.py")
+BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_iframe.py")
 
 
 @pytest.fixture(autouse=True, scope="module")
