@@ -9,7 +9,7 @@ from playwright.sync_api import Page, expect
 from tests.e2e_utils import StreamlitRunner
 
 ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
-BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_no_args.py")
+BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_iframe.py")
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -26,7 +26,7 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_template_check_container_size(page: Page):
-    expect(page.get_by_text("Test PDF Viewer with no arguments")).to_be_visible()
+    expect(page.get_by_text("Test PDF Viewer using legacy iframe")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     expect(iframe_component).to_be_visible()
