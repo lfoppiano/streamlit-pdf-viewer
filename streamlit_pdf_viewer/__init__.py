@@ -45,7 +45,7 @@ def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "100%", 
     pdf_viewer function to display a PDF file in a Streamlit app.
 
     :param input: The source of the PDF file. Accepts a file path, URL, or binary data.
-    :param width: Width of the PDF viewer in pixels. Defaults to 700 pixels.
+    :param width: The width of the PDF viewer defaults to 100% of the layout. Specify in pixels with a numeric value, or as a percentage for relative sizing.
     :param height: Height of the PDF viewer in pixels. If not provided, the viewer show the whole content.
     :param key: An optional key that uniquely identifies this component. Used to preserve state in Streamlit apps.
     :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
