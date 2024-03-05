@@ -48,7 +48,7 @@ def test_should_render_template_check_container_size(page: Page):
     expect(pdf_container).to_be_visible()
 
     b_box = pdf_container.bounding_box()
-    assert b_box['width'] == 400
+    assert b_box['width'] == 500
     assert b_box['height'] > 0
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
