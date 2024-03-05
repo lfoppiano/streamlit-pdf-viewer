@@ -50,6 +50,6 @@ jobs:
         run: |          
           pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures pytest-cov
           playwright install chromium firefox
-          pytest --cov=. --cov-report xml
+          pytest --cov=streamlit_pdf_viewer --cov-report xml
       - name: Coveralls
         uses: coverallsapp/github-action@v2
