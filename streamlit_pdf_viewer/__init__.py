@@ -34,7 +34,7 @@ def get_screen_width():
     """
     return streamlit_js_eval(js_expressions=async_js_code)
 
-def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "40%", height: int = None, key=None,
+def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "100%", height: int = None, key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
