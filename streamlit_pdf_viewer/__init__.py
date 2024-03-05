@@ -22,19 +22,23 @@ else:
         path=build_dir
     )
 
-def get_screen_width():
+def get_screen_size():
+    """
+    Returns the inner width and outer height of a window.
+    Ideally, it should return the inner height, but JavaScript couldn't retrieve the height in an iframe.
+    """
     async_js_code = """
     new Promise(resolve => {
         if (document.readyState === "complete") {
-            resolve(window.innerWidth);
+            resolve([window.innerWidth, window.outerHeight]);
         } else {
-            window.addEventListener("load", () => resolve(window.innerWidth));
+            window.addEventListener("load", () => resolve([window.innerWidth, window.outerHeight]));
         }
     })
     """
     return streamlit_js_eval(js_expressions=async_js_code)
 
-def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "100%", height: int = None, key=None,
+def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "100%", height: Union[str, int] = "100%", key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
@@ -63,12 +67,20 @@ def pdf_viewer(input: Union[str, Path, bytes], width: Union[str, int] = "100%", 
     Returns the value of the selected component (if any).
     """
 
+    screen_width, screen_height = get_screen_size()
+
     if isinstance(width, str) and width.endswith('%'):
-        screen_width = get_screen_width()
-        percentage = float(width[:-1]) / 100
-        width = int(screen_width * percentage)
+        percentage_width = float(width[:-1]) / 100
+        width = int(screen_width * percentage_width)
     elif not isinstance(width, int):
         raise TypeError("Width must be an integer or a percentage string (e.g., '70%' or 700)")
+
+    if isinstance(height, str) and height.endswith('%'):
+        percentage_height = float(height[:-1]) / 100
+        height = int(screen_height * percentage_height)
+    elif height is not None and not isinstance(height, int):
+        raise TypeError("Height must be an integer, a percentage string (e.g., '70%'), or None")
+
 
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
