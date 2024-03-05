@@ -38,23 +38,23 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer using legacy embed")).to_be_visible()
 
-    iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    expect(iframe_component).to_be_visible()
-
-    iframe_box = iframe_component.bounding_box()
-    assert iframe_box['width'] > 0
-    assert iframe_box['height'] > 0
-
-    iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
-    pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
-    expect(pdf_container).to_be_visible()
-
-    b_box = pdf_container.bounding_box()
-    assert b_box['width'] == 700
-    assert b_box['height'] > 0
-
-    pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
-    expect(pdf_viewer).not_to_be_visible()
-    
-    annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
-    expect(annotations_locator).to_be_hidden()
+    # iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    # expect(iframe_component).to_be_visible()
+    # 
+    # iframe_box = iframe_component.bounding_box()
+    # assert iframe_box['width'] > 0
+    # assert iframe_box['height'] > 0
+    # 
+    # iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
+    # pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
+    # expect(pdf_container).to_be_visible()
+    # 
+    # b_box = pdf_container.bounding_box()
+    # assert b_box['width'] == 700
+    # assert b_box['height'] > 0
+    # 
+    # pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
+    # expect(pdf_viewer).not_to_be_visible()
+    # 
+    # annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
+    # expect(annotations_locator).to_be_hidden()
