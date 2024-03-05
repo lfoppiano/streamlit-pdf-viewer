@@ -1,15 +1,14 @@
+import math
 import os
 from pathlib import Path
-from time import sleep
 
 import pytest
-
 from playwright.sync_api import Page, expect
 
+from tests import ROOT_DIRECTORY
 from tests.e2e_utils import StreamlitRunner
 
-ROOT_DIRECTORY = Path(__file__).parent.parent.absolute()
-BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_iframe.py")
+BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_embed_width_height.py")
 
 
 @pytest.fixture(scope="session")
@@ -36,7 +35,7 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_template_check_container_size(page: Page):
-    expect(page.get_by_text("Test PDF Viewer using legacy iframe")).to_be_visible()
+    expect(page.get_by_text("Test PDF Viewer using legacy embed with specified width and height")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     expect(iframe_component).to_be_visible()
@@ -50,11 +49,11 @@ def test_should_render_template_check_container_size(page: Page):
     expect(pdf_container).to_be_visible()
 
     b_box = pdf_container.bounding_box()
-    assert b_box['width'] == 700
-    assert b_box['height'] > 0
+    assert b_box['width'] == 600
+    assert math.floor(b_box['height']) == 500
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
     expect(pdf_viewer).not_to_be_visible()
-
+    
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
     expect(annotations_locator).to_be_hidden()
