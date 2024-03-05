@@ -51,3 +51,5 @@ jobs:
           pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures
           playwright install
           pytest
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
