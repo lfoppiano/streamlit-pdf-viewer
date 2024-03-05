@@ -49,7 +49,7 @@ jobs:
       - name: Test with pytest
         run: |          
           pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures
-          playwright install
+          playwright install chromium firefox
           pytest
       - name: Coveralls
         uses: coverallsapp/github-action@v2
