@@ -48,8 +48,8 @@ jobs:
           python -m build
       - name: Test with pytest
         run: |          
-          pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures
+          pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures pytest-cov
           playwright install chromium firefox
-          pytest
+          pytest --cov=. --cov-report xml
       - name: Coveralls
         uses: coverallsapp/github-action@v2
