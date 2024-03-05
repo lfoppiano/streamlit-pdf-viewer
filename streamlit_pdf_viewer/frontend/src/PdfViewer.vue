@@ -10,10 +10,10 @@
       </div>
     </div>
     <div v-else-if="args.rendering==='legacy_embed'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" width="100%" height="700" type="application/pdf"/>
+      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`" type="application/pdf"/>
     </div>
     <div v-else-if="args.rendering==='legacy_iframe'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" width="100%" height="700" type="application/pdf"/>
+      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`" type="application/pdf"/>
     </div>
     <div v-else>
       Error rendering option.

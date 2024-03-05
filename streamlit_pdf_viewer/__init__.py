@@ -7,6 +7,9 @@ import streamlit.components.v1 as components
 import json
 
 _RELEASE = True
+RENDERING_EMBED = "legacy_embed"
+RENDERING_IFRAME = "legacy_iframe"
+RENDERING_UNWRAP = "unwrap"
 
 if not _RELEASE:
     _component_func = components.declare_component(
@@ -29,7 +32,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
                annotations: list = (),
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
-               rendering: str = "unwrap",
+               rendering: str = RENDERING_UNWRAP,
                pages_to_render: List[int] = ()
                ):
     """
@@ -67,6 +70,10 @@ def pdf_viewer(input: Union[str, Path, bytes],
             binary = fo.read()
     else:
         binary = input
+        
+    if rendering == RENDERING_IFRAME or rendering == RENDERING_EMBED:
+        if height is None: 
+            height = "100%"
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
     component_value = _component_func(
