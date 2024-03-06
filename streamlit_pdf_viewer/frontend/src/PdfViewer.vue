@@ -94,9 +94,10 @@ export default {
       }
     };
 
-    const createCanvasForPage = (page, scale, rotation) => {
+    const createCanvasForPage = (page, scale, rotation, pageNumber) => {
       const viewport = page.getViewport({scale, rotation});
       const canvas = document.createElement("canvas");
+      canvas.id = `canvas_page_${pageNumber}`;
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       canvas.style.display = "block";
@@ -130,7 +131,7 @@ export default {
         pageScales.value.push(scale);
         pageHeights.value.push(actualViewport.height);
         if (pagesToRender.includes(i)) {
-          const canvas = createCanvasForPage(page, scale, rotation);
+          const canvas = createCanvasForPage(page, scale, rotation, i);
           pdfViewer?.append(canvas);
           if (canvas.width > maxWidth.value) {
             maxWidth.value = canvas.width;
