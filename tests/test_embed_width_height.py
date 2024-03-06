@@ -54,6 +54,6 @@ def test_should_render_template_check_container_size(page: Page):
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
     expect(pdf_viewer).not_to_be_visible()
-    
+
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
     expect(annotations_locator).to_be_hidden()

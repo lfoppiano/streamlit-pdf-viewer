@@ -6,12 +6,13 @@
 # streamlit-pdf-viewer
 
 Streamlit component that allows the visualisation and enrichment of PDF documents
+Tested on Chrome and Firefox. You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
 
-**Work in progress**: We are early in the development, and we appreciate new contributors.
+<img src="https://github.com/lfoppiano/streamlit-pdf-viewer/raw/main/docs/screenshot.png" width=500 align="right" />
 
-Currently, it has been tested on Chrome and Firefox. You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
-
-![screenshot.png](docs/screenshot.png)
+### Work in progress 
+We are early in the development, and we appreciate new contributors.
+> If with version 0.0.8 [the PDF is not shown](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/37), please use 0.0.7. 
 
 ## Getting started
 
