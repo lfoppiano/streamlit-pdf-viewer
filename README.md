@@ -1,3 +1,8 @@
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![PyPI version](https://badge.fury.io/py/streamlit-pdf-viewer.svg)](https://badge.fury.io/py/streamlit-pdf-viewer)
+[![Build](https://github.com/lfoppiano/streamlit-pdf-viewer/actions/workflows/ci-build.yml/badge.svg)](https://github.com/lfoppiano/streamlit-pdf-viewer/actions/workflows/ci-build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/lfoppiano/streamlit-pdf-viewer/badge.svg?branch=integration-tests)](https://coveralls.io/github/lfoppiano/streamlit-pdf-viewer?branch=integration-tests)
+
 # streamlit-pdf-viewer
 
 Streamlit component that allows the visualisation and enrichment of PDF documents
