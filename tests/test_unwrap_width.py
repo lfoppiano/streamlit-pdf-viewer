@@ -24,7 +24,7 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_template_check_container_size(page: Page):
-    expect(page.get_by_text("Test PDF Viewer with specified width")).to_be_visible()
+    expect(page.get_by_text("Test PDF Viewer with arguments with specified width")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     expect(iframe_component).to_be_visible()
@@ -39,7 +39,7 @@ def test_should_render_template_check_container_size(page: Page):
 
     b_box = pdf_container.bounding_box()
     assert b_box['width'] == 400
-    assert b_box['height'] == 300
+    assert b_box['height'] >= 4216 # Firefox returns 4216.000091552734, while Chome 4216
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
     expect(pdf_viewer).to_be_visible()
