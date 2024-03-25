@@ -12,7 +12,7 @@ Tested on Chrome and Firefox. You can see an [application](https://github.com/lf
 
 ### Work in progress 
 We are early in the development, and we appreciate new contributors.
-> If with version 0.0.8 [the PDF is not shown](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/37), please use 0.0.7. 
+> If with version 0.0.8 [the PDF is not shown](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/37), please upgrade. 
 
 ## Getting started
 
