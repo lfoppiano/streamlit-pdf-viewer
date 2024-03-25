@@ -173,10 +173,13 @@ export default {
     onMounted(() => {
       const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
       if (props.args.rendering === "unwrap") {
-        loadPdfs(binaryDataUrl);
+        loadPdfs(binaryDataUrl)
+          .then(setFrameHeight)
+          .then(Streamlit.setComponentReady);
+      } else {
+        setFrameHeight();
+        Streamlit.setComponentReady();
       }
-      setFrameHeight();
-      Streamlit.setComponentReady();
     });
 
     onUpdated(() => {
