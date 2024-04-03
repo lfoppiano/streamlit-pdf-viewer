@@ -25,9 +25,9 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], 
-               width: int = 700, 
-               height: int = None, 
+def pdf_viewer(input: Union[str, Path, bytes],
+               width: int = 700,
+               height: int = None,
                key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
@@ -70,9 +70,12 @@ def pdf_viewer(input: Union[str, Path, bytes],
             binary = fo.read()
     else:
         binary = input
-        
+
     if rendering == RENDERING_IFRAME or rendering == RENDERING_EMBED:
-        if height is None: 
+        console.warn(f"{RENDERING_IFRAME} and {RENDERING_EMBED} are deprecated. "
+                     f"They do not work consistently on all browswer "
+                     f"and will be removed in a future release.")
+        if height is None:
             height = "100%"
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
