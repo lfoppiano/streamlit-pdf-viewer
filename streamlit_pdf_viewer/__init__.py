@@ -72,7 +72,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
         binary = input
 
     if rendering == RENDERING_IFRAME or rendering == RENDERING_EMBED:
-        console.warn(f"{RENDERING_IFRAME} and {RENDERING_EMBED} are deprecated. "
+        print(f"{RENDERING_IFRAME} and {RENDERING_EMBED} are deprecated. "
                      f"They do not work consistently on all browswer "
                      f"and will be removed in a future release.")
         if height is None:
