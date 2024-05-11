@@ -72,9 +72,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
         binary = input
 
     if rendering == RENDERING_IFRAME or rendering == RENDERING_EMBED:
-        print(f"{RENDERING_IFRAME} and {RENDERING_EMBED} are deprecated. "
-                     f"They do not work consistently on all browswer "
-                     f"and will be removed in a future release.")
+        print(f"{RENDERING_IFRAME} and {RENDERING_EMBED} may not work consistently on all browsers "
+                     f"they might disapper in future releases.")
         if height is None:
             height = "100%"
 
