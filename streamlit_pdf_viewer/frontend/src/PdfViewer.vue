@@ -62,7 +62,7 @@ export default {
     });
 
     const pdfContainerStyle = computed(() => ({
-      width: `${props.args.width}px`,
+      width: props.args.width ? `${props.args.width}px` : `${maxWidth.value}px`,
       height: props.args.height ? `${props.args.height}px` : 'auto',
       overflow: 'auto',
     }));
@@ -150,21 +150,7 @@ export default {
         }
       }
 
-      if (props.args.width === null || props.args.width === undefined) {
-        maxWidth.value = window.innerWidth
-      } else if (Number.isInteger(props.args.width)) {
-        maxWidth.value = props.args.width
-
-        // If the desired width is larger than the available inner width,
-        // we should not exceed it. To be revised
-        if (window.innerWidth < maxWidth.value) {
-          maxWidth.value = window.innerWidth
-        }
-      }
-
-      // const PRINT_UNITS = 300 / 72.0
-
-      console.log("Device pixel ratio" + window.devicePixelRatio)
+      // console.log("Device pixel ratio" + window.devicePixelRatio)
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber)
         const rotation = page.rotate
@@ -216,8 +202,23 @@ export default {
       Streamlit.setFrameHeight(props.args.height || totalHeight.value);
     };
 
+    const setFrameWidth = () => {
+      if (props.args.width === null || props.args.width === undefined) {
+        maxWidth.value = window.innerWidth
+      } else if (Number.isInteger(props.args.width)) {
+        maxWidth.value = props.args.width
+
+        // If the desired width is larger than the available inner width,
+        // we should not exceed it. To be revised
+        if (window.innerWidth < maxWidth.value) {
+          maxWidth.value = window.innerWidth
+        }
+      }
+    }
+
     onMounted(() => {
       const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
+      setFrameWidth();
       if (props.args.rendering === "unwrap") {
         loadPdfs(binaryDataUrl)
           .then(setFrameHeight)
