@@ -2,6 +2,7 @@
   <div id="pdfContainer" :style="pdfContainerStyle">
     <div v-if="args.rendering==='unwrap'">
       <div id="pdfViewer" :style="pdfViewerStyle">
+        <!--        <div class="urlsAnnotations"></div>-->
         <div id="pdfAnnotations" v-if="args.annotations">
           <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
             <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
@@ -26,6 +27,7 @@ import { onMounted, onUpdated, computed, ref} from "vue";
 import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
+import PDFViewerApplicationOptions from "core-js/internals/task"
 
 export default {
   props: ["args"],
@@ -35,6 +37,17 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
+
+    // console.log("--- INIT ---")
+    // console.log("inner width: " + window.innerWidth)
+    // console.log("inner height: " + window.innerHeight)
+    // console.log("outer height: " + window.outerHeight)
+
+    // console.log("Width: " + maxWidth.value)
+
+    document.addEventListener('webviewerloaded', function () {
+      PDFViewerApplicationOptions.set('printResolution', 300);
+    });
 
     const isRenderingAllPages = props.args.pages_to_render.length === 0;
 
@@ -96,12 +109,20 @@ export default {
 
     const createCanvasForPage = (page, scale, rotation, pageNumber) => {
       const viewport = page.getViewport({scale, rotation});
+
+      // console.log(`Page viewport size: ${viewport.width}, ${viewport.height}`)
+
+      const ratio = window.devicePixelRatio || 1
+
       const canvas = document.createElement("canvas");
       canvas.id = `canvas_page_${pageNumber}`;
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+      canvas.height = viewport.height * ratio;
+      canvas.width = viewport.width * ratio;
+      canvas.style.width = viewport.width + 'px';
+      canvas.style.height = viewport.height + 'px';
       canvas.style.display = "block";
       canvas.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
+      canvas.getContext("2d").scale(ratio, ratio);
       return canvas;
     };
 
@@ -109,8 +130,14 @@ export default {
     const renderPage = async (page, canvas) => {
       const renderContext = {
         canvasContext: canvas.getContext("2d"),
-        viewport: page.getViewport({scale: pageScales.value[page._pageIndex], rotation: page.rotate}),
+        viewport: page.getViewport({
+          scale: pageScales.value[page._pageIndex],
+          rotation: page.rotate,
+          intent: "print",
+        })
       };
+      // console.log(`Scale page ${page._pageIndex}: ${pageScales.value[page._pageIndex]}`);
+
       const renderTask = page.render(renderContext);
       await renderTask.promise;
     };
@@ -123,22 +150,41 @@ export default {
         }
       }
 
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const rotation = page.rotate;
-        const actualViewport = page.getViewport({scale: 1.0, rotation: rotation});
-        const scale = props.args.width / actualViewport.width;
-        pageScales.value.push(scale);
-        pageHeights.value.push(actualViewport.height);
-        if (pagesToRender.includes(i)) {
-          const canvas = createCanvasForPage(page, scale, rotation, i);
-          pdfViewer?.append(canvas);
-          if (canvas.width > maxWidth.value) {
-            maxWidth.value = canvas.width;
-          }
-          totalHeight.value += canvas.height;
-          totalHeight.value += props.args.pages_vertical_spacing;
-          await renderPage(page, canvas);
+      if (props.args.width === null || props.args.width === undefined) {
+        maxWidth.value = window.innerWidth
+      } else if (Number.isInteger(props.args.width)) {
+        maxWidth.value = props.args.width
+
+        // If the desired width is larger than the available inner width,
+        // we should not exceed it. To be revised
+        if (window.innerWidth < maxWidth.value) {
+          maxWidth.value = window.innerWidth
+        }
+      }
+
+      // const PRINT_UNITS = 300 / 72.0
+
+      console.log("Device pixel ratio" + window.devicePixelRatio)
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const page = await pdf.getPage(pageNumber)
+        const rotation = page.rotate
+        // Initial viewport
+        const unscaledViewport = page.getViewport({
+          scale: 1.0,
+          rotation: rotation,
+        })
+
+        const scale = maxWidth.value / unscaledViewport.width
+        // console.log(`Page scale: ${scale}`)
+
+        pageScales.value.push(scale)
+        pageHeights.value.push(unscaledViewport.height)
+        if (pagesToRender.includes(pageNumber)) {
+          const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
+          pdfViewer?.append(canvas)
+          totalHeight.value += canvas.height
+          totalHeight.value += props.args.pages_vertical_spacing
+          await renderPage(page, canvas)
         }
       }
       // Subtract the margin for the last page as it's not needed
