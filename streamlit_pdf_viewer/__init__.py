@@ -42,8 +42,8 @@ def get_screen_size():
     return streamlit_js_eval(js_expressions=async_js_code)
 
 def pdf_viewer(input: Union[str, Path, bytes],
-               width: Union[str, int] = "100%",
-               height: Union[str, int] = "100%",
+               width: int = None,
+               height: int = None, 
                key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
@@ -88,6 +88,10 @@ def pdf_viewer(input: Union[str, Path, bytes],
         raise TypeError("Height must be an integer, a percentage string (e.g., '70%'), or None")
 
 
+
+# Validate width and height parameters
+    if width is not None and not isinstance(width, int):
+        raise TypeError("Width must be an integer")
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
     if not all(isinstance(page, int) for page in pages_to_render):
@@ -130,7 +134,7 @@ if not _RELEASE:
 
     viewer = pdf_viewer(
         binary,
-        height=700,
+        # height=700,
         width=800,
         annotations=annotations
     )
