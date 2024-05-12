@@ -78,8 +78,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
     if isinstance(width, str) and width.endswith('%'):
         percentage_width = float(width[:-1]) / 100
         width = int(screen_width * percentage_width)
-    elif not isinstance(width, int):
-        raise TypeError("Width must be an integer or a percentage string (e.g., '70%' or 700)")
+    elif width is not None and not isinstance(width, int):
+        raise TypeError("Width must be an integer or a percentage string (e.g., '70%' or 700) or None")
 
     if isinstance(height, str) and height.endswith('%'):
         percentage_height = float(height[:-1]) / 100
@@ -87,13 +87,6 @@ def pdf_viewer(input: Union[str, Path, bytes],
     elif height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer, a percentage string (e.g., '70%'), or None")
 
-
-
-# Validate width and height parameters
-    if width is not None and not isinstance(width, int):
-        raise TypeError("Width must be an integer")
-    if height is not None and not isinstance(height, int):
-        raise TypeError("Height must be an integer or None")
     if not all(isinstance(page, int) for page in pages_to_render):
         raise TypeError("pages_to_render must be a list of integers")
 
