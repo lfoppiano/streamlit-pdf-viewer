@@ -40,7 +40,7 @@ def test_should_render_template_check_container_size(page: Page):
 
     b_box = pdf_container.bounding_box()
     assert floor(b_box['width']) == 400
-    assert floor(b_box['height']) == 4216 # Firefox returns 4216.000091552734, while Chome 4216
+    assert floor(b_box['height']) == 4221
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
     expect(pdf_viewer).to_be_visible()

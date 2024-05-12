@@ -25,8 +25,8 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes],
-               width: int = 700,
+def pdf_viewer(input: Union[str, Path, bytes], 
+               width: int = None,
                height: int = None,
                key=None,
                annotations: list = (),
@@ -58,7 +58,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
     """
 
     # Validate width and height parameters
-    if not isinstance(width, int):
+    if width is not None and not isinstance(width, int):
         raise TypeError("Width must be an integer")
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
@@ -102,7 +102,7 @@ if not _RELEASE:
 
     viewer = pdf_viewer(
         binary,
-        height=700,
+        # height=700,
         width=800,
         annotations=annotations
     )
