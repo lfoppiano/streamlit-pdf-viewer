@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Union, List, Optional
 
 import streamlit.components.v1 as components
+from streamlit_js_eval import streamlit_js_eval
 import json
 
 _RELEASE = True
@@ -24,10 +25,25 @@ else:
         path=build_dir
     )
 
+def get_screen_size():
+    """
+    Returns the inner width and outer height of a window.
+    Ideally, it should return the inner height, but JavaScript couldn't retrieve the height in an iframe.
+    """
+    async_js_code = """
+    new Promise(resolve => {
+        if (document.readyState === "complete") {
+            resolve([window.innerWidth, window.outerHeight]);
+        } else {
+            window.addEventListener("load", () => resolve([window.innerWidth, window.outerHeight]));
+        }
+    })
+    """
+    return streamlit_js_eval(js_expressions=async_js_code)
 
 def pdf_viewer(input: Union[str, Path, bytes],
-               width: int = 700,
-               height: int = None,
+               width: int = None,
+               height: int = None, 
                key=None,
                annotations: list = (),
                pages_vertical_spacing: int = 2,
@@ -39,7 +55,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
     pdf_viewer function to display a PDF file in a Streamlit app.
 
     :param input: The source of the PDF file. Accepts a file path, URL, or binary data.
-    :param width: Width of the PDF viewer in pixels. Defaults to 700 pixels.
+    :param width: The width of the PDF viewer defaults to 100% of the layout. Specify in pixels with a numeric value, or as a percentage for relative sizing.
     :param height: Height of the PDF viewer in pixels. If not provided, the viewer show the whole content.
     :param key: An optional key that uniquely identifies this component. Used to preserve state in Streamlit apps.
     :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
@@ -57,11 +73,20 @@ def pdf_viewer(input: Union[str, Path, bytes],
     Returns the value of the selected component (if any).
     """
 
-    # Validate width and height parameters
-    if not isinstance(width, int):
-        raise TypeError("Width must be an integer")
-    if height is not None and not isinstance(height, int):
-        raise TypeError("Height must be an integer or None")
+    screen_width, screen_height = get_screen_size()
+
+    if isinstance(width, str) and width.endswith('%'):
+        percentage_width = float(width[:-1]) / 100
+        width = int(screen_width * percentage_width)
+    elif width is not None and not isinstance(width, int):
+        raise TypeError("Width must be an integer or a percentage string (e.g., '70%' or 700) or None")
+
+    if isinstance(height, str) and height.endswith('%'):
+        percentage_height = float(height[:-1]) / 100
+        height = int(screen_height * percentage_height)
+    elif height is not None and not isinstance(height, int):
+        raise TypeError("Height must be an integer, a percentage string (e.g., '70%'), or None")
+
     if not all(isinstance(page, int) for page in pages_to_render):
         raise TypeError("pages_to_render must be a list of integers")
 
@@ -102,7 +127,7 @@ if not _RELEASE:
 
     viewer = pdf_viewer(
         binary,
-        height=700,
+        # height=700,
         width=800,
         annotations=annotations
     )
