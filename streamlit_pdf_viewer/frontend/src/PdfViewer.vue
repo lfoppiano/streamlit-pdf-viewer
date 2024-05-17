@@ -49,10 +49,9 @@ export default {
       if (isRenderingAllPages) {
         return props.args.annotations;
       }
-      const filteredAnnotations = props.args.annotations.filter(anno => {
+      return props.args.annotations.filter(anno => {
         return props.args.pages_to_render.includes(Number(anno.page))
       })
-      return filteredAnnotations;
     });
 
     const pdfContainerStyle = computed(() => ({
