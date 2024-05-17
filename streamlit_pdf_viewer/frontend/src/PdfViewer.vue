@@ -104,7 +104,7 @@ export default {
 
       const canvas = document.createElement("canvas");
       canvas.id = `canvas_page_${pageNumber}`;
-      canvas.height = viewport.height * ratio;
+      canvas.height = viewport.height * ratio + props.args.pages_vertical_spacing;
       canvas.width = viewport.width * ratio;
       canvas.style.width = viewport.width + 'px';
       canvas.style.height = viewport.height + 'px';
