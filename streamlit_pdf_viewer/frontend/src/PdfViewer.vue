@@ -124,7 +124,6 @@ export default {
           intent: "print",
         })
       };
-      // console.log(`Scale page ${page._pageIndex}: ${pageScales.value[page._pageIndex]}`);
 
       const renderTask = page.render(renderContext);
       await renderTask.promise;
@@ -138,7 +137,6 @@ export default {
         }
       }
 
-      // console.log("Device pixel ratio" + window.devicePixelRatio)
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber)
         const rotation = page.rotate
@@ -149,7 +147,6 @@ export default {
         })
 
         const scale = maxWidth.value / unscaledViewport.width
-        // console.log(`Page scale: ${scale}`)
 
         pageScales.value.push(scale)
         pageHeights.value.push(unscaledViewport.height)
