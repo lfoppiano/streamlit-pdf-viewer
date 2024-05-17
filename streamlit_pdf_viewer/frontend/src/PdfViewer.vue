@@ -153,8 +153,9 @@ export default {
         if (pagesToRender.includes(pageNumber)) {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
           pdfViewer?.append(canvas)
-          totalHeight.value += canvas.height
-          totalHeight.value += props.args.pages_vertical_spacing
+
+          const ratio = window.devicePixelRatio || 1
+          totalHeight.value += canvas.height / ratio
           await renderPage(page, canvas)
         }
       }
