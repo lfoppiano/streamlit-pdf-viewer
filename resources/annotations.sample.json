@@ -1,0 +1,26 @@
+[
+  {
+    "page": 1,
+    "x": 220,
+    "y": 155,
+    "height": 22,
+    "width": 65,
+    "color": "red"
+  },
+  {
+    "page": 1,
+    "x": 175,
+    "y": 259,
+    "height": 7,
+    "width": 35,
+    "color": "orange"
+  },
+  {
+    "page": 2,
+    "x": 198,
+    "y": 280,
+    "height": 7,
+    "width": 30,
+    "color": "orange"
+  }
+]

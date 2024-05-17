@@ -27,7 +27,6 @@ import { onMounted, onUpdated, computed, ref} from "vue";
 import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
-import PDFViewerApplicationOptions from "core-js/internals/task"
 
 export default {
   props: ["args"],
@@ -37,17 +36,6 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
-
-    // console.log("--- INIT ---")
-    // console.log("inner width: " + window.innerWidth)
-    // console.log("inner height: " + window.innerHeight)
-    // console.log("outer height: " + window.outerHeight)
-
-    // console.log("Width: " + maxWidth.value)
-
-    document.addEventListener('webviewerloaded', function () {
-      PDFViewerApplicationOptions.set('printResolution', 300);
-    });
 
     const isRenderingAllPages = props.args.pages_to_render.length === 0;
 
@@ -116,7 +104,7 @@ export default {
 
       const canvas = document.createElement("canvas");
       canvas.id = `canvas_page_${pageNumber}`;
-      canvas.height = viewport.height * ratio;
+      canvas.height = viewport.height * ratio + props.args.pages_vertical_spacing;
       canvas.width = viewport.width * ratio;
       canvas.style.width = viewport.width + 'px';
       canvas.style.height = viewport.height + 'px';
@@ -136,7 +124,6 @@ export default {
           intent: "print",
         })
       };
-      // console.log(`Scale page ${page._pageIndex}: ${pageScales.value[page._pageIndex]}`);
 
       const renderTask = page.render(renderContext);
       await renderTask.promise;
@@ -150,7 +137,6 @@ export default {
         }
       }
 
-      // console.log("Device pixel ratio" + window.devicePixelRatio)
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber)
         const rotation = page.rotate
@@ -161,15 +147,15 @@ export default {
         })
 
         const scale = maxWidth.value / unscaledViewport.width
-        // console.log(`Page scale: ${scale}`)
 
         pageScales.value.push(scale)
         pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
           pdfViewer?.append(canvas)
-          totalHeight.value += canvas.height
-          totalHeight.value += props.args.pages_vertical_spacing
+
+          const ratio = window.devicePixelRatio || 1
+          totalHeight.value += canvas.height / ratio
           await renderPage(page, canvas)
         }
       }

@@ -102,7 +102,6 @@ if not _RELEASE:
 
     viewer = pdf_viewer(
         binary,
-        # height=700,
         width=800,
         annotations=annotations
     )
