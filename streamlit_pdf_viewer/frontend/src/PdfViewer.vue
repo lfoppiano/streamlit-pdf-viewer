@@ -98,8 +98,6 @@ export default {
     const createCanvasForPage = (page, scale, rotation, pageNumber) => {
       const viewport = page.getViewport({scale, rotation});
 
-      // console.log(`Page viewport size: ${viewport.width}, ${viewport.height}`)
-
       const ratio = window.devicePixelRatio || 1
 
       const canvas = document.createElement("canvas");
@@ -216,7 +214,6 @@ export default {
     });
 
     onUpdated(() => {
-      // console.log("onUpdated")
       setFrameHeight();
     });
 
