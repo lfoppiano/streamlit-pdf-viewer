@@ -27,7 +27,6 @@ import { onMounted, onUpdated, computed, ref} from "vue";
 import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
-import PDFViewerApplicationOptions from "core-js/internals/task"
 
 export default {
   props: ["args"],
@@ -37,17 +36,6 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
-
-    // console.log("--- INIT ---")
-    // console.log("inner width: " + window.innerWidth)
-    // console.log("inner height: " + window.innerHeight)
-    // console.log("outer height: " + window.outerHeight)
-
-    // console.log("Width: " + maxWidth.value)
-
-    document.addEventListener('webviewerloaded', function () {
-      PDFViewerApplicationOptions.set('printResolution', 300);
-    });
 
     const isRenderingAllPages = props.args.pages_to_render.length === 0;
 
