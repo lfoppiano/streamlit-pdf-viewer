@@ -24,9 +24,11 @@
 
 <script>
 import { onMounted, onUpdated, computed, ref} from "vue";
+import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
+import * as pdfjsLib from "pdfjs-dist";
 
 const CMAP_URL = "pdfjs-dist/cmaps/";
 const CMAP_PACKED = true;
@@ -117,18 +119,32 @@ export default {
     };
 
 
-    const renderPage = async (page, canvas) => {
+    const renderPage = async (page, canvas, viewport) => {
       const renderContext = {
         canvasContext: canvas.getContext("2d"),
-        viewport: page.getViewport({
-          scale: pageScales.value[page._pageIndex],
-          rotation: page.rotate,
-          intent: "print",
-        })
+        viewport: viewport
       };
 
       const renderTask = page.render(renderContext);
       await renderTask.promise;
+
+      const textContent = await page.getTextContent();
+      const textLayerDiv = document.createElement("div");
+      textLayerDiv.className = "textLayer"
+      textLayerDiv.style.position = "absolute";
+      textLayerDiv.style.height = `${viewport.height}px`;
+      textLayerDiv.style.width = `${viewport.width}px`;
+      pdfjsLib.renderTextLayer({
+        textContentSource: textContent,
+        container: textLayerDiv,
+        viewport: viewport,
+        textDivs: []
+      })
+
+      const pdfViewer = document.getElementById("pdfViewer");
+      pdfViewer.appendChild(textLayerDiv)
+
+
     };
 
     const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {
@@ -156,9 +172,15 @@ export default {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
           pdfViewer?.append(canvas)
 
+          const viewport = page.getViewport({
+            scale: pageScales.value[page._pageIndex],
+            rotation: page.rotate,
+            intent: "print",
+          });
+
           const ratio = window.devicePixelRatio || 1
           totalHeight.value += canvas.height / ratio
-          await renderPage(page, canvas)
+          await renderPage(page, canvas, viewport)
         }
       }
       // Subtract the margin for the last page as it's not needed
