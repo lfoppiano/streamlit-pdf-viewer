@@ -28,6 +28,10 @@ import "pdfjs-dist/build/pdf.worker.entry";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
 
+const CMAP_URL = "pdfjs-dist/cmaps/";
+const CMAP_PACKED = true;
+const ENABLE_XFA = true;
+
 export default {
   props: ["args"],
 
@@ -170,7 +174,12 @@ export default {
 
     const loadPdfs = async (url) => {
       try {
-        const loadingTask = await getDocument(url);
+        const loadingTask = await getDocument({
+          "url": url,
+          "cMapUrl": CMAP_URL,
+          "cMapPacked": CMAP_PACKED,
+          "enableXfa": ENABLE_XFA,
+        });
         const pdfViewer = document.getElementById("pdfViewer");
         clearExistingCanvases(pdfViewer);
 
