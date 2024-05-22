@@ -2,12 +2,11 @@
   <div id="pdfContainer" :style="pdfContainerStyle">
     <div v-if="args.rendering==='unwrap'">
       <div id="pdfViewer" :style="pdfViewerStyle">
-        <!--        <div class="urlsAnnotations"></div>-->
-        <div id="pdfAnnotations" v-if="args.annotations">
-          <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
-            <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
-          </div>
+      <div id="pdfAnnotations" v-if="args.annotations">
+        <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
+          <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
         </div>
+      </div>
       </div>
     </div>
     <div v-else-if="args.rendering==='legacy_embed'">
@@ -89,7 +88,8 @@ export default {
         height: `${annoObj.height * scale}px`,
         outline: `${props.args.annotation_outline_size * scale}px solid`,
         outlineColor: annoObj.color,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        'z-index': 10
       };
     };
 
