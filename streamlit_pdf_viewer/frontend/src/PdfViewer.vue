@@ -130,9 +130,9 @@ export default {
       const textContent = await page.getTextContent();
       const textLayerDiv = document.createElement("div");
       textLayerDiv.className = "textLayer"
-      textLayerDiv.style.position = "absolute";
-      textLayerDiv.style.height = `${viewport.height}px`;
-      textLayerDiv.style.width = `${viewport.width}px`;
+      // textLayerDiv.style.position = "absolute";
+      // textLayerDiv.style.height = `${viewport.height}px`;
+      // textLayerDiv.style.width = `${viewport.width}px`;
       pdfjsLib.renderTextLayer({
         textContentSource: textContent,
         container: textLayerDiv,
@@ -140,10 +140,20 @@ export default {
         textDivs: []
       })
 
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'page';
+
+      const canvasWrapper = document.createElement('div');
+      canvasWrapper.className = 'canvasWrapper';
+      canvasWrapper.appendChild(canvas);
+
+      pageDiv.style = "position: relative;";
+
       const pdfViewer = document.getElementById("pdfViewer");
-      pdfViewer.appendChild(textLayerDiv)
+      pageDiv.appendChild(canvasWrapper);
+      pageDiv.appendChild(textLayerDiv);
 
-
+      pdfViewer.appendChild(pageDiv);
     };
 
     const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {
@@ -169,7 +179,8 @@ export default {
         pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
-          pdfViewer?.append(canvas)
+          // pdfViewer?.append(canvas)
+          pdfViewer.style.setProperty('--scale-factor', scale);
 
           const viewport = page.getViewport({
             scale: pageScales.value[page._pageIndex],
