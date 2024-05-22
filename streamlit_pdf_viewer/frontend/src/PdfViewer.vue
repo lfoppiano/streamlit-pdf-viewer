@@ -25,7 +25,7 @@
 <script>
 import { onMounted, onUpdated, computed, ref} from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
-import "pdfjs-dist/build/pdf.worker.entry";
+import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
 import * as pdfjsLib from "pdfjs-dist";
