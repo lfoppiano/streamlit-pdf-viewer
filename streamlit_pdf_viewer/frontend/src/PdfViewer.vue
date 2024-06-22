@@ -68,12 +68,12 @@ export default {
       let height = 0;
       if (isRenderingAllPages) {
         for (let i = 0; i < page - 1; i++) {
-          height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + props.args.pages_vertical_spacing; // Add margin for each page
+          height += pageHeights.value[i] * pageScales.value[i] + props.args.pages_vertical_spacing; // Add margin for each page
         }
       } else {
         for (let i = 0; i < pageHeights.value.length; i++) {
           if (props.args.pages_to_render.includes(i + 1) && i < page - 1) {
-            height += Math.floor(pageHeights.value[i] * pageScales.value[i]) + props.args.pages_vertical_spacing;
+            height += pageHeights.value[i] * pageScales.value[i] + props.args.pages_vertical_spacing;
           }
         }
       }
