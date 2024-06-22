@@ -2,12 +2,11 @@
   <div id="pdfContainer" :style="pdfContainerStyle">
     <div v-if="args.rendering==='unwrap'">
       <div id="pdfViewer" :style="pdfViewerStyle">
-        <!--        <div class="urlsAnnotations"></div>-->
-        <div id="pdfAnnotations" v-if="args.annotations">
-          <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
-            <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
-          </div>
+      <div id="pdfAnnotations" v-if="args.annotations">
+        <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
+          <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
         </div>
+      </div>
       </div>
     </div>
     <div v-else-if="args.rendering==='legacy_embed'">
@@ -24,9 +23,15 @@
 
 <script>
 import { onMounted, onUpdated, computed, ref} from "vue";
-import "pdfjs-dist/build/pdf.worker.entry";
+import "pdfjs-dist/web/pdf_viewer.css";
+import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
+import * as pdfjsLib from "pdfjs-dist";
+
+const CMAP_URL = "pdfjs-dist/cmaps/";
+const CMAP_PACKED = true;
+const ENABLE_XFA = true;
 
 export default {
   props: ["args"],
@@ -43,11 +48,12 @@ export default {
       if (isRenderingAllPages) {
         return props.args.annotations;
       }
-      const filteredAnnotations = props.args.annotations.filter(anno => {
+      return props.args.annotations.filter(anno => {
         return props.args.pages_to_render.includes(Number(anno.page))
       })
-      return filteredAnnotations;
     });
+
+    const renderText = props.args.render_text === true
 
     const pdfContainerStyle = computed(() => ({
       width: props.args.width ? `${props.args.width}px` : `${maxWidth.value}px`,
@@ -84,7 +90,8 @@ export default {
         height: `${annoObj.height * scale}px`,
         outline: `${props.args.annotation_outline_size * scale}px solid`,
         outlineColor: annoObj.color,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        'z-index': 10
       };
     };
 
@@ -97,8 +104,6 @@ export default {
 
     const createCanvasForPage = (page, scale, rotation, pageNumber) => {
       const viewport = page.getViewport({scale, rotation});
-
-      // console.log(`Page viewport size: ${viewport.width}, ${viewport.height}`)
 
       const ratio = window.devicePixelRatio || 1
 
@@ -115,18 +120,53 @@ export default {
     };
 
 
-    const renderPage = async (page, canvas) => {
+    const renderPage = async (page, canvas, viewport) => {
       const renderContext = {
         canvasContext: canvas.getContext("2d"),
-        viewport: page.getViewport({
-          scale: pageScales.value[page._pageIndex],
-          rotation: page.rotate,
-          intent: "print",
-        })
+        viewport: viewport
       };
-
       const renderTask = page.render(renderContext);
       await renderTask.promise;
+
+      if (renderText) {
+        const textContent = await page.getTextContent();
+        const textLayerDiv = document.createElement("div");
+        textLayerDiv.className = "textLayer"
+        // textLayerDiv.style.position = "absolute";
+        // textLayerDiv.style.height = `${viewport.height}px`;
+        // textLayerDiv.style.width = `${viewport.width}px`;
+        pdfjsLib.renderTextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport: viewport,
+          textDivs: []
+        })
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+
+        const canvasWrapper = document.createElement('div');
+        canvasWrapper.className = 'canvasWrapper';
+        canvasWrapper.appendChild(canvas);
+
+        pageDiv.style = "position: relative;";
+
+        const pdfViewer = document.getElementById("pdfViewer");
+        pageDiv.appendChild(canvasWrapper);
+        pageDiv.appendChild(textLayerDiv);
+
+        pdfViewer.appendChild(pageDiv);
+      } else {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+
+        const canvasWrapper = document.createElement('div');
+        canvasWrapper.className = 'canvasWrapper';
+        canvasWrapper.appendChild(canvas);
+
+        pageDiv.style = "position: relative;";
+        pageDiv.appendChild(canvasWrapper);
+        pdfViewer.appendChild(pageDiv);
+      }
     };
 
     const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {
@@ -152,11 +192,18 @@ export default {
         pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
-          pdfViewer?.append(canvas)
+          // pdfViewer?.append(canvas)
+          pdfViewer.style.setProperty('--scale-factor', scale);
+
+          const viewport = page.getViewport({
+            scale: pageScales.value[page._pageIndex],
+            rotation: page.rotate,
+            intent: "print",
+          });
 
           const ratio = window.devicePixelRatio || 1
           totalHeight.value += canvas.height / ratio
-          await renderPage(page, canvas)
+          await renderPage(page, canvas, viewport)
         }
       }
       // Subtract the margin for the last page as it's not needed
@@ -172,7 +219,12 @@ export default {
 
     const loadPdfs = async (url) => {
       try {
-        const loadingTask = await getDocument(url);
+        const loadingTask = await getDocument({
+          "url": url,
+          "cMapUrl": CMAP_URL,
+          "cMapPacked": CMAP_PACKED,
+          "enableXfa": ENABLE_XFA,
+        });
         const pdfViewer = document.getElementById("pdfViewer");
         clearExistingCanvases(pdfViewer);
 
@@ -216,7 +268,6 @@ export default {
     });
 
     onUpdated(() => {
-      // console.log("onUpdated")
       setFrameHeight();
     });
 
