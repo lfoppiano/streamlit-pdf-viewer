@@ -53,6 +53,8 @@ export default {
       })
     });
 
+    const renderText = props.args.render_text === true
+
     const pdfContainerStyle = computed(() => ({
       width: props.args.width ? `${props.args.width}px` : `${maxWidth.value}px`,
       height: props.args.height ? `${props.args.height}px` : 'auto',
@@ -123,37 +125,48 @@ export default {
         canvasContext: canvas.getContext("2d"),
         viewport: viewport
       };
-
       const renderTask = page.render(renderContext);
       await renderTask.promise;
 
-      const textContent = await page.getTextContent();
-      const textLayerDiv = document.createElement("div");
-      textLayerDiv.className = "textLayer"
-      // textLayerDiv.style.position = "absolute";
-      // textLayerDiv.style.height = `${viewport.height}px`;
-      // textLayerDiv.style.width = `${viewport.width}px`;
-      pdfjsLib.renderTextLayer({
-        textContentSource: textContent,
-        container: textLayerDiv,
-        viewport: viewport,
-        textDivs: []
-      })
+      if (renderText) {
+        const textContent = await page.getTextContent();
+        const textLayerDiv = document.createElement("div");
+        textLayerDiv.className = "textLayer"
+        // textLayerDiv.style.position = "absolute";
+        // textLayerDiv.style.height = `${viewport.height}px`;
+        // textLayerDiv.style.width = `${viewport.width}px`;
+        pdfjsLib.renderTextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport: viewport,
+          textDivs: []
+        })
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
 
-      const pageDiv = document.createElement('div');
-      pageDiv.className = 'page';
+        const canvasWrapper = document.createElement('div');
+        canvasWrapper.className = 'canvasWrapper';
+        canvasWrapper.appendChild(canvas);
 
-      const canvasWrapper = document.createElement('div');
-      canvasWrapper.className = 'canvasWrapper';
-      canvasWrapper.appendChild(canvas);
+        pageDiv.style = "position: relative;";
 
-      pageDiv.style = "position: relative;";
+        const pdfViewer = document.getElementById("pdfViewer");
+        pageDiv.appendChild(canvasWrapper);
+        pageDiv.appendChild(textLayerDiv);
 
-      const pdfViewer = document.getElementById("pdfViewer");
-      pageDiv.appendChild(canvasWrapper);
-      pageDiv.appendChild(textLayerDiv);
+        pdfViewer.appendChild(pageDiv);
+      } else {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
 
-      pdfViewer.appendChild(pageDiv);
+        const canvasWrapper = document.createElement('div');
+        canvasWrapper.className = 'canvasWrapper';
+        canvasWrapper.appendChild(canvas);
+
+        pageDiv.style = "position: relative;";
+        pageDiv.appendChild(canvasWrapper);
+        pdfViewer.appendChild(pageDiv);
+      }
     };
 
     const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {

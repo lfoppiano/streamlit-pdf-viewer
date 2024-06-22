@@ -25,7 +25,7 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes], 
+def pdf_viewer(input: Union[str, Path, bytes],
                width: int = None,
                height: int = None,
                key=None,
@@ -33,7 +33,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
                pages_vertical_spacing: int = 2,
                annotation_outline_size: int = 1,
                rendering: str = RENDERING_UNWRAP,
-               pages_to_render: List[int] = ()
+               pages_to_render: List[int] = (),
+               render_text: bool = False
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -50,6 +51,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
     "legacy_iframe" and "legacy_embed" which uses the legacy approach for showing PDF document with streamlit.
     These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still
     working to implement for the "unwrap" method.
+    :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -73,7 +75,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
 
     if rendering == RENDERING_IFRAME or rendering == RENDERING_EMBED:
         print(f"{RENDERING_IFRAME} and {RENDERING_EMBED} may not work consistently on all browsers "
-                     f"they might disapper in future releases.")
+              f"they might disapper in future releases.")
         if height is None:
             height = "100%"
 
@@ -88,7 +90,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
         pages_vertical_spacing=pages_vertical_spacing,
         annotation_outline_size=annotation_outline_size,
         rendering=rendering,
-        pages_to_render=pages_to_render
+        pages_to_render=pages_to_render,
+        render_text=render_text
     )
     return component_value
 
@@ -97,11 +100,12 @@ if not _RELEASE:
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
 
-    with open("resources/annotations.json", 'rb') as fo:
+    with open("resources/annotations.sample.json", 'rb') as fo:
         annotations = json.loads(fo.read())
 
     viewer = pdf_viewer(
         binary,
         width=800,
-        annotations=annotations
+        annotations=annotations,
+        render_text=True
     )
