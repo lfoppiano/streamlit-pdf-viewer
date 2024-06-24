@@ -117,3 +117,9 @@ bump-my-version bump patch | minor | major
 git push
 git push --tags 
 ```
+
+## Acknowledgement
+
+The project was initiated at the [National Institute for Materials Science](https://www.nims.go.jp) (NIMS) in Japan.
+Currently, the development is possible thanks to [ScienciLAB](https://www.sciencialab.com).
+Main collaborator: [Tomoya Mato](https://github.com/t29mato) very helpful to attenuate the pain of Javascript. 
