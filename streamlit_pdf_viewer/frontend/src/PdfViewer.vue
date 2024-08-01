@@ -274,8 +274,10 @@ export default {
 
         // If the desired width is larger than the available inner width,
         // we should not exceed it. To be revised
-        if (0 < window.innerWidth < maxWidth.value) {
-          maxWidth.value = window.innerWidth
+        if (window.innerWidth > 0) {
+          if (window.innerWidth < maxWidth.value) {
+            maxWidth.value = window.innerWidth
+          }
         }
       }
     }

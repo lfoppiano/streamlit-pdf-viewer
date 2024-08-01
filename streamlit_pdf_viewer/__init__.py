@@ -114,7 +114,8 @@ if not _RELEASE:
         st.markdown("BAO")
         viewer = pdf_viewer(
             binary,
-            height=300,
+            width=400,
+            height=400,
             annotations=annotations,
             render_text=False,
             key="bao"
@@ -123,7 +124,7 @@ if not _RELEASE:
         st.markdown("Miao")
         viewer2 = pdf_viewer(
             binary2,
-            height=300,
+            height=400,
             render_text=False,
             key="miao"
         )
