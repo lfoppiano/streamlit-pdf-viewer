@@ -111,20 +111,20 @@ if not _RELEASE:
     tab1, tab2 = st.tabs(["tab1", "tab2"])
 
     with tab1:
-        st.markdown("BAO")
-        viewer = pdf_viewer(
-            binary,
-            width=400,
-            height=400,
-            annotations=annotations,
-            render_text=False,
-            key="bao"
-        )
+        st.markdown("tab 1")
+        with st.container(height=300):
+            viewer = pdf_viewer(
+                binary,
+                annotations=annotations,
+                render_text=True,
+                key="bao"
+            )
     with tab2:
-        st.markdown("Miao")
+        st.markdown("tab 2")
         viewer2 = pdf_viewer(
             binary2,
-            height=400,
-            render_text=False,
+            height=500,
+            annotations=annotations,
+            render_text=True,
             key="miao"
         )
