@@ -135,12 +135,14 @@ export default {
         // textLayerDiv.style.position = "absolute";
         // textLayerDiv.style.height = `${viewport.height}px`;
         // textLayerDiv.style.width = `${viewport.width}px`;
-        pdfjsLib.renderTextLayer({
+        const textLayer = new pdfjsLib.TextLayer({
           textContentSource: textContent,
           container: textLayerDiv,
           viewport: viewport,
           textDivs: []
         })
+        await textLayer.render()
+        
         const pageDiv = document.createElement('div');
         pageDiv.className = 'page';
 
@@ -186,12 +188,35 @@ export default {
           rotation: rotation,
         })
 
+        // console.log(`unscaledViewport ${pageNumber}`)
+        // console.log(unscaledViewport)
+
+        // console.log("Max width")
+        // console.log(maxWidth.value)
+
+        // console.log("Height")
+        // console.log(props.args.height)
+
+        if (props.args.height > 0) {
+          let widthScale =  unscaledViewport.width / unscaledViewport.height
+          const possibleScaledWidth = widthScale * props.args.height
+          if (maxWidth.value === 0) {
+            maxWidth.value = possibleScaledWidth
+          } else if (possibleScaledWidth < maxWidth.value) {
+            maxWidth.value = possibleScaledWidth
+          }
+        }
+
         const scale = maxWidth.value / unscaledViewport.width
 
         pageScales.value.push(scale)
         pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber)
+
+          // console.log(`canvas`)
+          // console.log(canvas)
+
           // pdfViewer?.append(canvas)
           pdfViewer.style.setProperty('--scale-factor', scale);
 
@@ -200,6 +225,9 @@ export default {
             rotation: page.rotate,
             intent: "print",
           });
+
+          // console.log(`Scaled viewport`)
+          // console.log(viewport)
 
           const ratio = window.devicePixelRatio || 1
           totalHeight.value += canvas.height / ratio
@@ -248,8 +276,10 @@ export default {
 
         // If the desired width is larger than the available inner width,
         // we should not exceed it. To be revised
-        if (window.innerWidth < maxWidth.value) {
-          maxWidth.value = window.innerWidth
+        if (window.innerWidth > 0) {
+          if (window.innerWidth < maxWidth.value) {
+            maxWidth.value = window.innerWidth
+          }
         }
       }
     }

@@ -97,15 +97,34 @@ def pdf_viewer(input: Union[str, Path, bytes],
 
 
 if not _RELEASE:
+    import streamlit as st
+
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
+
+    with open("resources/test.pdf", 'rb') as fo:
+        binary2 = fo.read()
 
     with open("resources/annotations.sample.json", 'rb') as fo:
         annotations = json.loads(fo.read())
 
-    viewer = pdf_viewer(
-        binary,
-        width=800,
-        annotations=annotations,
-        render_text=True
-    )
+    tab1, tab2 = st.tabs(["tab1", "tab2"])
+
+    with tab1:
+        st.markdown("tab 1")
+        with st.container(height=300):
+            viewer = pdf_viewer(
+                binary,
+                annotations=annotations,
+                render_text=True,
+                key="bao"
+            )
+    with tab2:
+        st.markdown("tab 2")
+        viewer2 = pdf_viewer(
+            binary2,
+            height=500,
+            annotations=annotations,
+            render_text=True,
+            key="miao"
+        )
