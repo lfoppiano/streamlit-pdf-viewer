@@ -135,12 +135,14 @@ export default {
         // textLayerDiv.style.position = "absolute";
         // textLayerDiv.style.height = `${viewport.height}px`;
         // textLayerDiv.style.width = `${viewport.width}px`;
-        pdfjsLib.renderTextLayer({
+        const textLayer = new pdfjsLib.TextLayer({
           textContentSource: textContent,
           container: textLayerDiv,
           viewport: viewport,
           textDivs: []
         })
+        await textLayer.render()
+        
         const pageDiv = document.createElement('div');
         pageDiv.className = 'page';
 
