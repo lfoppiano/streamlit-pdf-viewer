@@ -15,6 +15,11 @@ parse = """(?x)
     )?                                # pre-release section is optional
 """
 
+serialize = [
+    "{major}.{minor}.{patch}-{pre_l}{pre_n}",
+    "{major}.{minor}.{patch}",
+]
+
 [tool.bumpversion.parts.pre_l]
 values = ["dev", "rc", "final"]
 optional_value = "final"
