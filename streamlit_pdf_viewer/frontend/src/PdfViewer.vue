@@ -180,9 +180,9 @@ export default {
         }
       }
 
-      let ratioBoost = 1
+      let ResolutionBoost = 1
       if (props.args.ratio_boost) {
-        ratioBoost = props.args.ratio_boost
+        ResolutionBoost = props.args.resolution_boost
       }
 
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
@@ -218,7 +218,7 @@ export default {
         pageScales.value.push(scale)
         pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
-          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, ratioBoost)
+          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, ResolutionBoost)
 
           // console.log(`canvas`)
           // console.log(canvas)

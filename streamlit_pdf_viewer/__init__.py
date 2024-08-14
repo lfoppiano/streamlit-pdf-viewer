@@ -35,7 +35,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
                rendering: str = RENDERING_UNWRAP,
                pages_to_render: List[int] = (),
                render_text: bool = False,
-               ratio_boost: int = 1
+               resolution_boost: int = 1
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -53,6 +53,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
     These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still
     working to implement for the "unwrap" method.
     :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
+    :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -68,9 +69,9 @@ def pdf_viewer(input: Union[str, Path, bytes],
     if not all(isinstance(page, int) for page in pages_to_render):
         raise TypeError("pages_to_render must be a list of integers")
 
-    if ratio_boost < 1:
+    if resolution_boost < 1:
         raise ValueError("ratio_boost must be greater than 1")
-    elif ratio_boost > 10:
+    elif resolution_boost > 10:
         raise ValueError("ratio_boost must be lower than 10")
 
     if type(input) is not bytes:
@@ -98,7 +99,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
         rendering=rendering,
         pages_to_render=pages_to_render,
         render_text=render_text,
-        ratio_boost=ratio_boost
+        ratio_boost=resolution_boost
     )
     return component_value
 
@@ -133,5 +134,6 @@ if not _RELEASE:
             height=500,
             annotations=annotations,
             render_text=True,
-            key="miao"
+            key="miao",
+            resolution_boost=4
         )
