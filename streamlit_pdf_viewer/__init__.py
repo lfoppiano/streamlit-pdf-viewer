@@ -98,33 +98,31 @@ def pdf_viewer(input: Union[str, Path, bytes],
 
 if not _RELEASE:
     import streamlit as st
+    # from glob import glob
+    #
+    # # paths = glob("/Users/lfoppiano/kDrive/library/articles/materials informatics/polymers/*.pdf")
+    # paths = glob("/Users/lfoppiano/development/projects/alirahelth/data/articles/*.pdf")
+    # for id, (tab, path) in enumerate(zip(st.tabs(paths),paths)):
+    #     with tab:
+    #         with st.container(height=600):
+    #             if id == 0:
+    #                 pdf_viewer(path, width=500, render_text=True)
+    #             else:
+    #                 pdf_viewer(path, width=1000, render_text=True)
 
-    with open("resources/test.pdf", 'rb') as fo:
-        binary = fo.read()
 
-    with open("resources/test.pdf", 'rb') as fo:
+    st.set_page_config(
+        layout="wide"
+    )
+
+    with open("/Users/lfoppiano/development/projects/alirahelth/data/articles/Basso Dias RAD 2022.pdf", 'rb') as fo:
         binary2 = fo.read()
 
-    with open("resources/annotations.sample.json", 'rb') as fo:
-        annotations = json.loads(fo.read())
 
-    tab1, tab2 = st.tabs(["tab1", "tab2"])
 
-    with tab1:
-        st.markdown("tab 1")
-        with st.container(height=300):
-            viewer = pdf_viewer(
-                binary,
-                annotations=annotations,
+    with st.container():
+        viewer = pdf_viewer(
+                binary2,
                 render_text=True,
                 key="bao"
             )
-    with tab2:
-        st.markdown("tab 2")
-        viewer2 = pdf_viewer(
-            binary2,
-            height=500,
-            annotations=annotations,
-            render_text=True,
-            key="miao"
-        )

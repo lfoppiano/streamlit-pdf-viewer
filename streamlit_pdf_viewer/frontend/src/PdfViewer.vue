@@ -125,8 +125,17 @@ export default {
         canvasContext: canvas.getContext("2d"),
         viewport: viewport
       };
-      const renderTask = page.render(renderContext);
-      await renderTask.promise;
+
+      try {
+        const renderTask = page.render(renderContext);
+        await renderTask.promise.catch(function(error){
+          // alertError(error);
+          // do nothing
+        });
+      } catch (e) {
+        // do nothing
+      }
+
 
       if (renderText) {
         const textContent = await page.getTextContent();
