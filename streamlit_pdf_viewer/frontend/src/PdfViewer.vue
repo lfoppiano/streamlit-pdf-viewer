@@ -181,7 +181,7 @@ export default {
       }
 
       let resolutionBoost = 1
-      if (props.args.ratio_boost) {
+      if (props.args.resolution_boost) {
         resolutionBoost = props.args.resolution_boost
       }
 
