@@ -34,7 +34,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
                annotation_outline_size: int = 1,
                rendering: str = RENDERING_UNWRAP,
                pages_to_render: List[int] = (),
-               render_text: bool = False
+               render_text: bool = False,
+               ratio_boost: int = 1
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -67,6 +68,11 @@ def pdf_viewer(input: Union[str, Path, bytes],
     if not all(isinstance(page, int) for page in pages_to_render):
         raise TypeError("pages_to_render must be a list of integers")
 
+    if ratio_boost < 1:
+        raise ValueError("ratio_boost must be greater than 1")
+    elif ratio_boost > 10:
+        raise ValueError("ratio_boost must be lower than 10")
+
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
@@ -91,7 +97,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
         annotation_outline_size=annotation_outline_size,
         rendering=rendering,
         pages_to_render=pages_to_render,
-        render_text=render_text
+        render_text=render_text,
+        ratio_boost=ratio_boost
     )
     return component_value
 
