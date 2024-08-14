@@ -102,10 +102,10 @@ export default {
       }
     };
 
-    const createCanvasForPage = (page, scale, rotation, pageNumber, ratioBoost=1) => {
+    const createCanvasForPage = (page, scale, rotation, pageNumber, resolutionRatioBoost=1) => {
       const viewport = page.getViewport({scale, rotation});
 
-      const ratio = (window.devicePixelRatio || 1) * ratioBoost
+      const ratio = (window.devicePixelRatio || 1) * resolutionRatioBoost
       // console.log(ratio)
 
       const canvas = document.createElement("canvas");
@@ -180,9 +180,9 @@ export default {
         }
       }
 
-      let ResolutionBoost = 1
+      let resolutionBoost = 1
       if (props.args.ratio_boost) {
-        ResolutionBoost = props.args.resolution_boost
+        resolutionBoost = props.args.resolution_boost
       }
 
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
@@ -218,7 +218,7 @@ export default {
         pageScales.value.push(scale)
         pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
-          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, ResolutionBoost)
+          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost)
 
           // console.log(`canvas`)
           // console.log(canvas)

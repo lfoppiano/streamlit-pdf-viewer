@@ -99,7 +99,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
         rendering=rendering,
         pages_to_render=pages_to_render,
         render_text=render_text,
-        ratio_boost=resolution_boost
+        resolution_boost=resolution_boost
     )
     return component_value
 
