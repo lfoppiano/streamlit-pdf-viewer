@@ -107,6 +107,17 @@ def pdf_viewer(input: Union[str, Path, bytes],
 if not _RELEASE:
     import streamlit as st
 
+    # from glob import glob
+
+    # paths = glob("/Users/lfoppiano/kDrive/library/articles/materials informatics/polymers/*.pdf")
+    # path = "/Users/lfoppiano/development/projects/alirahelth/data/articles/Basso Dias RAD 2022.pdf"
+    # values = list(range(1, 10))
+    # for id, tab in enumerate(st.tabs([f"tab {val}" for val in values])):
+    #     with tab:
+    #         with st.container(height=600):
+    #             pdf_viewer(path, width=800, render_text=True, resolution_boost=values[id])
+    #
+
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
 
