@@ -36,7 +36,8 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 def test_resolution_boost(page: Page):
     expect(page.get_by_text("Test PDF Viewer with different resolution boosts")).to_be_visible()
     page.wait_for_selector('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
-    page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(6).wait_for("visible")
+    page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(2).wait_for(state="visible")
+    page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(6).wait_for(state="hidden")
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').all()
     assert len(iframe_components) == 6
 
