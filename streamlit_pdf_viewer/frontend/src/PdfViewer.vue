@@ -4,8 +4,7 @@
       <div id="pdfViewer" :style="pdfViewerStyle">
       <div id="pdfAnnotations" v-if="args.annotations">
         <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
-<!--          <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>-->
-          <div :style="getAnnotationStyle(annotation, index)"></div>
+          <div :style="getAnnotationStyle(annotation, index)" :id="`annotation-${index}`"></div>
         </div>
       </div>
       </div>
@@ -97,8 +96,7 @@ export default {
         'z-index': 10
       };
       if (index) {
-        obj['id'] = `annotation-${index}`;
-        loadedAnnotations.value.push(obj['id'])
+        loadedAnnotations.value.push(`annotation-${index}`);
       }
       return obj
     };
@@ -232,7 +230,6 @@ export default {
           totalHeight.value += canvas.height / ratio
           await renderPage(page, canvas, viewport)
           if (canvas.id !== undefined) {
-            console.log(canvas.id)
             loadedPages.value.push(canvas.id)
           }
         }
@@ -266,6 +263,36 @@ export default {
       }
     };
 
+    const scrollToItem = () => {
+      if (props.args.scroll_to_page) {
+        const page = document.getElementById(`canvas_page_${props.args.scroll_to_page}`);
+        if (page) {
+          page.scrollIntoView({behavior: "smooth"});
+        }
+      } else if (props.args.scroll_to_annotation) {
+        const annotation = document.getElementById(`annotation-${props.args.scroll_to_annotation}`);
+        if (annotation) {
+          annotation.scrollIntoView({behavior: "smooth", block: "center"});
+        }
+      }
+    };
+
+    const collectAndReturnIds = () => {
+      const pages_ids = new Set()
+      const annotations_ids = new Set()
+
+      let j
+
+      for (j = 0; j < loadedAnnotations.value.length; j++) {
+        annotations_ids.add(loadedAnnotations.value[j]);
+      }
+      for (j = 0; j < loadedPages.value.length; j++) {
+        pages_ids.add(loadedPages.value[j]);
+      }
+
+      Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
+    }
+
 
     const setFrameHeight = () => {
       Streamlit.setFrameHeight(props.args.height || totalHeight.value);
@@ -293,24 +320,8 @@ export default {
       if (props.args.rendering === "unwrap") {
         loadPdfs(binaryDataUrl)
           .then(setFrameHeight)
-          .then(Streamlit.setComponentReady)
-          .then(
-            function() {
-              const pages_ids = new Set()
-              const annotations_ids = new Set()
-
-              let j = 0
-
-              for(j=0; j < loadedAnnotations.value.length; j++) {
-                annotations_ids.add(loadedAnnotations.value[j]);
-              }
-              for(j=0; j < loadedPages.value.length; j++) {
-                pages_ids.add(loadedPages.value[j]);
-              }
-
-              Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
-            }
-          );
+          .then(collectAndReturnIds)
+          .then(Streamlit.setComponentReady);
       } else {
         setFrameHeight();
         Streamlit.setComponentReady();
@@ -319,6 +330,7 @@ export default {
 
     onUpdated(() => {
       setFrameHeight();
+      scrollToItem();
     });
 
 
