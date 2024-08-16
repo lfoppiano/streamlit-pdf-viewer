@@ -270,7 +270,7 @@ export default {
           page.scrollIntoView({behavior: "smooth"});
         }
       } else if (props.args.scroll_to_annotation) {
-        const annotation = document.getElementById(`annotation-${props.args.scroll_to_annotation}`);
+        const annotation = document.getElementById(`annotation-${props.args.scroll_to_annotation - 1}`);
         if (annotation) {
           annotation.scrollIntoView({behavior: "smooth", block: "center"});
         }
