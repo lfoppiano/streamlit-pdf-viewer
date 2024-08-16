@@ -6,7 +6,7 @@ from typing import Union, List, Optional
 import streamlit.components.v1 as components
 import json
 
-_RELEASE = False
+_RELEASE = True
 RENDERING_EMBED = "legacy_embed"
 RENDERING_IFRAME = "legacy_iframe"
 RENDERING_UNWRAP = "unwrap"
