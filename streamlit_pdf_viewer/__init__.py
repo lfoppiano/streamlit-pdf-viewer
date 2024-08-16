@@ -78,14 +78,14 @@ def pdf_viewer(input: Union[str, Path, bytes],
     elif resolution_boost > 10:
         raise ValueError("ratio_boost must be lower than 10")
 
-    if scroll_to_page:
-        if scroll_to_annotation:
+    if scroll_to_page is not None:
+        if scroll_to_annotation is not None:
             raise ValueError("scroll_to_page and scroll_to_annotation cannot be used together")
-        if scroll_to_page and scroll_to_page < 1:
+        if scroll_to_page is not None and scroll_to_page < 1:
             scroll_to_page = None
 
     else:
-        if scroll_to_annotation and scroll_to_annotation < 1:
+        if scroll_to_annotation is not None and scroll_to_annotation < 1:
             scroll_to_annotation = None
 
     if type(input) is not bytes:
