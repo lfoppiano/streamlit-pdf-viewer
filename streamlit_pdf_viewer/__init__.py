@@ -34,7 +34,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
                annotation_outline_size: int = 1,
                rendering: str = RENDERING_UNWRAP,
                pages_to_render: List[int] = (),
-               render_text: bool = False
+               render_text: bool = False,
+               resolution_boost: int = 1
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -52,6 +53,7 @@ def pdf_viewer(input: Union[str, Path, bytes],
     These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still
     working to implement for the "unwrap" method.
     :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
+    :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -66,6 +68,11 @@ def pdf_viewer(input: Union[str, Path, bytes],
         raise TypeError("Height must be an integer or None")
     if not all(isinstance(page, int) for page in pages_to_render):
         raise TypeError("pages_to_render must be a list of integers")
+
+    if resolution_boost < 1:
+        raise ValueError("ratio_boost must be greater than 1")
+    elif resolution_boost > 10:
+        raise ValueError("ratio_boost must be lower than 10")
 
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
@@ -91,13 +98,25 @@ def pdf_viewer(input: Union[str, Path, bytes],
         annotation_outline_size=annotation_outline_size,
         rendering=rendering,
         pages_to_render=pages_to_render,
-        render_text=render_text
+        render_text=render_text,
+        resolution_boost=resolution_boost
     )
     return component_value
 
 
 if not _RELEASE:
     import streamlit as st
+
+    # from glob import glob
+
+    # paths = glob("/Users/lfoppiano/kDrive/library/articles/materials informatics/polymers/*.pdf")
+    # path = "/Users/lfoppiano/development/projects/alirahelth/data/articles/Basso Dias RAD 2022.pdf"
+    # values = list(range(1, 10))
+    # for id, tab in enumerate(st.tabs([f"tab {val}" for val in values])):
+    #     with tab:
+    #         with st.container(height=600):
+    #             pdf_viewer(path, width=800, render_text=True, resolution_boost=values[id])
+    #
 
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
@@ -126,5 +145,6 @@ if not _RELEASE:
             height=500,
             annotations=annotations,
             render_text=True,
-            key="miao"
+            key="miao",
+            resolution_boost=4
         )
