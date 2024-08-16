@@ -235,7 +235,7 @@ export default {
           // console.log(`Scaled viewport`)
           // console.log(viewport)
 
-          const ratio = window.devicePixelRatio || 1
+          const ratio = (window.devicePixelRatio || 1) * resolutionBoost
           totalHeight.value += canvas.height / ratio
           await renderPage(page, canvas, viewport)
         }
