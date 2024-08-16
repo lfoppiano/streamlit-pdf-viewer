@@ -81,11 +81,11 @@ def pdf_viewer(input: Union[str, Path, bytes],
     if scroll_to_page:
         if scroll_to_annotation:
             raise ValueError("scroll_to_page and scroll_to_annotation cannot be used together")
-        if scroll_to_page < 1:
+        if scroll_to_page and scroll_to_page < 1:
             scroll_to_page = None
 
     else:
-        if scroll_to_annotation < 1:
+        if scroll_to_annotation and scroll_to_annotation < 1:
             scroll_to_annotation = None
 
     if type(input) is not bytes:

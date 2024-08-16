@@ -330,7 +330,9 @@ export default {
 
     onUpdated(() => {
       setFrameHeight();
-      scrollToItem();
+      if (props.args.rendering === "unwrap") {
+        scrollToItem();
+      }
     });
 
 
