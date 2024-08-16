@@ -138,6 +138,12 @@ if not _RELEASE:
                 render_text=True,
                 key="bao"
             )
+        st.markdown(viewer)
+        st.markdown(type(viewer))
+
+        annotations_id = viewer['annotations']
+        pages_id = viewer['pages']
+
     with tab2:
         st.markdown("tab 2")
         viewer2 = pdf_viewer(
