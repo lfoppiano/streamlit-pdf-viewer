@@ -224,20 +224,3 @@ if not _RELEASE:
     #                 pdf_viewer(path, width=500, render_text=True)
     #             else:
     #                 pdf_viewer(path, width=1000, render_text=True)
-
-
-    st.set_page_config(
-        layout="wide"
-    )
-
-    with open("/Users/lfoppiano/development/projects/alirahelth/data/articles/Basso Dias RAD 2022.pdf", 'rb') as fo:
-        binary2 = fo.read()
-
-
-
-    with st.container():
-        viewer = pdf_viewer(
-            binary2,
-            render_text=True,
-            key="bao"
-        )
