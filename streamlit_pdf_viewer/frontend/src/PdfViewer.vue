@@ -4,7 +4,7 @@
       <div id="pdfViewer" :style="pdfViewerStyle">
       <div id="pdfAnnotations" v-if="args.annotations">
         <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
-          <div :style="getAnnotationStyle(annotation)" :id="`annotation-${index}`"></div>
+          <div :style="getAnnotationStyle(annotation, index)" :id="`annotation-${index}`"></div>
         </div>
       </div>
       </div>
@@ -41,6 +41,8 @@ export default {
     const maxWidth = ref(0);
     const pageScales = ref([]);
     const pageHeights = ref([]);
+    const loadedPages = ref([]);
+    const loadedAnnotations = ref([]);
 
     const isRenderingAllPages = props.args.pages_to_render.length === 0;
 
@@ -80,9 +82,9 @@ export default {
       return height;
     };
 
-    const getAnnotationStyle = (annoObj) => {
+    const getAnnotationStyle = (annoObj, index) => {
       const scale = pageScales.value[annoObj.page - 1];
-      return {
+      const obj = {
         position: 'absolute',
         left: `${annoObj.x * scale}px`,
         top: `${calculatePdfsHeight(annoObj.page) + annoObj.y * scale}px`,
@@ -93,6 +95,10 @@ export default {
         cursor: 'pointer',
         'z-index': 10
       };
+      if (index) {
+        loadedAnnotations.value.push(`annotation-${index}`);
+      }
+      return obj
     };
 
     const clearExistingCanvases = (pdfViewer) => {
@@ -143,7 +149,7 @@ export default {
           textDivs: []
         })
         await textLayer.render()
-        
+
         const pageDiv = document.createElement('div');
         pageDiv.className = 'page';
 
@@ -194,17 +200,8 @@ export default {
           rotation: rotation,
         })
 
-        // console.log(`unscaledViewport ${pageNumber}`)
-        // console.log(unscaledViewport)
-
-        // console.log("Max width")
-        // console.log(maxWidth.value)
-
-        // console.log("Height")
-        // console.log(props.args.height)
-
         if (props.args.height > 0) {
-          let widthScale =  unscaledViewport.width / unscaledViewport.height
+          const widthScale =  unscaledViewport.width / unscaledViewport.height
           const possibleScaledWidth = widthScale * props.args.height
           if (maxWidth.value === 0) {
             maxWidth.value = possibleScaledWidth
@@ -220,9 +217,6 @@ export default {
         if (pagesToRender.includes(pageNumber)) {
           const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost)
 
-          // console.log(`canvas`)
-          // console.log(canvas)
-
           // pdfViewer?.append(canvas)
           pdfViewer.style.setProperty('--scale-factor', scale);
 
@@ -232,12 +226,12 @@ export default {
             intent: "print",
           });
 
-          // console.log(`Scaled viewport`)
-          // console.log(viewport)
-
           const ratio = (window.devicePixelRatio || 1) * resolutionBoost
           totalHeight.value += canvas.height / ratio
           await renderPage(page, canvas, viewport)
+          if (canvas.id !== undefined) {
+            loadedPages.value.push(canvas.id)
+          }
         }
       }
       // Subtract the margin for the last page as it's not needed
@@ -269,6 +263,36 @@ export default {
       }
     };
 
+    const scrollToItem = () => {
+      if (props.args.scroll_to_page) {
+        const page = document.getElementById(`canvas_page_${props.args.scroll_to_page}`);
+        if (page) {
+          page.scrollIntoView({behavior: "smooth"});
+        }
+      } else if (props.args.scroll_to_annotation) {
+        const annotation = document.getElementById(`annotation-${props.args.scroll_to_annotation - 1}`);
+        if (annotation) {
+          annotation.scrollIntoView({behavior: "smooth", block: "center"});
+        }
+      }
+    };
+
+    const collectAndReturnIds = () => {
+      const pages_ids = new Set()
+      const annotations_ids = new Set()
+
+      let j
+
+      for (j = 0; j < loadedAnnotations.value.length; j++) {
+        annotations_ids.add(loadedAnnotations.value[j]);
+      }
+      for (j = 0; j < loadedPages.value.length; j++) {
+        pages_ids.add(loadedPages.value[j]);
+      }
+
+      Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
+    }
+
 
     const setFrameHeight = () => {
       Streamlit.setFrameHeight(props.args.height || totalHeight.value);
@@ -296,6 +320,7 @@ export default {
       if (props.args.rendering === "unwrap") {
         loadPdfs(binaryDataUrl)
           .then(setFrameHeight)
+          .then(collectAndReturnIds)
           .then(Streamlit.setComponentReady);
       } else {
         setFrameHeight();
@@ -305,6 +330,9 @@ export default {
 
     onUpdated(() => {
       setFrameHeight();
+      if (props.args.rendering === "unwrap") {
+        scrollToItem();
+      }
     });
 
 

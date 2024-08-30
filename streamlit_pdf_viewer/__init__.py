@@ -35,7 +35,9 @@ def pdf_viewer(input: Union[str, Path, bytes],
                rendering: str = RENDERING_UNWRAP,
                pages_to_render: List[int] = (),
                render_text: bool = False,
-               resolution_boost: int = 1
+               resolution_boost: int = 1,
+               scroll_to_page: int = None,
+               scroll_to_annotation: int = None,
                ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -54,6 +56,8 @@ def pdf_viewer(input: Union[str, Path, bytes],
     working to implement for the "unwrap" method.
     :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
     :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
+    :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
+    :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -73,6 +77,16 @@ def pdf_viewer(input: Union[str, Path, bytes],
         raise ValueError("ratio_boost must be greater than 1")
     elif resolution_boost > 10:
         raise ValueError("ratio_boost must be lower than 10")
+
+    if scroll_to_page is not None:
+        if scroll_to_annotation is not None:
+            raise ValueError("scroll_to_page and scroll_to_annotation cannot be used together")
+        if scroll_to_page is not None and scroll_to_page < 1:
+            scroll_to_page = None
+
+    else:
+        if scroll_to_annotation is not None and scroll_to_annotation < 1:
+            scroll_to_annotation = None
 
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
@@ -99,13 +113,16 @@ def pdf_viewer(input: Union[str, Path, bytes],
         rendering=rendering,
         pages_to_render=pages_to_render,
         render_text=render_text,
-        resolution_boost=resolution_boost
+        resolution_boost=resolution_boost,
+        scroll_to_page=scroll_to_page,
+        scroll_to_annotation=scroll_to_annotation
     )
     return component_value
 
 
 if not _RELEASE:
     import streamlit as st
+    from streamlit import markdown
 
     # from glob import glob
 
@@ -117,6 +134,29 @@ if not _RELEASE:
     #         with st.container(height=600):
     #             pdf_viewer(path, width=800, render_text=True, resolution_boost=values[id])
     #
+    # def scroll_to_page(page):
+        # st.markdown(
+        #     """
+        #     function(){
+        #         document.getElementById(""" + page + """).scrollIntoView({behavior: 'smooth'})
+        #     };
+        #
+        #     function()
+        #     """, unsafe_allow_html=True)
+
+        # print(page)
+        # st.components.v1.html(
+        #     """
+        #     <script>
+        #         function scrollDown(){
+        #             page_canvas = document.getElementById('""" + page + """')
+        #             console.log(page_canvas)
+        #             page_canvas.scrollIntoView({behavior: 'smooth'})
+        #         }
+        #         scrollDown()
+        #     </script>
+        #     """
+        # )
 
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
@@ -129,15 +169,35 @@ if not _RELEASE:
 
     tab1, tab2 = st.tabs(["tab1", "tab2"])
 
+    # st.markdown("""
+    #     <style>
+    #     * {
+    #     overflow-anchor: none !important;
+    #     }
+    #     </style>""", unsafe_allow_html=True)
+    # @st.fragment
+    # def show_buttons_scrolling(pages_id: List):
+    #     for page in pages_id:
+    #         print(page)
+    #         st.button(f"Page {page}", key=f"page_{page}", on_click=scroll_to_page, args=(page,))
+
     with tab1:
         st.markdown("tab 1")
-        with st.container(height=300):
+        with st.container(height=400):
             viewer = pdf_viewer(
                 binary,
                 annotations=annotations,
                 render_text=True,
-                key="bao"
+                key="bao",
+                scroll_to_page=3
             )
+        # st.markdown(viewer)
+        # st.markdown(type(viewer))
+        # if type(viewer) == dict:
+        #     annotations_id = viewer['annotations']
+        #     pages_id = viewer['pages']
+        #     show_buttons_scrolling(pages_id)
+
     with tab2:
         st.markdown("tab 2")
         viewer2 = pdf_viewer(
@@ -146,5 +206,7 @@ if not _RELEASE:
             annotations=annotations,
             render_text=True,
             key="miao",
-            resolution_boost=4
+            resolution_boost=4,
+            scroll_to_annotation=2
         )
+
