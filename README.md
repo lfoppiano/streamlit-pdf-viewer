@@ -5,8 +5,8 @@
 
 # streamlit-pdf-viewer
 
-Streamlit component that allows the visualisation and enrichment of PDF documents
-Tested on Chrome and Firefox. You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
+Streamlit component that allows the visualisation and enrichment of PDF documents.
+You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
 
 <img src="https://github.com/lfoppiano/streamlit-pdf-viewer/raw/main/docs/screenshot.png" width=500 align="right" />
 
@@ -21,7 +21,7 @@ Tested on Chrome and Firefox. You can see an [application](https://github.com/lf
 - Scroll to a specific annotation
 
 ## Limitations
-- The component is developed on Firefox, however we are trying to make it compatible with Chrome as well.
+- Tested and developed to support Firefox and Chrome.
 - The legacy visualization works only on Firefox and does not support annotations 
 - Our Javascript skills are limited, so all troubleshooting may take time 
 - The component is still in development, so expect some bugs and limitations
@@ -43,7 +43,12 @@ from streamlit_pdf_viewer import pdf_viewer
 pdf_viewer("str, path or bytes")
 ```
 
-## Options
+### Caveats 
+
+Here some caveats to be aware of: 
+- Is mandatory to specify a `width` to show PDF document on tabs and expanders, otherwise, the viewer will not be displayed on tabs not immediately visible.  
+- The `legacy` rendering is not supported on Chrome, due to security reasons.
+
 
 ### Params
 
