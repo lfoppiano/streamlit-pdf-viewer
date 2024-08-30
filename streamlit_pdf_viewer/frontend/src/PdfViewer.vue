@@ -93,7 +93,7 @@ export default {
         outline: `${props.args.annotation_outline_size * scale}px solid`,
         outlineColor: annoObj.color,
         cursor: 'pointer',
-        'z-index': 10
+        'z-index': 1
       };
       if (index) {
         loadedAnnotations.value.push(`annotation-${index}`);
@@ -139,6 +139,7 @@ export default {
         const textContent = await page.getTextContent();
         const textLayerDiv = document.createElement("div");
         textLayerDiv.className = "textLayer"
+        textLayerDiv.style = "z-index: 2"
         // textLayerDiv.style.position = "absolute";
         // textLayerDiv.style.height = `${viewport.height}px`;
         // textLayerDiv.style.width = `${viewport.width}px`;
