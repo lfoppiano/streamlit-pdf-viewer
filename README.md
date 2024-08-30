@@ -10,8 +10,23 @@ Tested on Chrome and Firefox. You can see an [application](https://github.com/lf
 
 <img src="https://github.com/lfoppiano/streamlit-pdf-viewer/raw/main/docs/screenshot.png" width=500 align="right" />
 
-### Work in progress 
-We are early in the development, and we appreciate new contributors.
+## Features
+- Show PDF files in a Streamlit application with a simple command
+- Based on the pdf.js library
+- Support showing the PDF with the native pdf.js browser's viewer: "legacy" (with limitations, no annotations, no scrolling, etc..) 
+- Visualize annotations on top of the PDF documents
+- Render text on top of the PDF document, allowing copy-paste
+- Allow to render specific pages of the PDF document
+- Scroll to a specific page
+- Scroll to a specific annotation
+
+## Limitations
+- The component is developed on Firefox, however we are trying to make it compatible with Chrome as well.
+- The legacy visualization works only on Firefox and does not support annotations 
+- Our Javascript skills are limited, so all troubleshooting may take time 
+- The component is still in development, so expect some bugs and limitations
+- The streamlit reload at each action may render slowly for complex PDF documents
+
 
 ## Getting started
 
