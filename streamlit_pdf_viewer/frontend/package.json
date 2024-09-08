@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "pdfjs-dist": "^4.5.136",
+    "pdfjs-dist": "^4.6.82",
     "streamlit-component-lib": "^2.0.0",
     "vue": "^3.0.0-0"
   },
