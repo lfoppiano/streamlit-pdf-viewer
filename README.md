@@ -5,13 +5,28 @@
 
 # streamlit-pdf-viewer
 
-Streamlit component that allows the visualisation and enrichment of PDF documents
-Tested on Chrome and Firefox. You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
+Streamlit component that allows the visualisation and enrichment of PDF documents.
+You can see an [application](https://github.com/lfoppiano/structure-vision) in action [here](https://structure-vision.streamlit.app/).
 
 <img src="https://github.com/lfoppiano/streamlit-pdf-viewer/raw/main/docs/screenshot.png" width=500 align="right" />
 
-### Work in progress 
-We are early in the development, and we appreciate new contributors.
+## Features
+- Show PDF files in a Streamlit application with a simple command
+- Based on the pdf.js library
+- Support showing the PDF with the native pdf.js browser's viewer: "legacy" (with limitations, no annotations, no scrolling, etc..) 
+- Visualize annotations on top of the PDF documents
+- Render text on top of the PDF document, allowing copy-paste
+- Allow to render specific pages of the PDF document
+- Scroll to a specific page
+- Scroll to a specific annotation
+
+## Limitations
+- Tested and developed to support Firefox and Chrome.
+- The legacy visualization works only on Firefox and does not support annotations 
+- Our Javascript skills are limited, so all troubleshooting may take time 
+- The component is still in development, so expect some bugs and limitations
+- The streamlit reload at each action may render slowly for complex PDF documents
+
 
 ## Getting started
 
@@ -28,7 +43,12 @@ from streamlit_pdf_viewer import pdf_viewer
 pdf_viewer("str, path or bytes")
 ```
 
-## Options
+### Caveats 
+
+Here some caveats to be aware of: 
+- Is mandatory to specify a `width` to show PDF document on tabs and expanders, otherwise, the viewer will not be displayed on tabs not immediately visible.  
+- The `legacy` rendering is not supported on Chrome, due to security reasons.
+
 
 ### Params
 
