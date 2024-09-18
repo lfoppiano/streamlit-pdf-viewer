@@ -210,3 +210,17 @@ if not _RELEASE:
             scroll_to_annotation=2
         )
 
+
+## Issue with Chrome
+
+    # from glob import glob
+    #
+    # # paths = glob("/Users/lfoppiano/kDrive/library/articles/materials informatics/polymers/*.pdf")
+    # paths = glob("/Users/lfoppiano/development/projects/alirahelth/data/articles/*.pdf")
+    # for id, (tab, path) in enumerate(zip(st.tabs(paths),paths)):
+    #     with tab:
+    #         with st.container(height=600):
+    #             if id == 0:
+    #                 pdf_viewer(path, width=500, render_text=True)
+    #             else:
+    #                 pdf_viewer(path, width=1000, render_text=True)
