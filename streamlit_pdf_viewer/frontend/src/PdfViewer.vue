@@ -335,7 +335,7 @@ export default {
         loadPdfs(binaryDataUrl)
           .then(setFrameHeight)
           .then(collectAndReturnIds)
-          .then(scrollToItem)
+          // .then(scrollToItem)
           //LF calling setComponentReady seems to be done anyway by the WithStreamlitConnection.vue
           // .then(Streamlit.setComponentReady);
       } else {
@@ -346,9 +346,9 @@ export default {
 
     onUpdated(() => {
       setFrameHeight();
-      // if (props.args.rendering === "unwrap") {
-      //   scrollToItem();
-      // }
+      if (props.args.rendering === "unwrap") {
+        scrollToItem();
+      }
     });
 
 
