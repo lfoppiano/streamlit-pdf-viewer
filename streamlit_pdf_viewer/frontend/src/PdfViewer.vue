@@ -160,31 +160,35 @@ export default {
         })
         await textLayer.render()
 
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'page';
+        requestAnimationFrame(async () => {
+          const pageDiv = document.createElement('div');
+          pageDiv.className = 'page';
 
-        const canvasWrapper = document.createElement('div');
-        canvasWrapper.className = 'canvasWrapper';
-        canvasWrapper.appendChild(canvas);
+          const canvasWrapper = document.createElement('div');
+          canvasWrapper.className = 'canvasWrapper';
+          canvasWrapper.appendChild(canvas);
 
-        pageDiv.style = "position: relative;";
+          pageDiv.style = "position: relative;";
 
-        const pdfViewer = document.getElementById("pdfViewer");
-        pageDiv.appendChild(canvasWrapper);
-        pageDiv.appendChild(textLayerDiv);
+          const pdfViewer = document.getElementById("pdfViewer");
+          pageDiv.appendChild(canvasWrapper);
+          pageDiv.appendChild(textLayerDiv);
 
-        pdfViewer.appendChild(pageDiv);
+          pdfViewer.appendChild(pageDiv);
+        });
       } else {
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'page';
+        requestAnimationFrame(() => {
+          const pageDiv = document.createElement('div');
+          pageDiv.className = 'page';
 
-        const canvasWrapper = document.createElement('div');
-        canvasWrapper.className = 'canvasWrapper';
-        canvasWrapper.appendChild(canvas);
+          const canvasWrapper = document.createElement('div');
+          canvasWrapper.className = 'canvasWrapper';
+          canvasWrapper.appendChild(canvas);
 
-        pageDiv.style = "position: relative;";
-        pageDiv.appendChild(canvasWrapper);
-        pdfViewer.appendChild(pageDiv);
+          pageDiv.style = "position: relative;";
+          pageDiv.appendChild(canvasWrapper);
+          pdfViewer.appendChild(pageDiv);
+        });
       }
     };
 
@@ -258,10 +262,10 @@ export default {
     const loadPdfs = async (url) => {
       try {
         const loadingTask = await getDocument({
-          "url": url,
-          "cMapUrl": CMAP_URL,
-          "cMapPacked": CMAP_PACKED,
-          "enableXfa": ENABLE_XFA,
+          url: url,
+          cMapUrl: CMAP_URL,
+          cMapPacked: CMAP_PACKED,
+          enableXfa: ENABLE_XFA,
         });
         const pdfViewer = document.getElementById("pdfViewer");
         clearExistingCanvases(pdfViewer);
@@ -331,18 +335,20 @@ export default {
         loadPdfs(binaryDataUrl)
           .then(setFrameHeight)
           .then(collectAndReturnIds)
-          .then(Streamlit.setComponentReady);
+          .then(scrollToItem)
+          //LF calling setComponentReady seems to be done anyway by the WithStreamlitConnection.vue
+          // .then(Streamlit.setComponentReady);
       } else {
         setFrameHeight();
-        Streamlit.setComponentReady();
+        // Streamlit.setComponentReady();
       }
     });
 
     onUpdated(() => {
       setFrameHeight();
-      if (props.args.rendering === "unwrap") {
-        scrollToItem();
-      }
+      // if (props.args.rendering === "unwrap") {
+      //   scrollToItem();
+      // }
     });
 
 
