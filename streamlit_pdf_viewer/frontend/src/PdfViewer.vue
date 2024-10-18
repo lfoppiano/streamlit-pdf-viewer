@@ -260,6 +260,7 @@ export default {
     };
 
     const loadPdfs = async (url) => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.mjs';
       try {
         const loadingTask = await getDocument({
           url: url,
@@ -304,7 +305,7 @@ export default {
         pages_ids.add(loadedPages.value[j]);
       }
 
-      Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
+      // Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
     }
 
 
