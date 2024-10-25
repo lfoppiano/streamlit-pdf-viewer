@@ -25,20 +25,21 @@ else:
     )
 
 
-def pdf_viewer(input: Union[str, Path, bytes],
-               width: int = None,
-               height: int = None,
-               key=None,
-               annotations: list = (),
-               pages_vertical_spacing: int = 2,
-               annotation_outline_size: int = 1,
-               rendering: str = RENDERING_UNWRAP,
-               pages_to_render: List[int] = (),
-               render_text: bool = False,
-               resolution_boost: int = 1,
-               scroll_to_page: int = None,
-               scroll_to_annotation: int = None,
-               ):
+def pdf_viewer(
+        input: Union[str, Path, bytes],
+        width: int = None,
+        height: int = None,
+        key=None,
+        annotations: list = (),
+        pages_vertical_spacing: int = 2,
+        annotation_outline_size: int = 1,
+        rendering: str = RENDERING_UNWRAP,
+        pages_to_render: List[int] = (),
+        render_text: bool = False,
+        resolution_boost: int = 1,
+        scroll_to_page: int = None,
+        scroll_to_annotation: int = None,
+):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
 
