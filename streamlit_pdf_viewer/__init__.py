@@ -67,8 +67,13 @@ def pdf_viewer(
     """
 
     # Validate width and height parameters
-    if width is not None and not isinstance(width, int):
-        raise TypeError("Width must be an integer")
+    if width is not None:
+        if isinstance(width, str):
+            # Check if the string is a valid integer or ends with '%'
+            if not (width.isdigit() or width.endswith('%')):
+                raise ValueError("Width must be an integer or a percentage string (e.g., '50%')")
+        elif not isinstance(width, int):
+            raise TypeError("Width must be an integer or a string")
     if height is not None and not isinstance(height, int):
         raise TypeError("Height must be an integer or None")
     if not all(isinstance(page, int) for page in pages_to_render):
