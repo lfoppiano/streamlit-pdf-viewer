@@ -1,6 +1,6 @@
 name: Build unstable
 
-on: [ push ]
+on: [ push, pull_request ]
 
 concurrency:
   group: unstable
