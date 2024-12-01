@@ -60,11 +60,22 @@ export default {
 
     const renderText = props.args.render_text === true
 
-    const pdfContainerStyle = computed(() => ({
-      width: props.args.width ? `${props.args.width}px` : `${maxWidth.value}px`,
-      height: props.args.height ? `${props.args.height}px` : 'auto',
-      overflow: 'auto',
-    }));
+    const pdfContainerStyle = computed(() => {
+      const getStyleValue = (value, defaultValue) => {
+        if (typeof value === 'string' && value.endsWith('%')) {
+          return value; // Use percentage as is
+        } else if (typeof value === 'number' || (typeof value === 'string' && /^\d+$/.test(value))) {
+          return `${value}px`; // Append 'px' for numeric values
+        }
+        return defaultValue; // Use default if value is not valid
+      };
+
+      return {
+        width: getStyleValue(props.args.width, `${maxWidth.value}px`),
+        height: height: props.args.height ? `${props.args.height}px` : 'auto',
+        overflow: 'auto',
+      };
+    });
 
     const pdfViewerStyle = {position: 'relative'};
     const getPageStyle = {position: 'relative'};
