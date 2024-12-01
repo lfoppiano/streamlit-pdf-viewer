@@ -70,7 +70,7 @@ export default {
 
       return {
         width: getStyleValue(props.args.width, `${maxWidth.value}px`),
-        height: height: props.args.height ? `${props.args.height}px` : 'auto',
+        height: props.args.height ? `${props.args.height}px` : 'auto',
         overflow: 'auto',
       };
     });
