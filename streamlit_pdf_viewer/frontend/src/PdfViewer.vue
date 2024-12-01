@@ -27,6 +27,7 @@ import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
 import {Streamlit} from "streamlit-component-lib";
+import { useStreamlit } from "./streamlit"
 import * as pdfjsLib from "pdfjs-dist";
 
 const CMAP_URL = "pdfjs-dist/cmaps/";
@@ -37,6 +38,8 @@ export default {
   props: ["args"],
 
   setup(props) {
+
+    useStreamlit() // lifecycle hooks for automatic Streamlit resize
     const totalHeight = ref(0);
     const maxWidth = ref(0);
     const pageScales = ref([]);
