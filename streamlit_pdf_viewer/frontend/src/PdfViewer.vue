@@ -324,8 +324,6 @@ export default {
         // For numeric heights or other valid values
         Streamlit.setFrameHeight(height);
       }
-      
-      console.log(totalHeight.value, height)
     };
 
     const setFrameWidth = () => {
