@@ -309,7 +309,6 @@ export default {
       for (j = 0; j < loadedPages.value.length; j++) {
         pages_ids.add(loadedPages.value[j]);
       }
-
       // Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
     }
 
