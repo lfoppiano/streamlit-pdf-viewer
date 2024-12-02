@@ -206,44 +206,35 @@ export default {
 
     const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {
       if (pagesToRender.length === 0) {
-        pagesToRender = []
-        for (let i = 0; i < pdf.numPages; i++) {
-          pagesToRender.push(i + 1);
-        }
+        pagesToRender = Array.from({ length: pdf.numPages }, (_, i) => i + 1);
       }
 
-      let resolutionBoost = 1
-      if (props.args.resolution_boost) {
-        resolutionBoost = props.args.resolution_boost
-      }
+      let resolutionBoost = props.args.resolution_boost || 1;
+      totalHeight.value = 0;
 
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-        const page = await pdf.getPage(pageNumber)
-        const rotation = page.rotate
-        // Initial viewport
-        const unscaledViewport = page.getViewport({
-          scale: 1.0,
-          rotation: rotation,
-        })
+        const page = await pdf.getPage(pageNumber);
+        const rotation = page.rotate;
+        const unscaledViewport = page.getViewport({ scale: 1.0, rotation: rotation });
 
-        if (props.args.height > 0) {
-          const widthScale =  unscaledViewport.width / unscaledViewport.height
-          const possibleScaledWidth = widthScale * props.args.height
+        if (props.args.height !== null && props.args.height > 0) {
+          const widthScale = unscaledViewport.width / unscaledViewport.height;
+          const possibleScaledWidth = widthScale * props.args.height;
           if (maxWidth.value === 0) {
-            maxWidth.value = possibleScaledWidth
+            maxWidth.value = possibleScaledWidth;
           } else if (possibleScaledWidth < maxWidth.value) {
-            maxWidth.value = possibleScaledWidth
+            maxWidth.value = possibleScaledWidth;
           }
+        } else if (maxWidth.value === 0) {
+          maxWidth.value = unscaledViewport.width;
         }
 
-        const scale = maxWidth.value / unscaledViewport.width
+        const scale = maxWidth.value / unscaledViewport.width;
+        pageScales.value.push(scale);
+        pageHeights.value.push(unscaledViewport.height);
 
-        pageScales.value.push(scale)
-        pageHeights.value.push(unscaledViewport.height)
         if (pagesToRender.includes(pageNumber)) {
-          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost)
-
-          // pdfViewer?.append(canvas)
+          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost);
           pdfViewer.style.setProperty('--scale-factor', scale);
 
           const viewport = page.getViewport({
@@ -252,19 +243,21 @@ export default {
             intent: "print",
           });
 
-          const ratio = (window.devicePixelRatio || 1) * resolutionBoost
-          totalHeight.value += canvas.height / ratio
-          await renderPage(page, canvas, viewport)
+          const ratio = (window.devicePixelRatio || 1) * resolutionBoost;
+          totalHeight.value += canvas.height / ratio;
+
+          await renderPage(page, canvas, viewport);
+
           if (canvas.id !== undefined) {
-            loadedPages.value.push(canvas.id)
+            loadedPages.value.push(canvas.id);
           }
         }
       }
-      // Subtract the margin for the last page as it's not needed
+
       if (pagesToRender.length > 0) {
         totalHeight.value -= props.args.pages_vertical_spacing;
       }
-    };
+    }
 
     const alertError = (error) => {
       window.alert(error.message);
@@ -322,24 +315,44 @@ export default {
 
 
     const setFrameHeight = () => {
-      Streamlit.setFrameHeight(props.args.height || totalHeight.value);
+      const height = props.args.height;
+      
+      if (height === null || height === undefined) {
+        // If height is null or undefined, use totalHeight
+        Streamlit.setFrameHeight(totalHeight.value);
+      } else {
+        // For numeric heights or other valid values
+        Streamlit.setFrameHeight(height);
+      }
+      
+      console.log(totalHeight.value, height)
     };
 
     const setFrameWidth = () => {
-      if (props.args.width === null || props.args.width === undefined) {
-        maxWidth.value = window.innerWidth
-      } else if (Number.isInteger(props.args.width)) {
-        maxWidth.value = props.args.width
-
-        // If the desired width is larger than the available inner width,
-        // we should not exceed it. To be revised
-        if (window.innerWidth > 0) {
-          if (window.innerWidth < maxWidth.value) {
-            maxWidth.value = window.innerWidth
-          }
+      const { width } = props.args;
+      
+      const calculateWidth = (widthValue) => {
+        if (typeof widthValue === 'string' && widthValue.endsWith('%')) {
+          // Handle percentage string
+          const percentage = parseFloat(widthValue) / 100;
+          return Math.floor(window.innerWidth * percentage);
+        } else if (Number.isInteger(Number(widthValue))) {
+          // Handle integer value
+          return Number(widthValue);
         }
+        // Default to full window width if invalid input
+        return window.innerWidth;
+      };
+
+      if (width === null || width === undefined) {
+        maxWidth.value = window.innerWidth;
+      } else {
+        const calculatedWidth = calculateWidth(width);
+        
+        // Ensure the calculated width doesn't exceed the window's inner width
+        maxWidth.value = Math.min(calculatedWidth, window.innerWidth);
       }
-    }
+    };
 
     onMounted(() => {
       const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
