@@ -27,7 +27,7 @@ else:
 
 def pdf_viewer(
         input: Union[str, Path, bytes],
-        width: int = None,
+        width: Union[str,int] = None,
         height: int = None,
         key=None,
         annotations: list = (),
