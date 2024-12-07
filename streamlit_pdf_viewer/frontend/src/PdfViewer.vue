@@ -129,7 +129,7 @@ export default {
       canvas.id = `canvas_page_${pageNumber}`;
       canvas.height = viewport.height * ratio + props.args.pages_vertical_spacing;
       canvas.width = viewport.width * ratio;
-      canvas.style.width = maxWidth.value + 'px'; // viewport.width + 'px';
+      canvas.style.width = viewport.width + 'px';
       canvas.style.height = viewport.height + 'px';
       canvas.style.display = "block";
       canvas.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
