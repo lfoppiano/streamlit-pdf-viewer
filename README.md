@@ -47,7 +47,11 @@ pdf_viewer("str, path or bytes")
 ### Caveats 
 
 Here some caveats to be aware of: 
-- Is mandatory to specify a `width` to show PDF document on tabs and expanders, otherwise, the viewer will not be displayed on tabs not immediately visible.  
+- It ss mandatory to specify a `width` to show PDF document on tabs and expanders, otherwise, the viewer will not be displayed on tabs not immediately visible.
+- From version 0.0.16, the behavior for managing width and height has changed: 
+  - If only the height is specified, the PDF document will be shown in proportion with the with proportional based on the PDF dimensions. 
+  - The possibility to show a large view of half the PDF is not available anymore (let's face it, it was not very useful).
+  - If you need to use all the available space and limit the height, you can encapsulate the `pdf_viewer()` into a `st.component(width:...)` setting the width.
 - The `legacy` rendering is not supported on Chrome, due to security reasons.
 
 
