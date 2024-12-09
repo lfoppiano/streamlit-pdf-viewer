@@ -16,11 +16,6 @@ jobs:
         node-version: [ 18, 20 ]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
       - uses: actions/setup-node@v4
         with:
           node-version: ${{matrix.node-version}}
@@ -30,6 +25,11 @@ jobs:
           npm --version
           npm install
           npm run build
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - name: Cleanup more disk space
         run: sudo rm -rf /usr/share/dotnet && sudo rm -rf /opt/ghc && sudo rm -rf "/usr/local/share/boost" && sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Install python dependencies
@@ -44,17 +44,11 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build Python backend
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
         run: | 
           python --version
           pip install build 
           python -m build
       - name: Test with pytest
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
         run: |          
           pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures pytest-cov
           playwright install chromium firefox
