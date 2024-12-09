@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8, 3.9, '3.10', '3.11', '3.12' ]
+        python-version: [ 3.9, '3.10', '3.11', '3.12', '3.13' ]
         node-version: [ 18, 20 ]
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+          cache: 'pip_${{ matrix.python-version }}'
       - uses: actions/setup-node@v4
         with:
           node-version: ${{matrix.node-version}}
