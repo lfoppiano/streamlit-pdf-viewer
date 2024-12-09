@@ -44,11 +44,17 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build Python backend
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
         run: | 
           python --version
           pip install build 
           python -m build
       - name: Test with pytest
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
         run: |          
           pip install playwright pytest-playwright pytest pytest-github-actions-annotate-failures pytest-cov
           playwright install chromium firefox
