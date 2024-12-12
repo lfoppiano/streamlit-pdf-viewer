@@ -67,8 +67,8 @@ In the following table the list of parameters that can be provided to the `pdf_v
 | pages_to_render         | Filter the rendering to a specific set of pages. By default, all pages are rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | render_text             | Enable a layer of text on top of the PDF document. The text may be selected and copied. **NOTE** to avoid breaking existing deployments, we made this optional at first, also considering that having many annotations might interfere with the copy-paste.                                                                                                                                                                                                                                                                                                                                                       
 | scroll_to_page          | Scroll to a specific page when the component is rendered. Default is None. Require ints and ignores the parameters below zero.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| scroll_to_annotation    | Scroll to a specific annotation when the component is rendered. Default is None. Mutually exclusive with `scroll_to_page`. Raise an exception if used with `scroll_to_page`                                                                                                                                                                                                                                                                                                                                                                                                                                        |   
-
+| scroll_to_annotation    | Scroll to a specific annotation when the component is rendered. Default is None. Mutually exclusive with `scroll_to_page`. Raise an exception if used with `scroll_to_page`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| on_annotation_click     | Callback function that is called when an annotation is clicked. The function receives the annotation as a parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### Annotation format 
 The annotations format has been derived from the [Grobid's coordinate formats](https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/), which are described as a list of "bounding boxes".
@@ -90,6 +90,44 @@ Here an example:
 ```
 
 The example shown in our screenshot can be found [here](resources/annotations.json).
+
+### How to use on_annotation_click
+
+```python
+from streamlit_pdf_viewer import pdf_viewer
+
+annotations = [
+    {
+        "page": 1,
+        "x": 220,
+        "y": 155,
+        "height": 22,
+        "width": 65,
+        "color": "red"
+    },
+    {
+        "page": 1,
+        "x": 220,
+        "y": 155,
+        "height": 22,
+        "width": 65,
+        "color": "red"
+    }
+]
+
+def my_custom_annotation_handler(annotation):
+    print(f"Annotation {annotation} clicked.")
+
+pdf_viewer(
+   "path/to/pdf",
+   on_annotation_click=my_custom_annotation_handler,
+   annotations=annotations
+)
+
+```
+
+
+### 
 
 ## Developers notes
 
