@@ -31,6 +31,8 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
+    page.get_by_text("tab 1").wait_for(state="visible")
+    page.get_by_text("tab 2").wait_for(state="visible")
 
 
 def test_resolution_boost(page: Page):
