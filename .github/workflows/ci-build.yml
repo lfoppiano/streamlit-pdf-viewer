@@ -24,7 +24,6 @@ jobs:
       - name: build frontend
         run: |
           cd streamlit_pdf_viewer/frontend/
-          npm --version
           npm install
           npm run build
       - name: Set up Python ${{ matrix.python-version }}
@@ -46,7 +45,6 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Build Python backend
         run: | 
-          python --version
           pip install build 
           python -m build
       - name: Test with pytest
