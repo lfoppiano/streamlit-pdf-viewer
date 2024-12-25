@@ -1,7 +1,7 @@
 import base64
 import os
 from pathlib import Path
-from typing import Union, List, Optional, Callable
+from typing import Union, List, Optional
 
 import streamlit.components.v1 as components
 import json
@@ -39,8 +39,7 @@ def pdf_viewer(
         resolution_boost: int = 1,
         scroll_to_page: int = None,
         scroll_to_annotation: int = None,
-        on_annotation_click: Optional[Callable[[dict], None]] = None,
-    ):
+):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
 
@@ -60,7 +59,6 @@ def pdf_viewer(
     :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
-    :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -120,12 +118,6 @@ def pdf_viewer(
         scroll_to_page=scroll_to_page,
         scroll_to_annotation=scroll_to_annotation
     )
-
-    # Execute the custom callback function
-    if component_value and 'clicked_annotation' in component_value:
-        clicked_annotation = component_value['clicked_annotation']
-        if on_annotation_click is not None and callable(on_annotation_click):
-            on_annotation_click(clicked_annotation)
     return component_value
 
 
