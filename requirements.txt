@@ -1,2 +1,1 @@
 streamlit
-bump-my-version
