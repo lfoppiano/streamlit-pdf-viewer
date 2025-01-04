@@ -2,11 +2,19 @@
   <div id="pdfContainer" :style="pdfContainerStyle">
     <div v-if="args.rendering==='unwrap'">
       <div id="pdfViewer" :style="pdfViewerStyle">
-      <div id="pdfAnnotations" v-if="args.annotations">
-        <div v-for="(annotation, index) in filteredAnnotations" :key="index" :style="getPageStyle">
-          <div :style="getAnnotationStyle(annotation, index)" :id="`annotation-${index}`"></div>
+        <div id="pdfAnnotations" v-if="args.annotations">
+          <div
+              v-for="(annotation, index) in filteredAnnotations"
+              :key="index"
+              :style="getPageStyle"
+              @click="handleAnnotationClick(annotation, index)"
+          >
+            <div
+                :style="getAnnotationStyle(annotation, index)"
+                :id="`annotation-${index}`"
+            ></div>
+          </div>
         </div>
-      </div>
       </div>
     </div>
     <div v-else-if="args.rendering==='legacy_embed'">
@@ -54,6 +62,16 @@ export default {
         return props.args.pages_to_render.includes(Number(anno.page))
       })
     });
+
+    const handleAnnotationClick = (annotation, index) => {
+      // Convert the Proxy object to a plain object
+      const serializedAnnotation = JSON.parse(JSON.stringify(annotation));
+
+      // Send data to Streamlit
+      Streamlit.setComponentValue({
+        clicked_annotation: { index, ...serializedAnnotation },
+      });
+    };
 
     const renderText = props.args.render_text === true
 
@@ -377,6 +395,7 @@ export default {
 
     return {
       filteredAnnotations,
+      handleAnnotationClick,
       getAnnotationStyle,
       pdfContainerStyle,
       pdfViewerStyle,
