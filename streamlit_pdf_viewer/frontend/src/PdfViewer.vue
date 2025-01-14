@@ -75,18 +75,31 @@ export default {
 
     const renderText = props.args.render_text === true
 
-    const pdfContainerStyle = computed(() => {
-      const getStyleValue = (value, defaultValue) => {
-        if (typeof value === 'string' && value.endsWith('%')) {
-          return value; // Use percentage as is
-        } else if (typeof value === 'number' || (typeof value === 'string' && /^\d+$/.test(value))) {
-          return `${value}px`; // Append 'px' for numeric values
+    const parseWidthValue = (widthValue, fallbackValue = window.innerWidth) => {
+      if (typeof widthValue === "string" && widthValue.endsWith("%")) {
+        const num = parseFloat(widthValue)
+        if (!isNaN(num)) {
+          return { type: "percent", value: num / 100 }
         }
-        return defaultValue; // Use default if value is not valid
-      };
+      }
+      const numeric = Number(widthValue)
+      if (!isNaN(numeric) && numeric > 0) {
+        return { type: "pixel", value: numeric }
+      }
+      return { type: "pixel", value: fallbackValue }
+    }
 
+
+    const pdfContainerStyle = computed(() => {
+      const result = parseWidthValue(props.args.width, window.innerWidth);
+      let widthCSS;
+      if (result.type === "percent") {
+        widthCSS = `${result.value * 100}%`;
+      } else {
+        widthCSS = `${result.value}px`;
+      }
       return {
-        width: getStyleValue(props.args.width, `${maxWidth.value}px`),
+        width: widthCSS,
         height: props.args.height ? `${props.args.height}px` : 'auto',
         overflow: 'auto',
       };
@@ -343,28 +356,12 @@ export default {
     };
 
     const setFrameWidth = () => {
-      const { width } = props.args;
-      
-      const calculateWidth = (widthValue) => {
-        if (typeof widthValue === 'string' && widthValue.endsWith('%')) {
-          // Handle percentage string
-          const percentage = parseFloat(widthValue) / 100;
-          return Math.floor(window.innerWidth * percentage);
-        } else if (Number.isInteger(Number(widthValue))) {
-          // Handle integer value
-          return Number(widthValue);
-        }
-        // Default to full window width if invalid input
-        return window.innerWidth;
-      };
-
-      if (width === null || width === undefined) {
-        maxWidth.value = window.innerWidth;
+      const result = parseWidthValue(props.args.width, window.innerWidth);
+      if (result.type === "percent") {
+        const calculated = Math.floor(result.value * window.innerWidth);
+        maxWidth.value = Math.min(calculated, window.innerWidth);
       } else {
-        const calculatedWidth = calculateWidth(width);
-        
-        // Ensure the calculated width doesn't exceed the window's inner width
-        maxWidth.value = Math.min(calculatedWidth, window.innerWidth);
+        maxWidth.value = Math.min(result.value, window.innerWidth);
       }
     };
 
