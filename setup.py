@@ -5,6 +5,7 @@ import setuptools
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 bump_version = (this_directory / ".bumpversion.toml").read_text()
+licence = (this_directory / "LICENSE").read_text()
 current_version_line = [line for line in bump_version.split('\n') if 'current_version' in line][0]
 version = current_version_line.split('=')[1].strip().strip('"')
 
@@ -27,5 +28,6 @@ setuptools.setup(
         "devel": [
             "wheel"
         ]
-    }
+    },
+    license=licence
 )
