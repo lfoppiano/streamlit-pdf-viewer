@@ -34,7 +34,7 @@ jobs:
       - name: Install python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade flake8 pytest pycodestyle
+          pip install --upgrade flake8 pytest==8.0.1 pycodestyle
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
