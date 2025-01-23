@@ -1,27 +1,15 @@
 <template>
   <div id="pdfContainer" :style="pdfContainerStyle">
-    <div v-if="args.rendering==='unwrap'">
-      <div id="pdfViewer" :style="pdfViewerStyle">
-        <div id="pdfAnnotations" v-if="args.annotations">
-          <div
-              v-for="(annotation, index) in filteredAnnotations"
-              :key="index"
-              :style="getPageStyle"
-              @click="handleAnnotationClick(annotation, index)"
-          >
-            <div
-                :style="getAnnotationStyle(annotation, index)"
-                :id="`annotation-${index}`"
-            ></div>
-          </div>
-        </div>
-      </div>
+    <div v-if="args.rendering === 'unwrap'">
+      <div id="pdfViewer" :style="pdfViewerStyle"></div>
     </div>
-    <div v-else-if="args.rendering==='legacy_embed'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`" type="application/pdf"/>
+    <div v-else-if="args.rendering === 'legacy_embed'">
+      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`"
+             type="application/pdf"/>
     </div>
-    <div v-else-if="args.rendering==='legacy_iframe'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`" type="application/pdf"/>
+    <div v-else-if="args.rendering === 'legacy_iframe'">
+      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`"
+             type="application/pdf"/>
     </div>
     <div v-else>
       Error rendering option.
@@ -30,12 +18,13 @@
 </template>
 
 <script>
-import { onMounted, onUpdated, computed, ref} from "vue";
+import { onMounted, onUpdated, computed, ref, onUnmounted } from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
-import {getDocument} from "pdfjs-dist/build/pdf";
-import {Streamlit} from "streamlit-component-lib";
+import { getDocument } from "pdfjs-dist/build/pdf";
+import { Streamlit } from "streamlit-component-lib";
 import * as pdfjsLib from "pdfjs-dist";
+import { debounce } from 'lodash';
 
 const CMAP_URL = "pdfjs-dist/cmaps/";
 const CMAP_PACKED = true;
@@ -50,30 +39,11 @@ export default {
     const pageScales = ref([]);
     const pageHeights = ref([]);
     const loadedPages = ref([]);
-    const loadedAnnotations = ref([]);
+    const currentFrameHeight = ref(props.args.height || 0);
 
     const isRenderingAllPages = props.args.pages_to_render.length === 0;
 
-    const filteredAnnotations = computed(() => {
-      if (isRenderingAllPages) {
-        return props.args.annotations;
-      }
-      return props.args.annotations.filter(anno => {
-        return props.args.pages_to_render.includes(Number(anno.page))
-      })
-    });
-
-    const handleAnnotationClick = (annotation, index) => {
-      // Convert the Proxy object to a plain object
-      const serializedAnnotation = JSON.parse(JSON.stringify(annotation));
-
-      // Send data to Streamlit
-      Streamlit.setComponentValue({
-        clicked_annotation: { index, ...serializedAnnotation },
-      });
-    };
-
-    const renderText = props.args.render_text === true
+    const renderText = props.args.render_text === true;
 
     const parseWidthValue = (widthValue, fallbackValue = window.innerWidth) => {
       if (typeof widthValue === "string" && widthValue.endsWith("%")) {
@@ -89,30 +59,24 @@ export default {
       return { type: "pixel", value: fallbackValue }
     }
 
-
     const pdfContainerStyle = computed(() => {
       const result = parseWidthValue(props.args.width, window.innerWidth);
-      let widthCSS;
-      if (result.type === "percent") {
-        widthCSS = `${result.value * 100}%`;
-      } else {
-        widthCSS = `${result.value}px`;
-      }
+      const widthCSS = result.type === "percent" ? `${result.value * 100}%` : `${result.value}px`;
       return {
         width: widthCSS,
         height: props.args.height ? `${props.args.height}px` : 'auto',
         overflow: 'auto',
+        position: 'relative',
       };
     });
 
-    const pdfViewerStyle = {position: 'relative'};
-    const getPageStyle = {position: 'relative'};
+    const pdfViewerStyle = { position: 'relative' };
 
     const calculatePdfsHeight = (page) => {
       let height = 0;
       if (isRenderingAllPages) {
         for (let i = 0; i < page - 1; i++) {
-          height += pageHeights.value[i] * pageScales.value[i] + props.args.pages_vertical_spacing; // Add margin for each page
+          height += pageHeights.value[i] * pageScales.value[i] + props.args.pages_vertical_spacing;
         }
       } else {
         for (let i = 0; i < pageHeights.value.length; i++) {
@@ -124,169 +88,159 @@ export default {
       return height;
     };
 
-    const getAnnotationStyle = (annoObj, index) => {
-      const scale = pageScales.value[annoObj.page - 1];
-      const obj = {
-        position: 'absolute',
-        left: `${annoObj.x * scale}px`,
-        top: `${calculatePdfsHeight(annoObj.page) + annoObj.y * scale}px`,
-        width: `${annoObj.width * scale}px`,
-        height: `${annoObj.height * scale}px`,
-        outline: `${props.args.annotation_outline_size * scale}px solid`,
-        outlineColor: annoObj.color,
-        cursor: 'pointer',
-        'z-index': 1
-      };
-      if (index) {
-        loadedAnnotations.value.push(`annotation-${index}`);
-      }
-      return obj
-    };
-
     const clearExistingCanvases = (pdfViewer) => {
-      const canvases = pdfViewer?.getElementsByTagName("canvas");
-      for (let j = canvases.length - 1; j >= 0; j--) {
-        pdfViewer?.removeChild(canvases.item(j));
-      }
+      if (!pdfViewer) return;
+      pdfViewer.innerHTML = '';
     };
 
-    const createCanvasForPage = (page, scale, rotation, pageNumber, resolutionRatioBoost=1) => {
-      const viewport = page.getViewport({scale, rotation});
-
-      const ratio = (window.devicePixelRatio || 1) * resolutionRatioBoost
-      // console.log(ratio)
+    const createCanvasForPage = (page, scale, rotation, pageNumber, resolutionRatioBoost = 1) => {
+      const viewport = page.getViewport({ scale, rotation });
+      const ratio = (window.devicePixelRatio || 1) * resolutionRatioBoost;
 
       const canvas = document.createElement("canvas");
       canvas.id = `canvas_page_${pageNumber}`;
       canvas.height = viewport.height * ratio + props.args.pages_vertical_spacing;
       canvas.width = viewport.width * ratio;
-      canvas.style.width = viewport.width + 'px';
-      canvas.style.height = viewport.height + 'px';
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
       canvas.style.display = "block";
       canvas.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
       canvas.getContext("2d").scale(ratio, ratio);
+
       return canvas;
     };
 
+    const renderAnnotation = (annotation, pageDiv, scale) => {
+      const annotationDiv = document.createElement('div');
+      annotationDiv.id = `annotation-${annotation.id || annotation.page}-${annotation.index}`;
+      annotationDiv.style.position = 'absolute';
+      annotationDiv.style.left = `${annotation.x * scale}px`;
+      annotationDiv.style.top = `${annotation.y * scale}px`;
+      annotationDiv.style.width = `${annotation.width * scale}px`;
+      annotationDiv.style.height = `${annotation.height * scale}px`;
+      annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px solid ${annotation.color}`;
+      annotationDiv.style.cursor = renderText ? 'text' : 'pointer';
+      annotationDiv.style.pointerEvents = renderText ? 'none' : 'auto';
+      annotationDiv.style.zIndex = 10;
 
-    const renderPage = async (page, canvas, viewport) => {
+      if (!renderText) {
+        annotationDiv.addEventListener('click', () => {
+          Streamlit.setComponentValue({
+            clicked_annotation: { index: annotation.index, ...annotation },
+          });
+        });
+      }
+
+      pageDiv.appendChild(annotationDiv);
+    };
+
+    const renderPage = async (page, canvas, viewport, annotations) => {
       const renderContext = {
         canvasContext: canvas.getContext("2d"),
         viewport: viewport
       };
 
-      try {
-        const renderTask = page.render(renderContext);
-        await renderTask.promise.catch(function(error){
-          // alertError(error);
-          // do nothing
-        });
-      } catch (e) {
-        // do nothing
-      }
+      await page.render(renderContext).promise;
 
+      const pageDiv = document.createElement('div');
+      pageDiv.className = 'page';
+      pageDiv.style.position = 'relative';
+      pageDiv.style.width = `${viewport.width}px`;
+      pageDiv.style.height = `${viewport.height}px`;
+
+      const canvasWrapper = document.createElement('div');
+      canvasWrapper.className = 'canvasWrapper';
+      canvasWrapper.style.position = 'absolute';
+      canvasWrapper.style.top = '0';
+      canvasWrapper.style.left = '0';
+      canvasWrapper.appendChild(canvas);
+
+      pageDiv.appendChild(canvasWrapper);
 
       if (renderText) {
         const textContent = await page.getTextContent();
         const textLayerDiv = document.createElement("div");
-        textLayerDiv.className = "textLayer"
-        textLayerDiv.style = "z-index: 2"
-        // textLayerDiv.style.position = "absolute";
-        // textLayerDiv.style.height = `${viewport.height}px`;
-        // textLayerDiv.style.width = `${viewport.width}px`;
+        textLayerDiv.className = "textLayer";
+        textLayerDiv.style.zIndex = "11";
+        textLayerDiv.style.position = 'absolute';
+        textLayerDiv.style.top = '0';
+        textLayerDiv.style.left = '0';
+        textLayerDiv.style.height = `${viewport.height}px`;
+        textLayerDiv.style.width = `${viewport.width}px`;
+
         const textLayer = new pdfjsLib.TextLayer({
           textContentSource: textContent,
           container: textLayerDiv,
           viewport: viewport,
           textDivs: []
-        })
-        await textLayer.render()
-
-        requestAnimationFrame(async () => {
-          const pageDiv = document.createElement('div');
-          pageDiv.className = 'page';
-
-          const canvasWrapper = document.createElement('div');
-          canvasWrapper.className = 'canvasWrapper';
-          canvasWrapper.appendChild(canvas);
-
-          pageDiv.style = "position: relative;";
-
-          const pdfViewer = document.getElementById("pdfViewer");
-          pageDiv.appendChild(canvasWrapper);
-          pageDiv.appendChild(textLayerDiv);
-
-          pdfViewer.appendChild(pageDiv);
         });
-      } else {
-        requestAnimationFrame(() => {
-          const pageDiv = document.createElement('div');
-          pageDiv.className = 'page';
+        await textLayer.render();
 
-          const canvasWrapper = document.createElement('div');
-          canvasWrapper.className = 'canvasWrapper';
-          canvasWrapper.appendChild(canvas);
+        pageDiv.appendChild(textLayerDiv);
+      }
 
-          pageDiv.style = "position: relative;";
-          pageDiv.appendChild(canvasWrapper);
-          pdfViewer.appendChild(pageDiv);
+      if (annotations && annotations.length > 0) {
+        annotations.forEach(annotation => {
+          renderAnnotation(annotation, pageDiv, viewport.scale);
         });
       }
+
+      const pdfViewer = document.getElementById("pdfViewer");
+      pdfViewer.appendChild(pageDiv);
     };
 
-    const renderPdfPages = async (pdf, pdfViewer, pagesToRender = null) => {
-      if (pagesToRender.length === 0) {
-        pagesToRender = []
-        for (let i = 0; i < pdf.numPages; i++) {
-          pagesToRender.push(i + 1);
-        }
+    const getPagesToRender = (numPages) => {
+      if (props.args.pages_to_render.length === 0) {
+        return Array.from({ length: numPages }, (_, i) => i + 1);
       }
+      return props.args.pages_to_render;
+    };
 
-      let resolutionBoost = 1
-      if (props.args.resolution_boost) {
-        resolutionBoost = props.args.resolution_boost
-      }
+    const renderPdfPages = async (pdf, pdfViewer, pagesToRender) => {
+      totalHeight.value = 0;
+      pageScales.value = [];
+      pageHeights.value = [];
+      loadedPages.value = [];
+
+      const resolutionBoost = props.args.resolution_boost || 1;
 
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-        const page = await pdf.getPage(pageNumber)
-        const rotation = page.rotate
-        // Initial viewport
-        const unscaledViewport = page.getViewport({
-          scale: 1.0,
-          rotation: rotation,
-        })
+        const page = await pdf.getPage(pageNumber);
+        const rotation = page.rotate;
+        const unscaledViewport = page.getViewport({ scale: 1.0, rotation });
 
         if (props.args.height > 0) {
-          const widthScale =  unscaledViewport.width / unscaledViewport.height
-          const possibleScaledWidth = widthScale * props.args.height
-          if (maxWidth.value === 0) {
-            maxWidth.value = possibleScaledWidth
-          } else if (possibleScaledWidth < maxWidth.value) {
-            maxWidth.value = possibleScaledWidth
+          const widthScale = unscaledViewport.width / unscaledViewport.height;
+          const possibleScaledWidth = widthScale * props.args.height;
+          if (maxWidth.value === 0 || possibleScaledWidth < maxWidth.value) {
+            maxWidth.value = possibleScaledWidth;
           }
         }
 
-        const scale = maxWidth.value / unscaledViewport.width
+        const scale = maxWidth.value / unscaledViewport.width;
 
-        pageScales.value.push(scale)
-        pageHeights.value.push(unscaledViewport.height)
+        pageScales.value.push(scale);
+        pageHeights.value.push(unscaledViewport.height);
+
         if (pagesToRender.includes(pageNumber)) {
-          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost)
-
-          // pdfViewer?.append(canvas)
+          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost);
           pdfViewer.style.setProperty('--scale-factor', scale);
 
           const viewport = page.getViewport({
-            scale: pageScales.value[page._pageIndex],
-            rotation: page.rotate,
+            scale: scale,
+            rotation: rotation,
             intent: "print",
           });
 
-          const ratio = (window.devicePixelRatio || 1) * resolutionBoost
-          totalHeight.value += canvas.height / ratio
-          await renderPage(page, canvas, viewport)
-          if (canvas.id !== undefined) {
-            loadedPages.value.push(canvas.id)
+          const annotationsForPage = props.args.annotations.filter(
+            anno => Number(anno.page) === pageNumber
+          );
+
+          totalHeight.value += canvas.height / ((window.devicePixelRatio || 1) * resolutionBoost);
+          await renderPage(page, canvas, viewport, annotationsForPage);
+
+          if (canvas.id) {
+            loadedPages.value.push(canvas.id);
           }
         }
       }
@@ -304,17 +258,19 @@ export default {
     const loadPdfs = async (url) => {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.mjs';
       try {
-        const loadingTask = await getDocument({
+        const loadingTask = getDocument({
           url: url,
           cMapUrl: CMAP_URL,
           cMapPacked: CMAP_PACKED,
           enableXfa: ENABLE_XFA,
         });
+        const pdf = await loadingTask.promise;
+
         const pdfViewer = document.getElementById("pdfViewer");
         clearExistingCanvases(pdfViewer);
 
-        const pdf = await loadingTask.promise;
-        await renderPdfPages(pdf, pdfViewer, props.args.pages_to_render);
+        const pagesToRender = getPagesToRender(pdf.numPages);
+        await renderPdfPages(pdf, pdfViewer, pagesToRender);
       } catch (error) {
         alertError(error);
       }
@@ -324,79 +280,73 @@ export default {
       if (props.args.scroll_to_page) {
         const page = document.getElementById(`canvas_page_${props.args.scroll_to_page}`);
         if (page) {
-          page.scrollIntoView({behavior: "smooth"});
+          page.scrollIntoView({ behavior: "smooth" });
         }
       } else if (props.args.scroll_to_annotation) {
-        const annotation = document.getElementById(`annotation-${props.args.scroll_to_annotation - 1}`);
+        const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
         if (annotation) {
-          annotation.scrollIntoView({behavior: "smooth", block: "center"});
+          annotation.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }
     };
 
-    const collectAndReturnIds = () => {
-      const pages_ids = new Set()
-      const annotations_ids = new Set()
-
-      let j
-
-      for (j = 0; j < loadedAnnotations.value.length; j++) {
-        annotations_ids.add(loadedAnnotations.value[j]);
-      }
-      for (j = 0; j < loadedPages.value.length; j++) {
-        pages_ids.add(loadedPages.value[j]);
-      }
-
-      // Streamlit.setComponentValue({"pages": Array.from(pages_ids), "annotations": Array.from(annotations_ids)})
-    }
-
-
     const setFrameHeight = () => {
-      Streamlit.setFrameHeight(props.args.height || totalHeight.value);
+      const newHeight = props.args.height || totalHeight.value;
+      if (newHeight !== currentFrameHeight.value) {
+        Streamlit.setFrameHeight(newHeight);
+        currentFrameHeight.value = newHeight;
+      }
     };
 
     const setFrameWidth = () => {
       const result = parseWidthValue(props.args.width, window.innerWidth);
+      let newMaxWidth;
       if (result.type === "percent") {
-        const calculated = Math.floor(result.value * window.innerWidth);
-        maxWidth.value = Math.min(calculated, window.innerWidth);
+        newMaxWidth = Math.min(Math.floor(result.value * window.innerWidth), window.innerWidth);
       } else {
-        maxWidth.value = Math.min(result.value, window.innerWidth);
+        newMaxWidth = Math.min(result.value, window.innerWidth);
+      }
+
+      if (newMaxWidth !== maxWidth.value) {
+        maxWidth.value = newMaxWidth;
       }
     };
 
-    onMounted(() => {
-      const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
-      setFrameWidth();
-      if (props.args.rendering === "unwrap") {
-        loadPdfs(binaryDataUrl)
-          .then(setFrameHeight)
-          .then(collectAndReturnIds)
-          // .then(scrollToItem)
-          //LF calling setComponentReady seems to be done anyway by the WithStreamlitConnection.vue
-          // .then(Streamlit.setComponentReady);
-      } else {
-        setFrameHeight();
-        // Streamlit.setComponentReady();
+    const handleResize = async () => {
+      try {
+        console.log('handleResize');
+        if (props.args.rendering === "unwrap") {
+          const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
+          setFrameWidth();
+          await loadPdfs(binaryDataUrl);
+          setFrameHeight();
+        }
+      } catch (error) {
+        console.error(error);
       }
+    };
+
+    // Debounced resize handler to prevent multiple rapid executions
+    const debouncedHandleResize = debounce(handleResize, 200);
+
+    onMounted(() => {
+      debouncedHandleResize();
+      window.addEventListener("resize", debouncedHandleResize);
     });
 
     onUpdated(() => {
-      setFrameHeight();
-      setFrameWidth();
       if (props.args.rendering === "unwrap") {
         scrollToItem();
       }
     });
 
+    onUnmounted(() => {
+      window.removeEventListener("resize", debouncedHandleResize);
+    });
 
     return {
-      filteredAnnotations,
-      handleAnnotationClick,
-      getAnnotationStyle,
       pdfContainerStyle,
       pdfViewerStyle,
-      getPageStyle
     };
   },
 };
