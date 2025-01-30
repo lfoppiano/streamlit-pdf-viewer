@@ -75,11 +75,22 @@ export default {
 
     const renderText = props.args.render_text === true
 
-    const pdfContainerStyle = computed(() => ({
-      width: props.args.width ? `${props.args.width}px` : `${maxWidth.value}px`,
-      height: props.args.height ? `${props.args.height}px` : 'auto',
-      overflow: 'auto',
-    }));
+    const pdfContainerStyle = computed(() => {
+      const getStyleValue = (value, defaultValue) => {
+        if (typeof value === 'string' && value.endsWith('%')) {
+          return value; // Use percentage as is
+        } else if (typeof value === 'number' || (typeof value === 'string' && /^\d+$/.test(value))) {
+          return `${value}px`; // Append 'px' for numeric values
+        }
+        return defaultValue; // Use default if value is not valid
+      };
+
+      return {
+        width: getStyleValue(props.args.width, `${maxWidth.value}px`),
+        height: props.args.height ? `${props.args.height}px` : 'auto',
+        overflow: 'auto',
+      };
+    });
 
     const pdfViewerStyle = {position: 'relative'};
     const getPageStyle = {position: 'relative'};
@@ -332,20 +343,30 @@ export default {
     };
 
     const setFrameWidth = () => {
-      if (props.args.width === null || props.args.width === undefined) {
-        maxWidth.value = window.innerWidth
-      } else if (Number.isInteger(props.args.width)) {
-        maxWidth.value = props.args.width
-
-        // If the desired width is larger than the available inner width,
-        // we should not exceed it. To be revised
-        if (window.innerWidth > 0) {
-          if (window.innerWidth < maxWidth.value) {
-            maxWidth.value = window.innerWidth
-          }
+      const { width } = props.args;
+      
+      const calculateWidth = (widthValue) => {
+        if (typeof widthValue === 'string' && widthValue.endsWith('%')) {
+          // Handle percentage string
+          const percentage = parseFloat(widthValue) / 100;
+          return Math.floor(window.innerWidth * percentage);
+        } else if (Number.isInteger(Number(widthValue))) {
+          // Handle integer value
+          return Number(widthValue);
         }
+        // Default to full window width if invalid input
+        return window.innerWidth;
+      };
+
+      if (width === null || width === undefined) {
+        maxWidth.value = window.innerWidth;
+      } else {
+        const calculatedWidth = calculateWidth(width);
+        
+        // Ensure the calculated width doesn't exceed the window's inner width
+        maxWidth.value = Math.min(calculatedWidth, window.innerWidth);
       }
-    }
+    };
 
     onMounted(() => {
       const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
@@ -365,6 +386,7 @@ export default {
 
     onUpdated(() => {
       setFrameHeight();
+      setFrameWidth();
       if (props.args.rendering === "unwrap") {
         scrollToItem();
       }
