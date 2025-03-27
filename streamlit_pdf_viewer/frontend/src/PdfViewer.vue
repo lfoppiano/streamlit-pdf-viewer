@@ -118,7 +118,11 @@ export default {
       annotationDiv.style.top = `${annotation.y * scale}px`;
       annotationDiv.style.width = `${annotation.width * scale}px`;
       annotationDiv.style.height = `${annotation.height * scale}px`;
-      annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px solid ${annotation.color}`;
+      let border = annotation.border
+      if (!annotation.border) {
+        border = "solid"
+      }
+      annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px ${border} ${annotation.color}`;
       annotationDiv.style.cursor = renderText ? 'text' : 'pointer';
       annotationDiv.style.pointerEvents = renderText ? 'none' : 'auto';
       annotationDiv.style.zIndex = 10;

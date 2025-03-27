@@ -6,7 +6,8 @@
     "width": "109.54",
     "height": "23.19",
     "color": "rgba(255, 0, 0, 0.4)",
-    "type": "title"
+    "type": "title",
+    "border": "dashed"
   },
   {
     "page": "1",
