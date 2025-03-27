@@ -5,7 +5,8 @@
     "y": 155,
     "height": 22,
     "width": 65,
-    "color": "red"
+    "color": "red",
+    "border": "dashed"
   },
   {
     "page": 1,
