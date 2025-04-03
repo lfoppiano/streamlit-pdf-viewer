@@ -22,6 +22,7 @@
     "y": 280,
     "height": 7,
     "width": 30,
-    "color": "orange"
+    "color": "orange",
+    "border": "groove"
   }
 ]

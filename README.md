@@ -88,10 +88,13 @@ Here an example:
       "y": 155,
       "height": 22,
       "width": 65,
-      "color": "red"
+      "color": "red",
+      "border": "solid"
    },
 [...]
 ```
+
+The `border` parameter can be set with the following values: `solid`, `dashed`, `dotted`, `double`, `groove`, `ridge`, `inset`, `outset`. Any other value will result in the default value: `solid`. 
 
 The example shown in our screenshot can be found [here](resources/annotations.json).
 
@@ -115,7 +118,8 @@ annotations = [
         "y": 155,
         "height": 22,
         "width": 65,
-        "color": "red"
+        "color": "red",
+        "border": "dotted"
     }
 ]
 
