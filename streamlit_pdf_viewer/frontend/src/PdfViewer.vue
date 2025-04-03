@@ -29,6 +29,7 @@ import { debounce } from 'lodash';
 const CMAP_URL = "pdfjs-dist/cmaps/";
 const CMAP_PACKED = true;
 const ENABLE_XFA = true;
+const acceptedBorderStyleAttributes = ['solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset', 'none', undefined, null];
 
 export default {
   props: ["args"],
@@ -118,7 +119,11 @@ export default {
       annotationDiv.style.top = `${annotation.y * scale}px`;
       annotationDiv.style.width = `${annotation.width * scale}px`;
       annotationDiv.style.height = `${annotation.height * scale}px`;
-      annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px solid ${annotation.color}`;
+      let border = annotation.border
+      if (!annotation.border || !acceptedBorderStyleAttributes.includes(annotation.border)) {
+        border = "solid"
+      }
+      annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px ${border} ${annotation.color}`;
       annotationDiv.style.cursor = renderText ? 'text' : 'pointer';
       annotationDiv.style.pointerEvents = renderText ? 'none' : 'auto';
       annotationDiv.style.zIndex = 10;
