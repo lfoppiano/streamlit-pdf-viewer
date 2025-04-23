@@ -276,6 +276,7 @@ export default {
 
         const pagesToRender = getPagesToRender(pdf.numPages);
         await renderPdfPages(pdf, pdfViewer, pagesToRender);
+        scrollToItem();
       } catch (error) {
         alertError(error);
       }
@@ -337,12 +338,6 @@ export default {
     onMounted(() => {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
-    });
-
-    onUpdated(() => {
-      if (props.args.rendering === "unwrap") {
-        scrollToItem();
-      }
     });
 
     onUnmounted(() => {
