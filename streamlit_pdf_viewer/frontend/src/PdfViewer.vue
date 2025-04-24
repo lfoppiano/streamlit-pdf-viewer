@@ -114,6 +114,7 @@ export default {
     const renderAnnotation = (annotation, pageDiv, scale) => {
       const annotationDiv = document.createElement('div');
       annotationDiv.id = `annotation-${annotation.id || annotation.page}-${annotation.index}`;
+      annotationDiv.setAttribute("data-index", annotation.index);  // ← 🔧 Scroll to annotation fixed
       annotationDiv.style.position = 'absolute';
       annotationDiv.style.left = `${annotation.x * scale}px`;
       annotationDiv.style.top = `${annotation.y * scale}px`;
