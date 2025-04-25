@@ -111,9 +111,9 @@ export default {
       return canvas;
     };
 
-    const renderAnnotation = (annotation, pageDiv, scale) => {
+    const renderAnnotation = (annotation, annotationIndex, pageDiv, scale) => {
       const annotationDiv = document.createElement('div');
-      annotationDiv.id = `annotation-${annotation.id || annotation.page}-${annotation.index}`;
+      annotationDiv.id = `annotation-${annotation.id || annotationIndex}`;
       annotationDiv.style.position = 'absolute';
       annotationDiv.style.left = `${annotation.x * scale}px`;
       annotationDiv.style.top = `${annotation.y * scale}px`;
@@ -139,7 +139,7 @@ export default {
       pageDiv.appendChild(annotationDiv);
     };
 
-    const renderPage = async (page, canvas, viewport, annotations) => {
+    const renderPage = async (page, canvas, viewport, annotations, annotationCount) => {
       const renderContext = {
         canvasContext: canvas.getContext("2d"),
         viewport: viewport
@@ -185,8 +185,9 @@ export default {
       }
 
       if (annotations && annotations.length > 0) {
-        annotations.forEach(annotation => {
-          renderAnnotation(annotation, pageDiv, viewport.scale);
+        annotations.forEach((annotation, index) => {
+          const annotationUniqueIndex = annotationCount + index
+          renderAnnotation(annotation, annotationUniqueIndex, pageDiv, viewport.scale);
         });
       }
 
@@ -208,6 +209,8 @@ export default {
       loadedPages.value = [];
 
       const resolutionBoost = props.args.resolution_boost || 1;
+
+      let annotationCount = 0;
 
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber);
@@ -242,7 +245,8 @@ export default {
           );
 
           totalHeight.value += canvas.height / ((window.devicePixelRatio || 1) * resolutionBoost);
-          await renderPage(page, canvas, viewport, annotationsForPage);
+          await renderPage(page, canvas, viewport, annotationsForPage, annotationCount);
+          annotationCount += annotationsForPage.length
 
           if (canvas.id) {
             loadedPages.value.push(canvas.id);
@@ -256,8 +260,8 @@ export default {
     };
 
     const alertError = (error) => {
-      window.alert(error.message);
       console.error(error);
+      window.alert(error.message);
     };
 
     const loadPdfs = async (url) => {
@@ -276,6 +280,7 @@ export default {
 
         const pagesToRender = getPagesToRender(pdf.numPages);
         await renderPdfPages(pdf, pdfViewer, pagesToRender);
+        scrollToItem();
       } catch (error) {
         alertError(error);
       }
@@ -288,9 +293,9 @@ export default {
           page.scrollIntoView({ behavior: "smooth" });
         }
       } else if (props.args.scroll_to_annotation) {
-        const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
+        const annotation = document.querySelector(`#annotation-${props.args.scroll_to_annotation}`)
         if (annotation) {
-          annotation.scrollIntoView({ behavior: "smooth", block: "center" });
+          annotation.scrollIntoView({ behavior: "smooth" });
         }
       }
     };
@@ -337,12 +342,6 @@ export default {
     onMounted(() => {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
-    });
-
-    onUpdated(() => {
-      if (props.args.rendering === "unwrap") {
-        scrollToItem();
-      }
     });
 
     onUnmounted(() => {
