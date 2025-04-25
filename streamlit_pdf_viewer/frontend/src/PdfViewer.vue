@@ -113,8 +113,9 @@ export default {
 
     const renderAnnotation = (annotation, annotationIndex, pageDiv, scale) => {
       const annotationDiv = document.createElement('div');
-      annotationDiv.id = `annotation-${annotation.id || annotationIndex}`;
-      annotationDiv.setAttribute("data-index", annotation.index);  // ← 🔧 Scroll to annotation fixed
+      annotation.id = `${annotation.id || annotationIndex}`
+      annotationDiv.id = `annotation-${annotation.id}`;
+      annotationDiv.setAttribute("data-index", annotation.id);
       annotationDiv.style.position = 'absolute';
       annotationDiv.style.left = `${annotation.x * scale}px`;
       annotationDiv.style.top = `${annotation.y * scale}px`;
@@ -132,7 +133,7 @@ export default {
       if (!renderText) {
         annotationDiv.addEventListener('click', () => {
           Streamlit.setComponentValue({
-            clicked_annotation: { index: annotation.index, ...annotation },
+            clicked_annotation: { index: annotation.id, ...annotation },
           });
         });
       }
@@ -294,9 +295,9 @@ export default {
           page.scrollIntoView({ behavior: "smooth" });
         }
       } else if (props.args.scroll_to_annotation) {
-        const annotation = document.querySelector(`#annotation-${props.args.scroll_to_annotation}`)
+        const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
         if (annotation) {
-          annotation.scrollIntoView({ behavior: "smooth" });
+          annotation.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }
     };
