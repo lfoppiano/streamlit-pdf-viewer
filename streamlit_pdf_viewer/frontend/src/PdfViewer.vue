@@ -131,7 +131,7 @@ export default {
       if (!renderText) {
         annotationDiv.addEventListener('click', () => {
           Streamlit.setComponentValue({
-            clicked_annotation: { index: annotation.index, ...annotation },
+            clicked_annotation: { index: annotationIndex, ...annotation },
           });
         });
       }
