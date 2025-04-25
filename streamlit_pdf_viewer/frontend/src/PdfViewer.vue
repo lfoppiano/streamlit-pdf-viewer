@@ -111,9 +111,9 @@ export default {
       return canvas;
     };
 
-    const renderAnnotation = (annotation, annotationIndex, pageDiv, scale) => {
+    const renderAnnotation = (annotation, pageDiv, scale) => {
       const annotationDiv = document.createElement('div');
-      annotationDiv.id = `annotation-${annotation.id || annotationIndex}`;
+      annotationDiv.id = `annotation-${annotation.id}`;
       annotationDiv.style.position = 'absolute';
       annotationDiv.style.left = `${annotation.x * scale}px`;
       annotationDiv.style.top = `${annotation.y * scale}px`;
@@ -131,7 +131,7 @@ export default {
       if (!renderText) {
         annotationDiv.addEventListener('click', () => {
           Streamlit.setComponentValue({
-            clicked_annotation: { index: annotationIndex, ...annotation },
+            clicked_annotation: annotation,
           });
         });
       }
@@ -186,8 +186,10 @@ export default {
 
       if (annotations && annotations.length > 0) {
         annotations.forEach((annotation, index) => {
-          const annotationUniqueIndex = annotationCount + index
-          renderAnnotation(annotation, annotationUniqueIndex, pageDiv, viewport.scale);
+          if (!annotation.id) {
+            annotation.id = annotationCount + index;
+          }
+          renderAnnotation(annotation, pageDiv, viewport.scale);
         });
       }
 
