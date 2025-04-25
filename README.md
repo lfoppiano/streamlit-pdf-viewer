@@ -18,18 +18,18 @@ action [here](https://structure-vision.streamlit.app/).
 - Based on the pdf.js library
 - Visualize annotations on top of the PDF documents
 - Render text on top of the PDF document, allowing copy-paste
-- Allow to render specific pages of the PDF document
+- Allow rendering specific pages of the PDF document
 - Scroll to a specific page
 - Scroll to a specific annotation
 - Allow custom callbacks when an annotation is clicked
 - Additional support showing PDF documents using the native pdf.js browser's viewer: "legacy" (with limitations, no
-  annotations, no scrolling, etc..)
+  annotations, no scrolling, etc.)
 
 ## Limitations
 
 - Tested and developed to support Firefox and Chrome.
 - The legacy visualization works only on Firefox and does not support annotations
-- Our Javascript skills are limited, so all troubleshooting may take time
+- Our JavaScript skills are limited, so all troubleshooting may take time
 - The component is still in development, so expect some bugs and limitations
 - The streamlit reload at each action may render slowly for complex PDF documents
 
@@ -84,13 +84,16 @@ In the following table the list of parameters that can be provided to the `pdf_v
 
 ### Annotation format
 
-The annotations format has been derived from
-the [Grobid's coordinate formats](https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/), which are described as a
-list of "bounding boxes".
-The annotations are expressed as a dictionary of six elements, the page, x and y indicate the top left point. The color
-can be expressed following the html CSS convention.
+The annotation format has been derived from the [Grobid's coordinate formats](https://grobid.readthedocs.io/en/latest/Coordinates-in-PDF/), which are described as a list of "bounding boxes".
+The annotations are expressed as a dictionary of six elements; the page, x and y indicate the top left point. 
+The `color` can be expressed following the HTML CSS convention. 
+The `border` style also follow the HTML conventions limited to these values: `solid`, `dashed`, `dotted`, `double`, `groove`, `ridge`, `inset`, `outset`. 
+Any other value will result in the default value: `solid`.
 
-Here an example:
+Annotation unique identifiers are expressed by the `id` field, if `id` is not specified, an identifier will be generated during rendering. 
+Furthermore, the HTML identifier will be generated as `#annotation-{annotation.id}`. 
+
+Here is an example:
 
 ```json
 [
@@ -103,13 +106,10 @@ Here an example:
     "color": "red",
     "border": "solid"
   },
-  [
-    ...
-  ]
+[...]
 ```
 
-The `border` parameter can be set with the following values: `solid`, `dashed`, `dotted`, `double`, `groove`, `ridge`,
-`inset`, `outset`. Any other value will result in the default value: `solid`.
+
 
 The example shown in our screenshot can be found [here](resources/annotations.json).
 
@@ -205,6 +205,7 @@ git push --tags
 
 ## Acknowledgement
 
-The project was initiated at the [National Institute for Materials Science](https://www.nims.go.jp) (NIMS) in Japan.
+The project was initiated by [Luca Foppiano](https://github.com/lfoppiano) at the [National Institute for Materials Science](https://www.nims.go.jp) (NIMS) in Japan.
 Currently, the development is possible thanks to [ScienciLAB](https://www.sciencialab.com).
-Main collaborator: [Tomoya Mato](https://github.com/t29mato) very helpful to attenuate the pain of Javascript. 
+
+Main contacts: Luca Foppiano and [Tomoya Mato](https://github.com/t29mato). 
