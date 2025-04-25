@@ -1,19 +1,6 @@
 <template>
   <div id="pdfContainer" :style="pdfContainerStyle">
-    <div v-if="args.rendering === 'unwrap'">
-      <div id="pdfViewer" :style="pdfViewerStyle"></div>
-    </div>
-    <div v-else-if="args.rendering === 'legacy_embed'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`"
-             type="application/pdf"/>
-    </div>
-    <div v-else-if="args.rendering === 'legacy_iframe'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`"
-             type="application/pdf"/>
-    </div>
-    <div v-else>
-      Error rendering option.
-    </div>
+    <div id="pdfViewer" :style="pdfViewerStyle"></div>
   </div>
 </template>
 
