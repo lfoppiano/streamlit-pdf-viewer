@@ -100,12 +100,11 @@ export default {
 
       const canvas = document.createElement("canvas");
       canvas.id = `canvas_page_${pageNumber}`;
-      canvas.height = viewport.height * ratio + props.args.pages_vertical_spacing;
+      canvas.height = viewport.height * ratio;
       canvas.width = viewport.width * ratio;
       canvas.style.width = `${viewport.width}px`;
       canvas.style.height = `${viewport.height}px`;
       canvas.style.display = "block";
-      canvas.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
       canvas.getContext("2d").scale(ratio, ratio);
 
       return canvas;
@@ -154,6 +153,7 @@ export default {
       pageDiv.style.position = 'relative';
       pageDiv.style.width = `${viewport.width}px`;
       pageDiv.style.height = `${viewport.height}px`;
+      pageDiv.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
 
       const canvasWrapper = document.createElement('div');
       canvasWrapper.className = 'canvasWrapper';
