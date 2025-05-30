@@ -27,10 +27,10 @@ else:
 
 def pdf_viewer(
         input: Union[str, Path, bytes],
-        width: Union[str,int] = None,
+        width: Union[str, int] = None,
         height: int = None,
         key=None,
-        annotations: list = (),
+        annotations: List[Dict[str, Union[str, int, float, bool]]] = (),
         pages_vertical_spacing: int = 2,
         annotation_outline_size: int = 1,
         rendering: str = RENDERING_UNWRAP,
@@ -40,7 +40,7 @@ def pdf_viewer(
         scroll_to_page: int = None,
         scroll_to_annotation: int = None,
         on_annotation_click: Optional[Callable[[dict], None]] = None,
-    ):
+):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
 
@@ -108,6 +108,12 @@ def pdf_viewer(
         if height is None:
             height = "100%"
 
+    if not isinstance(annotations, list):
+        raise TypeError("annotations must be a list of dictionaries")
+    for annotation in annotations:
+        if not isinstance(annotation, dict):
+            raise TypeError("annotations must be a list of dictionaries")
+
     base64_pdf = base64.b64encode(binary).decode('utf-8')
     component_value = _component_func(
         binary=base64_pdf,
@@ -149,28 +155,28 @@ if not _RELEASE:
     #             pdf_viewer(path, width=800, render_text=True, resolution_boost=values[id])
     #
     # def scroll_to_page(page):
-        # st.markdown(
-        #     """
-        #     function(){
-        #         document.getElementById(""" + page + """).scrollIntoView({behavior: 'smooth'})
-        #     };
-        #
-        #     function()
-        #     """, unsafe_allow_html=True)
+    # st.markdown(
+    #     """
+    #     function(){
+    #         document.getElementById(""" + page + """).scrollIntoView({behavior: 'smooth'})
+    #     };
+    #
+    #     function()
+    #     """, unsafe_allow_html=True)
 
-        # print(page)
-        # st.components.v1.html(
-        #     """
-        #     <script>
-        #         function scrollDown(){
-        #             page_canvas = document.getElementById('""" + page + """')
-        #             console.log(page_canvas)
-        #             page_canvas.scrollIntoView({behavior: 'smooth'})
-        #         }
-        #         scrollDown()
-        #     </script>
-        #     """
-        # )
+    # print(page)
+    # st.components.v1.html(
+    #     """
+    #     <script>
+    #         function scrollDown(){
+    #             page_canvas = document.getElementById('""" + page + """')
+    #             console.log(page_canvas)
+    #             page_canvas.scrollIntoView({behavior: 'smooth'})
+    #         }
+    #         scrollDown()
+    #     </script>
+    #     """
+    # )
 
     with open("resources/test.pdf", 'rb') as fo:
         binary = fo.read()
@@ -224,17 +230,16 @@ if not _RELEASE:
             scroll_to_annotation=2
         )
 
-
 ## Issue with Chrome
 
-    # from glob import glob
-    #
-    # # paths = glob("/Users/lfoppiano/kDrive/library/articles/materials informatics/polymers/*.pdf")
-    # paths = glob("/Users/lfoppiano/development/projects/alirahelth/data/articles/*.pdf")
-    # for id, (tab, path) in enumerate(zip(st.tabs(paths),paths)):
-    #     with tab:
-    #         with st.container(height=600):
-    #             if id == 0:
-    #                 pdf_viewer(path, width=500, render_text=True)
-    #             else:
-    #                 pdf_viewer(path, width=1000, render_text=True)
+# from glob import glob
+#
+# # paths = glob("/Users/lfoppiano/kDrive/library/articles/materials informatics/polymers/*.pdf")
+# paths = glob("/Users/lfoppiano/development/projects/alirahelth/data/articles/*.pdf")
+# for id, (tab, path) in enumerate(zip(st.tabs(paths),paths)):
+#     with tab:
+#         with st.container(height=600):
+#             if id == 0:
+#                 pdf_viewer(path, width=500, render_text=True)
+#             else:
+#                 pdf_viewer(path, width=1000, render_text=True)
