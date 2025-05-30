@@ -1,7 +1,7 @@
 import base64
 import os
 from pathlib import Path
-from typing import Union, List, Optional, Callable
+from typing import Union, List, Optional, Callable, Dict
 
 import streamlit.components.v1 as components
 import json
@@ -110,9 +110,8 @@ def pdf_viewer(
 
     if not isinstance(annotations, list):
         raise TypeError("annotations must be a list of dictionaries")
-    for annotation in annotations:
-        if not isinstance(annotation, dict):
-            raise TypeError("annotations must be a list of dictionaries")
+    if any(not isinstance(annotation, dict) for annotation in annotations):
+        raise TypeError("annotations must be a list of dictionaries")
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
     component_value = _component_func(
