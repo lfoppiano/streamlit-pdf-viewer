@@ -30,7 +30,7 @@ def pdf_viewer(
         width: Union[str, int] = None,
         height: int = None,
         key=None,
-        annotations: List[Dict[str, Union[str, int, float]]] = (),
+        annotations: List[Dict[str, Union[str, int, float, bool]]] = (),
         pages_vertical_spacing: int = 2,
         annotation_outline_size: int = 1,
         rendering: str = RENDERING_UNWRAP,
