@@ -27,7 +27,7 @@ else:
 
 def pdf_viewer(
         input: Union[str, Path, bytes],
-        width: Union[str, int] = None,
+        width: Union[str, int] = "100%",
         height: int = None,
         key=None,
         annotations: List[Dict[str, Union[str, int, float, bool]]] = [],
@@ -37,6 +37,9 @@ def pdf_viewer(
         pages_to_render: List[int] = (),
         render_text: bool = False,
         resolution_boost: int = 1,
+        zoom_level: float = None,
+        viewer_align: str = "center",
+        show_page_separator: bool = True,
         scroll_to_page: int = None,
         scroll_to_annotation: int = None,
         on_annotation_click: Optional[Callable[[dict], None]] = None,
@@ -45,7 +48,7 @@ def pdf_viewer(
     pdf_viewer function to display a PDF file in a Streamlit app.
 
     :param input: The source of the PDF file. Accepts a file path, URL, or binary data.
-    :param width: Width of the PDF viewer in pixels. It defaults to 700 pixels. It supports both integer (pixel, e.g. 700) and string (percentages, e.g. 90% will make the pdf render to 90% of the container/window/screen width. If the pdf width is larger than the screen width, it will horizontally scroll).
+    :param width: Width of the PDF viewer in pixels. It defaults to 100%. It supports both integer (pixel, e.g. 700) and string (percentages, e.g. 90% will make the pdf render to 90% of the container/window/screen width. If the pdf width is larger than the screen width, it will horizontally scroll).
     :param height: Height of the PDF viewer in pixels. If not provided, the viewer show the whole content.
     :param key: An optional key that uniquely identifies this component. Used to preserve state in Streamlit apps.
     :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
@@ -58,6 +61,9 @@ def pdf_viewer(
     working to implement for the "unwrap" method.
     :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
     :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
+    :param zoom_level: The zoom level of the PDF viewer. Defaults to None (auto-fit to width).
+    :param viewer_align: The alignment of the PDF viewer in the container/window/screen. Can be "center", "left", or "right". Defaults to "center".
+    :param show_page_separator: Whether to show a separator between pages. Defaults to True.
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
@@ -85,6 +91,12 @@ def pdf_viewer(
         raise ValueError("ratio_boost must be greater than 1")
     elif resolution_boost > 10:
         raise ValueError("ratio_boost must be lower than 10")
+
+    if zoom_level is not None and (zoom_level < 0.1 or zoom_level > 10):
+        raise ValueError("zoom_level must be between 0.1 and 10")
+
+    if viewer_align not in ["center", "left", "right"]:
+        raise ValueError("viewer_align must be one of 'center', 'left', or 'right'")
 
     if scroll_to_page is not None:
         if scroll_to_annotation is not None:
@@ -127,6 +139,9 @@ def pdf_viewer(
         pages_to_render=pages_to_render,
         render_text=render_text,
         resolution_boost=resolution_boost,
+        zoom_level=zoom_level,
+        viewer_align=viewer_align,
+        show_page_separator=show_page_separator,
         scroll_to_page=scroll_to_page,
         scroll_to_annotation=scroll_to_annotation
     )
