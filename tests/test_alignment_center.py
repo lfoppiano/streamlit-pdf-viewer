@@ -57,18 +57,18 @@ def test_should_render_with_center_alignment(page: Page):
 def test_center_alignment_positioning(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
-    # Get the iframe dimensions
-    iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    iframe_box = iframe_component.bounding_box()
+    # Get the main container that should have alignment styles applied
+    main_container = iframe_frame.locator('div.container-wrapper')
+    expect(main_container).to_be_visible()
     
-    # Get the PDF container
-    pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
-    container_box = pdf_container.bounding_box()
+    # For center alignment, check that the margins are equal (indicating centering)
+    margin_left = main_container.evaluate("el => getComputedStyle(el).marginLeft")
+    margin_right = main_container.evaluate("el => getComputedStyle(el).marginRight")
     
-    # For center alignment with width=400, the container should be roughly centered
-    # Calculate expected center position
-    expected_center = iframe_box['width'] / 2
-    actual_center = container_box['x'] + container_box['width'] / 2
+    # Convert margin values to numbers for comparison
+    left_value = float(margin_left.replace('px', ''))
+    right_value = float(margin_right.replace('px', ''))
     
-    # Allow some margin for error (±50 pixels)
-    assert abs(actual_center - expected_center) < 50 
+    # For center alignment: left and right margins should be approximately equal
+    margin_diff = abs(left_value - right_value)
+    assert margin_diff < 5, f"Expected left and right margins to be equal for center alignment. Left: {margin_left}, Right: {margin_right}, Difference: {margin_diff}px" 

@@ -57,18 +57,14 @@ def test_should_render_with_left_alignment(page: Page):
 def test_left_alignment_positioning(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
-    # Get the PDF container wrapper
-    pdf_container_wrapper = iframe_frame.locator('div[class*="pdf-container-wrapper"]')
-    expect(pdf_container_wrapper).to_be_visible()
+    # Get the main container that should have alignment styles applied
+    main_container = iframe_frame.locator('div.container-wrapper')
+    expect(main_container).to_be_visible()
     
-    # Check that the wrapper has left alignment styles
-    # The wrapper should have justify-content: flex-start for left alignment
-    wrapper_styles = pdf_container_wrapper.evaluate("el => getComputedStyle(el)")
+    # Check the computed styles for left alignment
+    # For left alignment, marginLeft should be '0' or 'auto', marginRight should be 'auto'
+    margin_left = main_container.evaluate("el => getComputedStyle(el).marginLeft")
+    margin_right = main_container.evaluate("el => getComputedStyle(el).marginRight")
     
-    # Verify the alignment is applied (this will depend on the actual CSS implementation)
-    pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
-    container_box = pdf_container.bounding_box()
-    
-    # For left alignment, the container should be positioned at the left side
-    # (allowing some margin for padding)
-    assert container_box['x'] < 50 
+    # For left alignment: marginLeft should be 0, marginRight should be auto
+    assert margin_left == '0px', f"Expected marginLeft to be '0px' for left alignment, got: {margin_left}" 

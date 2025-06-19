@@ -92,8 +92,8 @@ def pdf_viewer(
     elif resolution_boost > 10:
         raise ValueError("ratio_boost must be lower than 10")
 
-    if zoom_level is not None and (zoom_level < 0.1 or zoom_level > 10):
-        raise ValueError("zoom_level must be between 0.1 and 10")
+    if zoom_level is not None and not isinstance(zoom_level, str) and (zoom_level < 0.1 or zoom_level > 10):
+        raise ValueError("zoom_level must be between 0.1 and 10, or a string value like 'auto' or 'auto-height'")
 
     if viewer_align not in ["center", "left", "right"]:
         raise ValueError("viewer_align must be one of 'center', 'left', or 'right'")

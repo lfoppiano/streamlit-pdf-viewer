@@ -57,18 +57,19 @@ def test_should_render_with_right_alignment(page: Page):
 def test_right_alignment_positioning(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
-    # Get the iframe dimensions
-    iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
-    iframe_box = iframe_component.bounding_box()
+    # Get the main container that should have alignment styles applied
+    main_container = iframe_frame.locator('div.container-wrapper')
+    expect(main_container).to_be_visible()
     
-    # Get the PDF container
-    pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
-    container_box = pdf_container.bounding_box()
+    # For right alignment, check that left margin is much larger than right margin
+    margin_left = main_container.evaluate("el => getComputedStyle(el).marginLeft")
+    margin_right = main_container.evaluate("el => getComputedStyle(el).marginRight")
     
-    # For right alignment with width=400, the container should be positioned towards the right
-    # The right edge of the container should be close to the right edge of the iframe
-    container_right_edge = container_box['x'] + container_box['width']
-    iframe_right_edge = iframe_box['width']
+    # Convert margin values to numbers for comparison
+    left_value = float(margin_left.replace('px', ''))
+    right_value = float(margin_right.replace('px', ''))
     
-    # Allow some margin for error and padding (±50 pixels)
-    assert abs(container_right_edge - iframe_right_edge) < 50 
+    # For right alignment: left margin should be much larger than right margin
+    assert left_value > right_value + 50, f"Expected left margin to be much larger than right margin for right alignment. Left: {margin_left}, Right: {margin_right}"
+    # Right margin should be close to 0
+    assert right_value < 5, f"Expected right margin to be close to 0 for right alignment, got: {margin_right}" 
