@@ -28,7 +28,7 @@ else:
 def pdf_viewer(
         input: Union[str, Path, bytes],
         width: Union[str, int] = "100%",
-        height: int = None,
+        height: Optional[int] = None,
         key=None,
         annotations: List[Dict[str, Union[str, int, float, bool]]] = [],
         pages_vertical_spacing: int = 2,
@@ -37,11 +37,11 @@ def pdf_viewer(
         pages_to_render: List[int] = (),
         render_text: bool = False,
         resolution_boost: int = 1,
-        zoom_level: float = None,
+        zoom_level: Optional[Union[float, str]] = None,
         viewer_align: str = "center",
         show_page_separator: bool = True,
-        scroll_to_page: int = None,
-        scroll_to_annotation: int = None,
+        scroll_to_page: Optional[int] = None,
+        scroll_to_annotation: Optional[int] = None,
         on_annotation_click: Optional[Callable[[dict], None]] = None,
 ):
     """
@@ -61,8 +61,8 @@ def pdf_viewer(
     working to implement for the "unwrap" method.
     :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
     :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
-    :param zoom_level: The zoom level of the PDF viewer. Defaults to None (auto-fit to width).
-    :param viewer_align: The alignment of the PDF viewer in the container/window/screen. Can be "center", "left", or "right". Defaults to "center".
+    :param zoom_level: The zoom level of the PDF viewer. Can be a float (0.1-10.0), "auto" for fit-to-width, "auto-height" for fit-to-height, or None (defaults to auto-fit to width).
+    :param viewer_align: The alignment of the PDF viewer in the container. Can be "center", "left", or "right". Defaults to "center".
     :param show_page_separator: Whether to show a separator between pages. Defaults to True.
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
@@ -92,8 +92,14 @@ def pdf_viewer(
     elif resolution_boost > 10:
         raise ValueError("ratio_boost must be lower than 10")
 
-    if zoom_level is not None and not isinstance(zoom_level, str) and (zoom_level < 0.1 or zoom_level > 10):
-        raise ValueError("zoom_level must be between 0.1 and 10, or a string value like 'auto' or 'auto-height'")
+    if zoom_level is not None:
+        if isinstance(zoom_level, float) and (zoom_level < 0.1 or zoom_level > 10):
+            raise ValueError("If zoom_level is a float, it must be between 0.1 and 10")
+        elif isinstance(zoom_level, str) and zoom_level not in ["auto", "auto-height"]:
+            raise ValueError("If zoom_level is a string, it must be 'auto' or 'auto-height'")
+        else:
+            raise ValueError("zoom_level must be a float, a string, or None")
+
 
     if viewer_align not in ["center", "left", "right"]:
         raise ValueError("viewer_align must be one of 'center', 'left', or 'right'")
