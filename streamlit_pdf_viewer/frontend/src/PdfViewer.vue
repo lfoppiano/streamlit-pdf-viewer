@@ -269,7 +269,12 @@ export default {
         finalScale = (maxWidth.value / unscaledViewport.width) * 0.98; // Fit to width
       } else if (localZoomLevel.value === 'auto-height') {
         const containerHeight = pdfContainer.value.clientHeight;
-        finalScale = (containerHeight / unscaledViewport.height) * 0.98; // Fit to height
+        // If no height is specified or container height is too small, fall back to fit-to-width
+        if (!props.args.height || containerHeight < 50) {
+          finalScale = (maxWidth.value / unscaledViewport.width) * 0.98; // Fit to width
+        } else {
+          finalScale = (containerHeight / unscaledViewport.height) * 0.98; // Fit to height
+        }
       } else {
         finalScale = localZoomLevel.value; // Use numeric zoom
       }
@@ -432,7 +437,12 @@ export default {
     };
 
     const fitToHeight = async () => {
-      setZoom('auto-height');
+      // If no height is specified, fall back to fit-to-width
+      if (!props.args.height) {
+        setZoom('auto');
+      } else {
+        setZoom('auto-height');
+      }
     };
 
     const toggleZoomPanel = () => {
