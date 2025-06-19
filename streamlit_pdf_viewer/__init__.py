@@ -97,9 +97,6 @@ def pdf_viewer(
             raise ValueError("If zoom_level is a float, it must be between 0.1 and 10")
         elif isinstance(zoom_level, str) and zoom_level not in ["auto", "auto-height"]:
             raise ValueError("If zoom_level is a string, it must be 'auto' or 'auto-height'")
-        else:
-            raise ValueError("zoom_level must be a float, a string, or None")
-
 
     if viewer_align not in ["center", "left", "right"]:
         raise ValueError("viewer_align must be one of 'center', 'left', or 'right'")
