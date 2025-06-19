@@ -11,6 +11,16 @@ from tests.e2e_utils import StreamlitRunner
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_zoom_auto_height.py")
 
 
+@pytest.fixture(scope="session")
+def browser_type_launch_args(browser_type_launch_args):
+    return {
+        **browser_type_launch_args,
+        "firefox_user_prefs": {
+            "pdfjs.disabled": False,
+        }
+    }
+
+
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
     with StreamlitRunner(Path(BASIC_EXAMPLE_FILE)) as runner:
@@ -35,7 +45,7 @@ def test_should_render_with_auto_height_zoom(page: Page):
     expect(pdf_container).to_be_visible()
 
     # Check that zoom controls are present
-    zoom_button = iframe_frame.locator('button[id="zoomButton"]')
+    zoom_button = iframe_frame.locator('button.zoom-button')
     expect(zoom_button).to_be_visible()
 
     # Verify PDF viewer is present and has content

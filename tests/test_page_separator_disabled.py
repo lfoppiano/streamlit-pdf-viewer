@@ -11,6 +11,16 @@ from tests.e2e_utils import StreamlitRunner
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_page_separator_disabled.py")
 
 
+@pytest.fixture(scope="session")
+def browser_type_launch_args(browser_type_launch_args):
+    return {
+        **browser_type_launch_args,
+        "firefox_user_prefs": {
+            "pdfjs.disabled": False,
+        }
+    }
+
+
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
     with StreamlitRunner(Path(BASIC_EXAMPLE_FILE)) as runner:
@@ -47,12 +57,17 @@ def test_should_render_with_page_separators_disabled(page: Page):
 def test_page_separators_are_not_visible(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
-    # Look for page separator elements
-    # The separators should be div elements with a specific class or style
-    page_separators = iframe_frame.locator('div[class*="page-separator"]')
+    # Look for page elements
+    # Page separators are implemented as CSS borders on page divs
+    page_divs = iframe_frame.locator('div.page')
     
-    # With show_page_separator=False, there should be no separators
-    separator_count = page_separators.count()
+    # With show_page_separator=False, page divs should not have border-bottom styles
+    # Check that at least one page div exists
+    expect(page_divs.first).to_be_visible()
     
-    # No separators should be present
-    assert separator_count == 0 
+    # Get the first page div and check its computed style
+    first_page = page_divs.first
+    border_bottom = first_page.evaluate("el => getComputedStyle(el).borderBottomWidth")
+    
+    # The border should be 0px or not set
+    assert border_bottom == '0px', f"Expected no border-bottom, but got: {border_bottom}" 

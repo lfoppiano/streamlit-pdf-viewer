@@ -11,6 +11,16 @@ from tests.e2e_utils import StreamlitRunner
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_zoom_numeric.py")
 
 
+@pytest.fixture(scope="session")
+def browser_type_launch_args(browser_type_launch_args):
+    return {
+        **browser_type_launch_args,
+        "firefox_user_prefs": {
+            "pdfjs.disabled": False,
+        }
+    }
+
+
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
     with StreamlitRunner(Path(BASIC_EXAMPLE_FILE)) as runner:
@@ -39,7 +49,7 @@ def test_should_render_with_numeric_zoom(page: Page):
     expect(pdf_container).to_be_visible()
 
     # Check that zoom controls are present
-    zoom_button = iframe_frame.locator('button[id="zoomButton"]')
+    zoom_button = iframe_frame.locator('button.zoom-button')
     expect(zoom_button).to_be_visible()
 
     # Verify PDF viewer is present and has content
@@ -56,17 +66,17 @@ def test_zoom_controls_functionality(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Click zoom button to open panel
-    zoom_button = iframe_frame.locator('button[id="zoomButton"]')
+    zoom_button = iframe_frame.locator('button.zoom-button')
     zoom_button.click()
     
     # Check that zoom panel is visible
-    zoom_panel = iframe_frame.locator('div[id="zoomPanel"]')
+    zoom_panel = iframe_frame.locator('div.zoom-panel')
     expect(zoom_panel).to_be_visible()
     
     # Check for zoom controls
-    zoom_in_button = iframe_frame.locator('button').filter(has_text="+")
-    zoom_out_button = iframe_frame.locator('button').filter(has_text="-")
-    manual_zoom_input = iframe_frame.locator('input[id="manualZoomInput"]')
+    zoom_in_button = iframe_frame.locator('button').filter(has_text="Zoom In")
+    zoom_out_button = iframe_frame.locator('button').filter(has_text="Zoom Out")
+    manual_zoom_input = iframe_frame.locator('input.zoom-input')
     
     expect(zoom_in_button).to_be_visible()
     expect(zoom_out_button).to_be_visible()
