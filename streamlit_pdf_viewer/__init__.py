@@ -88,9 +88,9 @@ def pdf_viewer(
         raise TypeError("pages_to_render must be a list of integers")
 
     if resolution_boost < 1:
-        raise ValueError("ratio_boost must be greater than 1")
+        raise ValueError("resolution_boost must be greater than 1")
     elif resolution_boost > 10:
-        raise ValueError("ratio_boost must be lower than 10")
+        raise ValueError("resolution_boost must be lower than 10")
 
     if zoom_level is not None:
         if isinstance(zoom_level, float) and (zoom_level < 0.1 or zoom_level > 10):
