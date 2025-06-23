@@ -1,11 +1,49 @@
 <template>
-  <div id="pdfContainer" :style="pdfContainerStyle">
-    <div id="pdfViewer" :style="pdfViewerStyle"/>
+  <div :style="pdfContainerStyle" ref="pdfContainer" class="container-wrapper">
+    <div id="pdfViewer"></div>
+    <button class="zoom-button" @click.stop="toggleZoomPanel">
+      {{ Math.round(currentZoom * 100) }}%
+    </button>
+    <div v-if="showZoomPanel" class="zoom-panel">
+      <div class="zoom-input-container">
+        <input
+          type="number"
+          class="zoom-input"
+          v-model="manualZoomInput"
+          @keyup.enter="applyManualZoom"
+          @blur="applyManualZoom"
+        />
+        <span class="zoom-input-percent">%</span>
+      </div>
+      <div class="zoom-separator"></div>
+      <button class="zoom-option" @click="zoomIn">
+        <span class="zoom-icon">+</span> Zoom In
+      </button>
+      <button class="zoom-option" @click="zoomOut">
+        <span class="zoom-icon">−</span> Zoom Out
+      </button>
+      <div class="zoom-separator"></div>
+      <button class="zoom-option" @click="fitToWidth">
+        <span class="zoom-icon">↔</span> Fit to Width
+      </button>
+      <button class="zoom-option" @click="fitToHeight">
+        <span class="zoom-icon">↕</span> Fit to Height
+      </button>
+      <button
+        v-for="preset in zoomPresets"
+        :key="preset"
+        class="zoom-option zoom-preset"
+        :class="{ active: Math.abs(currentZoom - preset) < 0.01 }"
+        @click="setZoom(preset)"
+      >
+        {{ Math.round(preset * 100) }}%
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-import {onMounted, onUpdated, computed, ref, onUnmounted} from "vue";
+import { onMounted, computed, ref, onUnmounted, watch } from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
@@ -28,8 +66,17 @@ export default {
     const pageHeights = ref([]);
     const loadedPages = ref([]);
     const currentFrameHeight = ref(props.args.height || 0);
+    const showZoomPanel = ref(false);
 
-    const isRenderingAllPages = props.args.pages_to_render.length === 0;
+    const initialZoom = props.args.zoom_level === null || props.args.zoom_level === undefined ? 'auto' : props.args.zoom_level;
+    const localZoomLevel = ref(initialZoom);
+    const currentZoom = ref(1); // Will be updated on render
+
+    const zoomPresets = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    const pdfInstance = ref(null);
+    const pdfContainer = ref(null);
+    const manualZoomInput = ref(100);
+    const isRendering = ref(false);
 
     const renderText = props.args.render_text === true;
 
@@ -50,31 +97,26 @@ export default {
     const pdfContainerStyle = computed(() => {
       const result = parseWidthValue(props.args.width, window.innerWidth);
       const widthCSS = result.type === "percent" ? `${result.value * 100}%` : `${result.value}px`;
-      return {
+      const style = {
         width: widthCSS,
         height: props.args.height ? `${props.args.height}px` : 'auto',
-        overflow: 'auto',
         position: 'relative',
       };
-    });
 
-    const pdfViewerStyle = {position: 'relative'};
-
-    const calculatePdfsHeight = (page) => {
-      let height = 0;
-      if (isRenderingAllPages) {
-        for (let i = 0; i < page - 1; i++) {
-          height += pageHeights.value[i] * pageScales.value[i] + props.args.pages_vertical_spacing;
-        }
-      } else {
-        for (let i = 0; i < pageHeights.value.length; i++) {
-          if (props.args.pages_to_render.includes(i + 1) && i < page - 1) {
-            height += pageHeights.value[i] * pageScales.value[i] + props.args.pages_vertical_spacing;
-          }
-        }
+      const align = props.args.viewer_align || 'center';
+      if (align === 'center') {
+        style.marginLeft = 'auto';
+        style.marginRight = 'auto';
+      } else if (align === 'left') {
+        style.marginLeft = '0';
+        style.marginRight = 'auto';
+      } else if (align === 'right') {
+        style.marginLeft = 'auto';
+        style.marginRight = '0';
       }
-      return height;
-    };
+
+      return style;
+    });
 
     const clearExistingCanvases = (pdfViewer) => {
       if (!pdfViewer) return;
@@ -142,6 +184,10 @@ export default {
       pageDiv.style.height = `${viewport.height}px`;
       pageDiv.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
 
+      if (props.args.show_page_separator) {
+        pageDiv.style.borderBottom = '1px solid #ddd';
+      }
+
       const canvasWrapper = document.createElement('div');
       canvasWrapper.className = 'canvasWrapper';
       canvasWrapper.style.position = 'absolute';
@@ -198,43 +244,52 @@ export default {
       loadedPages.value = [];
 
       const resolutionBoost = props.args.resolution_boost || 1;
+      let maxPageWidth = 0;
+
+      // Determine the final scale for all pages
+      const firstPage = await pdf.getPage(1);
+      const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
+      let finalScale;
+      if (localZoomLevel.value === 'auto') {
+        finalScale = (maxWidth.value / unscaledViewport.width) * 0.98; // Fit to width
+      } else if (localZoomLevel.value === 'auto-height') {
+        const containerHeight = pdfContainer.value.clientHeight;
+        // If no height is specified or container height is too small, fall back to fit-to-width
+        if (!props.args.height || containerHeight < 50) {
+          finalScale = (maxWidth.value / unscaledViewport.width) * 0.98; // Fit to width
+        } else {
+          finalScale = (containerHeight / unscaledViewport.height) * 0.98; // Fit to height
+        }
+      } else {
+        finalScale = localZoomLevel.value; // Use numeric zoom
+      }
+      currentZoom.value = finalScale;
+      manualZoomInput.value = Math.round(finalScale * 100);
 
       let annotationCount = 0;
 
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber);
         const rotation = page.rotate;
-        const unscaledViewport = page.getViewport({scale: 1.0, rotation});
 
-        if (props.args.height > 0) {
-          const widthScale = unscaledViewport.width / unscaledViewport.height;
-          const possibleScaledWidth = widthScale * props.args.height;
-          if (maxWidth.value === 0 || possibleScaledWidth < maxWidth.value) {
-            maxWidth.value = possibleScaledWidth;
-          }
+        pageScales.value.push(finalScale);
+        pageHeights.value.push(page.getViewport({ scale: 1.0, rotation }).height);
+
+        const scaledViewport = page.getViewport({ scale: finalScale, rotation });
+        if (scaledViewport.width > maxPageWidth) {
+            maxPageWidth = scaledViewport.width;
         }
 
-        const scale = maxWidth.value / unscaledViewport.width;
-
-        pageScales.value.push(scale);
-        pageHeights.value.push(unscaledViewport.height);
-
         if (pagesToRender.includes(pageNumber)) {
-          const canvas = createCanvasForPage(page, scale, rotation, pageNumber, resolutionBoost);
-          pdfViewer.style.setProperty('--scale-factor', scale);
-
-          const viewport = page.getViewport({
-            scale: scale,
-            rotation: rotation,
-            intent: "print",
-          });
+          const canvas = createCanvasForPage(page, finalScale, rotation, pageNumber, resolutionBoost);
+          pdfViewer.style.setProperty('--scale-factor', finalScale);
 
           const annotationsForPage = props.args.annotations.filter(
               anno => Number(anno.page) === pageNumber
           );
 
           totalHeight.value += canvas.height / ((window.devicePixelRatio || 1) * resolutionBoost);
-          await renderPage(page, canvas, viewport, annotationsForPage, annotationCount);
+          await renderPage(page, canvas, scaledViewport, annotationsForPage, annotationCount);
           annotationCount += annotationsForPage.length
 
           if (canvas.id) {
@@ -242,10 +297,14 @@ export default {
           }
         }
       }
-      // Subtract the margin for the last page as it's not needed
+
       if (pagesToRender.length > 0) {
         totalHeight.value -= props.args.pages_vertical_spacing;
       }
+
+      pdfViewer.style.width = `${maxPageWidth}px`;
+      pdfViewer.style.marginLeft = 'auto';
+      pdfViewer.style.marginRight = 'auto';
     };
 
     const alertError = (error) => {
@@ -263,6 +322,7 @@ export default {
           enableXfa: ENABLE_XFA,
         });
         const pdf = await loadingTask.promise;
+        pdfInstance.value = pdf;
 
         const pdfViewer = document.getElementById("pdfViewer");
         clearExistingCanvases(pdfViewer);
@@ -290,7 +350,7 @@ export default {
     };
 
     const setFrameHeight = () => {
-      const newHeight = props.args.height || totalHeight.value;
+      const newHeight = props.args.height ? props.args.height : totalHeight.value;
       if (newHeight !== currentFrameHeight.value) {
         Streamlit.setFrameHeight(newHeight);
         currentFrameHeight.value = newHeight;
@@ -303,7 +363,7 @@ export default {
       if (result.type === "percent") {
         newMaxWidth = Math.min(Math.floor(result.value * window.innerWidth), window.innerWidth);
       } else {
-        newMaxWidth = Math.min(result.value, window.innerWidth);
+        newMaxWidth = result.value;
       }
 
       if (newMaxWidth !== maxWidth.value) {
@@ -312,6 +372,8 @@ export default {
     };
 
     const handleResize = async () => {
+      if (isRendering.value) return;
+      isRendering.value = true;
       try {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
         setFrameWidth();
@@ -320,25 +382,222 @@ export default {
 
       } catch (error) {
         console.error(error);
+      } finally {
+        isRendering.value = false;
       }
     };
 
-    // Debounced resize handler to prevent multiple rapid executions
+    watch(() => props.args.binary, () => {
+        handleResize();
+    });
+
+    watch(() => props.args.zoom_level, (newVal) => {
+        localZoomLevel.value = newVal === null || newVal === undefined ? 'auto' : newVal;
+        handleResize();
+    });
+
+    watch(() => props.args.viewer_align, () => {
+        handleResize();
+    });
+
+    const setZoom = (zoomLevel) => {
+      localZoomLevel.value = zoomLevel;
+      showZoomPanel.value = false;
+      handleResize();
+    };
+
+    const zoomIn = () => {
+      const newZoom = Math.min(currentZoom.value * 1.2, 10);
+      setZoom(newZoom);
+    };
+
+    const zoomOut = () => {
+      const newZoom = Math.max(currentZoom.value / 1.2, 0.1);
+      setZoom(newZoom);
+    };
+
+    const fitToWidth = () => {
+      setZoom('auto');
+    };
+
+    const fitToHeight = async () => {
+      // If no height is specified, fall back to fit-to-width
+      if (!props.args.height) {
+        setZoom('auto');
+      } else {
+        setZoom('auto-height');
+      }
+    };
+
+    const toggleZoomPanel = () => {
+      showZoomPanel.value = !showZoomPanel.value;
+      if (showZoomPanel.value) {
+        manualZoomInput.value = Math.round(currentZoom.value * 100);
+      }
+    };
+
+    const applyManualZoom = () => {
+      let zoomValue = parseFloat(manualZoomInput.value);
+      if (!isNaN(zoomValue) && zoomValue > 0) {
+        // Clamp the zoom value between 10% and 1000%
+        zoomValue = Math.max(10, Math.min(zoomValue, 1000));
+        setZoom(zoomValue / 100);
+      } else {
+        // Reset input if invalid
+        manualZoomInput.value = Math.round(currentZoom.value * 100);
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      if (showZoomPanel.value && !event.target.closest('.zoom-controls')) {
+        showZoomPanel.value = false;
+      }
+    };
+
     const debouncedHandleResize = debounce(handleResize, 200);
 
     onMounted(() => {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
+      document.addEventListener('click', handleClickOutside);
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
+      document.removeEventListener('click', handleClickOutside);
     });
 
     return {
+      pdfContainer,
       pdfContainerStyle,
-      pdfViewerStyle,
+      showZoomPanel,
+      currentZoom,
+      localZoomLevel,
+      zoomPresets,
+      manualZoomInput,
+      setZoom,
+      zoomIn,
+      zoomOut,
+      fitToWidth,
+      fitToHeight,
+      toggleZoomPanel,
+      applyManualZoom,
     };
   },
 };
 </script>
+
+<style scoped>
+.container-wrapper {
+  position: relative;
+}
+.scrolling-container {
+  height: 100%;
+  overflow: auto;
+}
+.zoom-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.zoom-button {
+  background: rgba(40, 40, 40, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
+  transition: background 0.2s;
+  margin-bottom: 8px;
+}
+
+.zoom-button:hover {
+  background: rgba(50, 50, 50, 0.9);
+}
+
+.zoom-panel {
+  background: rgba(25, 25, 25, 0.95);
+  backdrop-filter: blur(5px);
+  border-radius: 8px;
+  padding: 8px;
+  width: 200px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.zoom-input-container {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+}
+
+.zoom-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px;
+  font-size: 14px;
+  border-radius: 4px;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+.zoom-input::-webkit-outer-spin-button,
+.zoom-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.zoom-input-percent {
+  color: white;
+  margin-left: 8px;
+}
+
+.zoom-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.zoom-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.zoom-option.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.zoom-preset {
+  justify-content: center;
+}
+
+.zoom-icon {
+  display: inline-block;
+  width: 24px;
+  margin-right: 8px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.zoom-separator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 8px 0;
+}
+</style>

@@ -22,12 +22,17 @@ action [here](https://structure-vision.streamlit.app/).
 - Scroll to a specific page
 - Scroll to a specific annotation
 - Allow custom callbacks when an annotation is clicked
+- Interactive zoom controls with multiple zoom options
+- Configurable alignment of the PDF viewer within its container
+- Optional horizontal separators between PDF pages
+- Additional support showing PDF documents using the native pdf.js browser's viewer: "legacy" (with limitations, no
+  annotations, no scrolling, etc.)
 
 ## Limitations
 
 - Tested and developed to support Firefox and Chrome.
 - The legacy visualization works only on Firefox and does not support annotations
-- Our JavaScript skills are limited, so all troubleshooting may take time 
+- This is a side project, so all troubleshooting may take time 
 - The component is still in development, so expect some bugs and limitations
 - The streamlit reload at each action may render slowly for complex PDF documents
 - Removed support showing PDF documents using the native pdf.js browser's viewer.
@@ -61,6 +66,23 @@ from streamlit_pdf_viewer import pdf_viewer
 pdf_viewer("str, path or bytes")
 ```
 
+You can also customize the viewer with additional options:
+
+```python
+import streamlit as st
+from streamlit_pdf_viewer import pdf_viewer
+
+# Display PDF with custom zoom, alignment, and separators
+pdf_viewer(
+    "path/to/your/document.pdf",
+    width=700,
+    height=1000,
+    zoom_level=1.2,                    # 120% zoom
+    viewer_align="center",             # Center alignment
+    show_page_separator=True           # Show separators between pages
+)
+```
+
 ### Params
 
 In the following table the list of parameters that can be provided to the `pdf_viewer` function:
@@ -75,6 +97,9 @@ In the following table the list of parameters that can be provided to the `pdf_v
 | annotation_outline_size | Size of the outline around each annotation in pixels. Defaults to 1 pixel.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | pages_to_render         | Filter the rendering to a specific set of pages. By default, all pages are rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | render_text             | Enable a layer of text on top of the PDF document. The text may be selected and copied. **NOTE** to avoid breaking existing deployments, we made this optional at first, also considering that having many annotations might interfere with the copy-paste.                                                                                                                                                                                                                                                                                                                                                       |
+| zoom_level              | The zoom level of the PDF viewer. Can be a float (0.1-10.0), `"auto"` for fit-to-width, `"auto-height"` for fit-to-height, or `None` (defaults to auto-fit to width). When zoom controls are enabled, users can interactively adjust the zoom level.                                                                                                                                                                                                                                                                                                                                                        |
+| viewer_align            | The alignment of the PDF viewer within its container. Can be `"center"` (default), `"left"`, or `"right"`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| show_page_separator     | Whether to show a horizontal separator line between PDF pages. Defaults to `True`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | scroll_to_page          | Scroll to a specific page when the component is rendered. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Default is None. Require ints and ignores the parameters below zero.                                                                                                                                                                                                                                                                                                                                                                     |
 | scroll_to_annotation    | Scroll to a specific annotation when the component is rendered. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Default is None (don't scroll). Mutually exclusive with `scroll_to_page`. Raise an exception if used with `scroll_to_page`                                                                                                                                                                                                                                                                                             |
 | on_annotation_click     | Callback function that is called when an annotation is clicked. The function receives the annotation as a parameter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |

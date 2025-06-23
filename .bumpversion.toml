@@ -1,9 +1,9 @@
 [tool.bumpversion]
-current_version = "0.0.25"
+current_version = "0.0.26"
 commit = "true"
 tag = "true"
 tag_name = "v{new_version}"
-#
+
 #parse = """(?x)
 #    (?P<major>0|[1-9]\\d*)\\.
 #    (?P<minor>0|[1-9]\\d*)\\.
