@@ -60,3 +60,16 @@ jobs:
           pytest --cov=streamlit_pdf_viewer --cov-report xml
       - name: Coveralls
         uses: coverallsapp/github-action@v2
+        with:
+          flag-name: run ${{ join(matrix.*, ' - ') }}
+          parallel: true
+
+  coveralls-finish-build:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true
