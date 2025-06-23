@@ -7,7 +7,6 @@ import streamlit.components.v1 as components
 import json
 
 _RELEASE = True
-RENDERING_UNWRAP = "unwrap"
 
 if not _RELEASE:
     _component_func = components.declare_component(

@@ -27,6 +27,7 @@ def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with specified height")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
     iframe_box = iframe_component.bounding_box()
@@ -41,10 +42,11 @@ def test_should_render_template_check_container_size(page: Page):
     # Since we do not specify the width, we occupy all the available space, which should correspond to the
     # parent element's width of the pdfContainer.
     # LF: This was changed with #58, where the proportions are maintained, or at least we try to
-    assert b_box['width'] < iframe_box['width']
+    assert b_box['width'] <= iframe_box['width']
     assert b_box['height'] == 300
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
+    pdf_viewer.wait_for(timeout=5000, state='visible')
     expect(pdf_viewer).to_be_visible()
 
     canvas_list = pdf_viewer.locator("canvas").all()

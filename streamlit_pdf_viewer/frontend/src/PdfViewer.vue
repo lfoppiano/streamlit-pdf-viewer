@@ -1,17 +1,17 @@
 <template>
   <div id="pdfContainer" :style="pdfContainerStyle">
-    <div id="pdfViewer" :style="pdfViewerStyle"></div>
+    <div id="pdfViewer" :style="pdfViewerStyle"/>
   </div>
 </template>
 
 <script>
-import { onMounted, onUpdated, computed, ref, onUnmounted } from "vue";
+import {onMounted, onUpdated, computed, ref, onUnmounted} from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
-import { getDocument } from "pdfjs-dist/build/pdf";
-import { Streamlit } from "streamlit-component-lib";
+import {getDocument} from "pdfjs-dist/build/pdf";
+import {Streamlit} from "streamlit-component-lib";
 import * as pdfjsLib from "pdfjs-dist";
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
 
 const CMAP_URL = "pdfjs-dist/cmaps/";
 const CMAP_PACKED = true;
@@ -37,14 +37,14 @@ export default {
       if (typeof widthValue === "string" && widthValue.endsWith("%")) {
         const num = parseFloat(widthValue)
         if (!isNaN(num)) {
-          return { type: "percent", value: num / 100 }
+          return {type: "percent", value: num / 100}
         }
       }
       const numeric = Number(widthValue)
       if (!isNaN(numeric) && numeric > 0) {
-        return { type: "pixel", value: numeric }
+        return {type: "pixel", value: numeric}
       }
-      return { type: "pixel", value: fallbackValue }
+      return {type: "pixel", value: fallbackValue}
     }
 
     const pdfContainerStyle = computed(() => {
@@ -58,7 +58,7 @@ export default {
       };
     });
 
-    const pdfViewerStyle = { position: 'relative' };
+    const pdfViewerStyle = {position: 'relative'};
 
     const calculatePdfsHeight = (page) => {
       let height = 0;
@@ -82,7 +82,7 @@ export default {
     };
 
     const createCanvasForPage = (page, scale, rotation, pageNumber, resolutionRatioBoost = 1) => {
-      const viewport = page.getViewport({ scale, rotation });
+      const viewport = page.getViewport({scale, rotation});
       const ratio = (window.devicePixelRatio || 1) * resolutionRatioBoost;
 
       const canvas = document.createElement("canvas");
@@ -119,7 +119,7 @@ export default {
       if (!renderText) {
         annotationDiv.addEventListener('click', () => {
           Streamlit.setComponentValue({
-            clicked_annotation: { index: annotation.id, ...annotation },
+            clicked_annotation: {index: annotation.id, ...annotation},
           });
         });
       }
@@ -186,7 +186,7 @@ export default {
 
     const getPagesToRender = (numPages) => {
       if (props.args.pages_to_render.length === 0) {
-        return Array.from({ length: numPages }, (_, i) => i + 1);
+        return Array.from({length: numPages}, (_, i) => i + 1);
       }
       return props.args.pages_to_render;
     };
@@ -204,7 +204,7 @@ export default {
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber);
         const rotation = page.rotate;
-        const unscaledViewport = page.getViewport({ scale: 1.0, rotation });
+        const unscaledViewport = page.getViewport({scale: 1.0, rotation});
 
         if (props.args.height > 0) {
           const widthScale = unscaledViewport.width / unscaledViewport.height;
@@ -230,7 +230,7 @@ export default {
           });
 
           const annotationsForPage = props.args.annotations.filter(
-            anno => Number(anno.page) === pageNumber
+              anno => Number(anno.page) === pageNumber
           );
 
           totalHeight.value += canvas.height / ((window.devicePixelRatio || 1) * resolutionBoost);
@@ -279,12 +279,12 @@ export default {
       if (props.args.scroll_to_page) {
         const page = document.getElementById(`canvas_page_${props.args.scroll_to_page}`);
         if (page) {
-          page.scrollIntoView({ behavior: "smooth" });
+          page.scrollIntoView({behavior: "smooth"});
         }
       } else if (props.args.scroll_to_annotation) {
         const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
         if (annotation) {
-          annotation.scrollIntoView({ behavior: "smooth", block: "center" });
+          annotation.scrollIntoView({behavior: "smooth", block: "center"});
         }
       }
     };
@@ -313,13 +313,11 @@ export default {
 
     const handleResize = async () => {
       try {
-        console.log('handleResize');
-        if (props.args.rendering === "unwrap") {
-          const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
-          setFrameWidth();
-          await loadPdfs(binaryDataUrl);
-          setFrameHeight();
-        }
+        const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
+        setFrameWidth();
+        await loadPdfs(binaryDataUrl);
+        setFrameHeight();
+
       } catch (error) {
         console.error(error);
       }

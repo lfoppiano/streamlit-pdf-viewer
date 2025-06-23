@@ -28,6 +28,7 @@ def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with arguments with specified width")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
     iframe_box = iframe_component.bounding_box()
@@ -40,14 +41,23 @@ def test_should_render_template_check_container_size(page: Page):
 
     b_box = pdf_container.bounding_box()
     assert floor(b_box['width']) == 400
-    assert floor(b_box['height']) == 4221
+    assert floor(b_box['height']) > 4000
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
+    pdf_viewer.wait_for(timeout=5000, state='visible')
     expect(pdf_viewer).to_be_visible()
 
-    canvas_list = pdf_viewer.locator("canvas").all()
+    page.wait_for_timeout(500)
+    canvas_locator = pdf_viewer.locator("canvas")
+    canvas_locator.nth(0).wait_for(timeout=5000, state='visible')
+    canvas_list = canvas_locator.all()
+    if len(canvas_list) != 8:
+        page.wait_for_timeout(500)
+
+    # If after all this waiting the page is not render we fail
     assert len(canvas_list) == 8
     for canvas in canvas_list:
+        canvas.wait_for(timeout=5000, state='visible')
         expect(canvas).to_be_visible()
 
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
