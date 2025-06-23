@@ -32,13 +32,14 @@ action [here](https://structure-vision.streamlit.app/).
 
 - Tested and developed to support Firefox and Chrome.
 - The legacy visualization works only on Firefox and does not support annotations
-- Our JavaScript skills are limited, so all troubleshooting may take time
+- This is a side project, so all troubleshooting may take time 
 - The component is still in development, so expect some bugs and limitations
 - The streamlit reload at each action may render slowly for complex PDF documents
+- Removed support showing PDF documents using the native pdf.js browser's viewer.
 
 ## Caveats
 
-Here some caveats to be aware of:
+Here are some caveats to be aware of:
 
 - It is mandatory to specify a `width` to show PDF document on tabs and expanders, otherwise, the viewer will not be
   displayed on tabs not immediately visible.
@@ -49,8 +50,7 @@ Here some caveats to be aware of:
       useful).
     - If you need to use all the available space and limit the height, you can encapsulate the `pdf_viewer()` into a
       `st.component(width:...)` setting the width.
-- The `legacy` rendering is not supported on Chrome, due to security reasons.
-
+- The `legacy` rendering has been removed from version 0.1.x+
 ## Getting started
 
 ```sh
@@ -95,7 +95,6 @@ In the following table the list of parameters that can be provided to the `pdf_v
 | annotations             | A list of annotations to be overlaid on the PDF. Format is described [here](#annotation-format).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | pages_vertical_spacing  | The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | annotation_outline_size | Size of the outline around each annotation in pixels. Defaults to 1 pixel.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| rendering               | Type of rendering: `unwrap` (default), `legacy_iframe`, or `legacy_embed`. The default value, `unwrap` shows the PDF document using pdf.js, and supports the visualisation of annotations. Other values are `legacy_iframe` and `legacy_embed` which use the legacy approach of injecting the document into an `<embed>` or `<iframe>`. They allow viewing the PDF using the viewer of the browser that contains additional features we are still working to implement in this component. **IMPORTANT**: :warning: The "legacy" methods **work only with Firefox**, and **do not support annotations**. :warning: |
 | pages_to_render         | Filter the rendering to a specific set of pages. By default, all pages are rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | render_text             | Enable a layer of text on top of the PDF document. The text may be selected and copied. **NOTE** to avoid breaking existing deployments, we made this optional at first, also considering that having many annotations might interfere with the copy-paste.                                                                                                                                                                                                                                                                                                                                                       |
 | zoom_level              | The zoom level of the PDF viewer. Can be a float (0.1-10.0), `"auto"` for fit-to-width, `"auto-height"` for fit-to-height, or `None` (defaults to auto-fit to width). When zoom controls are enabled, users can interactively adjust the zoom level.                                                                                                                                                                                                                                                                                                                                                        |
@@ -207,9 +206,9 @@ correct directory before running these commands.
     npm run build 
     ```
 
-1. Make sure that _RELEASE = True in `streamlit_pdf_viewer/__init__.py`.
+2. Make sure that _RELEASE = True in `streamlit_pdf_viewer/__init__.py`.
 
-2. move to the streamlit_application and run
+3. move to the streamlit_application and run
 
     ```shell
     pip install -e {path of component}

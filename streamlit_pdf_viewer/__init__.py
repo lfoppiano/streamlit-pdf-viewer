@@ -7,9 +7,6 @@ import streamlit.components.v1 as components
 import json
 
 _RELEASE = True
-RENDERING_EMBED = "legacy_embed"
-RENDERING_IFRAME = "legacy_iframe"
-RENDERING_UNWRAP = "unwrap"
 
 if not _RELEASE:
     _component_func = components.declare_component(
@@ -33,7 +30,6 @@ def pdf_viewer(
         annotations: List[Dict[str, Union[str, int, float, bool]]] = [],
         pages_vertical_spacing: int = 2,
         annotation_outline_size: int = 1,
-        rendering: str = RENDERING_UNWRAP,
         pages_to_render: List[int] = (),
         render_text: bool = False,
         resolution_boost: int = 1,
@@ -54,11 +50,7 @@ def pdf_viewer(
     :param annotations: A list of annotations to be overlaid on the PDF. Each annotation should be a dictionary.
     :param pages_vertical_spacing: The vertical space (in pixels) between each page of the PDF. Defaults to 2 pixels.
     :param annotation_outline_size: Size of the outline around each annotation in pixels. Defaults to 1 pixel.
-    :param rendering: Type of rendering. The default is "unwrap", which unwrap the PDF. Other values are
     :param pages_to_render: Optional list of page numbers to render. If None, all pages are rendered. This allows for selective rendering of pages in the PDF.
-    "legacy_iframe" and "legacy_embed" which uses the legacy approach for showing PDF document with streamlit.
-    These methods enable the default pdf viewer of Firefox/Chrome/Edge that contains additional features we are still
-    working to implement for the "unwrap" method.
     :param render_text: Whether to enable selection of text in the PDF viewer. Defaults to False.
     :param resolution_boost: Boost the resolution by a factor from 2 to 10. Defaults to 1.
     :param zoom_level: The zoom level of the PDF viewer. Can be a float (0.1-10.0), "auto" for fit-to-width, "auto-height" for fit-to-height, or None (defaults to auto-fit to width).
@@ -117,16 +109,11 @@ def pdf_viewer(
     else:
         binary = input
 
-    if rendering == RENDERING_IFRAME or rendering == RENDERING_EMBED:
-        print(f"{RENDERING_IFRAME} and {RENDERING_EMBED} may not work consistently on all browsers "
-              f"they might disappear in future releases.")
-        if height is None:
-            height = "100%"
-
     if not isinstance(annotations, list):
         raise TypeError("annotations must be a list of dictionaries")
     if any(not isinstance(annotation, dict) for annotation in annotations):
         raise TypeError("annotations must be a list of dictionaries")
+
 
     base64_pdf = base64.b64encode(binary).decode('utf-8')
     component_value = _component_func(
@@ -138,7 +125,6 @@ def pdf_viewer(
         annotations=annotations,
         pages_vertical_spacing=pages_vertical_spacing,
         annotation_outline_size=annotation_outline_size,
-        rendering=rendering,
         pages_to_render=pages_to_render,
         render_text=render_text,
         resolution_boost=resolution_boost,
