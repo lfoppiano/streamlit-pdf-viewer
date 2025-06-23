@@ -2,7 +2,9 @@
 streamlit_pdf_viewer/frontend/node_modules
 streamlit_pdf_viewer/frontend/.idea
 venv
+.venv
 dist
+.history
 /frontend/dist
 streamlit_pdf_viewer/frontend/package-lock.json
 streamlit_pdf_viewer.egg-info
