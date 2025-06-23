@@ -56,15 +56,21 @@ def test_resolution_boost(page: Page):
 
     # Tab 1
     iframe_frame_0 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_frame_0.locator('div[id="pdfContainer"]').wait_for(timeout=5000, state='visible')
     expect(iframe_frame_0.locator('div[id="pdfContainer"]')).to_be_visible()
+    iframe_frame_0.locator('div[id="pdfViewer"]').wait_for(timeout=5000, state='visible')
     expect(iframe_frame_0.locator('div[id="pdfViewer"]')).to_be_visible()
 
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
+    iframe_frame_1.locator('div[id="pdfContainer"]').wait_for(timeout=5000, state='visible')
     expect(iframe_frame_1.locator('div[id="pdfContainer"]')).to_be_visible()
+    iframe_frame_1.locator('div[id="pdfViewer"]').wait_for(timeout=5000, state='visible')
     expect(iframe_frame_1.locator('div[id="pdfViewer"]')).to_be_visible()
 
     iframe_frame_2 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(2)
+    iframe_frame_2.locator('div[id="pdfContainer"]').wait_for(timeout=5000, state='visible')
     expect(iframe_frame_2.locator('div[id="pdfContainer"]')).to_be_visible()
+    iframe_frame_2.locator('div[id="pdfViewer"]').wait_for(timeout=5000, state='visible')
     expect(iframe_frame_2.locator('div[id="pdfViewer"]')).to_be_visible()
 
     expect(iframe_components[0].locator('div[id="pdfViewer"]').get_by_text("from LaH10 to room–temperature").nth(

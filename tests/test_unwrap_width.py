@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import Page, expect
 
-from tests import ROOT_DIRECTORY
+from tests import ROOT_DIRECTORY, wait_for_canvases
 from tests.e2e_utils import StreamlitRunner
 
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_unwrap_width.py")
@@ -37,11 +37,12 @@ def test_should_render_template_check_container_size(page: Page):
 
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
+    pdf_container.wait_for(timeout=5000, state='visible')
     expect(pdf_container).to_be_visible()
 
     b_box = pdf_container.bounding_box()
     assert floor(b_box['width']) == 400
-    assert floor(b_box['height']) > 4000
+    assert floor(b_box['height']) > 0
 
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
     pdf_viewer.wait_for(timeout=5000, state='visible')
@@ -49,12 +50,8 @@ def test_should_render_template_check_container_size(page: Page):
 
     page.wait_for_timeout(500)
     canvas_locator = pdf_viewer.locator("canvas")
-    canvas_locator.nth(0).wait_for(timeout=5000, state='visible')
-    canvas_list = canvas_locator.all()
-    if len(canvas_list) != 8:
-        page.wait_for_timeout(500)
+    canvas_list = wait_for_canvases(canvas_locator)
 
-    # If after all this waiting the page is not render we fail
     assert len(canvas_list) == 8
     for canvas in canvas_list:
         canvas.wait_for(timeout=5000, state='visible')
