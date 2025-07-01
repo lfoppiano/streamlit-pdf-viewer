@@ -25,8 +25,8 @@ action [here](https://structure-vision.streamlit.app/).
 - Interactive zoom controls with multiple zoom options
 - Configurable alignment of the PDF viewer within its container
 - Optional horizontal separators between PDF pages
-- Additional support showing PDF documents using the native pdf.js browser's viewer: "legacy" (with limitations, no
-  annotations, no scrolling, etc.)
+- Version 0.0.x provides an additional "legacy" viewer using the native pdf.js browser's, with limitations including no
+  annotations, no scrolling - this is removed from version 0.1.x.
 
 ## Limitations
 
@@ -35,7 +35,6 @@ action [here](https://structure-vision.streamlit.app/).
 - This is a side project, so all troubleshooting may take time 
 - The component is still in development, so expect some bugs and limitations
 - The streamlit reload at each action may render slowly for complex PDF documents
-- Removed support showing PDF documents using the native pdf.js browser's viewer.
 
 ## Caveats
 
