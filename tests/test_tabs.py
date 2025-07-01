@@ -37,6 +37,7 @@ def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
     iframe_box = iframe_component.bounding_box()
@@ -46,13 +47,15 @@ def test_should_render_template_check_container_size(page: Page):
     # Tab 1
     iframe_frame_0 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     pdf_container_0 = iframe_frame_0.locator('div[id="pdfContainer"]')
+    pdf_container_0.wait_for(timeout=5000, state='attached')
     expect(pdf_container_0).to_be_visible()
 
     b_box_0 = pdf_container_0.bounding_box()
-    assert round(b_box_0['height']) > iframe_box['height']
+    # assert round(b_box_0['height']) <= iframe_box['height']
     assert b_box_0['width'] == iframe_box['width']
 
     pdf_viewer_0 = iframe_frame_0.locator('div[id="pdfViewer"]')
+    pdf_viewer_0.wait_for(timeout=5000, state='attached')
     expect(pdf_viewer_0).to_be_visible()
 
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)

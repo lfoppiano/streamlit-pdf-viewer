@@ -1,58 +1,43 @@
 <template>
   <div :style="pdfContainerStyle" ref="pdfContainer" class="container-wrapper">
-    <div v-if="args.rendering === 'unwrap'" id="pdfContainer" class="scrolling-container">
-      <div id="pdfViewer"></div>
-    </div>
-    <div v-else-if="args.rendering === 'legacy_embed'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`"
-             type="application/pdf"/>
-    </div>
-    <div v-else-if="args.rendering === 'legacy_iframe'">
-      <embed :src="`data:application/pdf;base64,${args.binary}`" :width="`${args.width}`" :height="`${args.height}`"
-             type="application/pdf"/>
-    </div>
-    <div v-else>
-      Error rendering option.
-    </div>
-    <div v-if="args.rendering === 'unwrap'" class="zoom-controls">
-      <button class="zoom-button" @click.stop="toggleZoomPanel">
-        {{ Math.round(currentZoom * 100) }}%
-      </button>
-      <div v-if="showZoomPanel" class="zoom-panel">
-        <div class="zoom-input-container">
-          <input 
-            type="number" 
-            class="zoom-input" 
-            v-model="manualZoomInput"
-            @keyup.enter="applyManualZoom"
-            @blur="applyManualZoom"
-          />
-          <span class="zoom-input-percent">%</span>
-        </div>
-        <div class="zoom-separator"></div>
-        <button class="zoom-option" @click="zoomIn">
-          <span class="zoom-icon">+</span> Zoom In
-        </button>
-        <button class="zoom-option" @click="zoomOut">
-          <span class="zoom-icon">−</span> Zoom Out
-        </button>
-        <div class="zoom-separator"></div>
-        <button class="zoom-option" @click="fitToWidth">
-          <span class="zoom-icon">↔</span> Fit to Width
-        </button>
-        <button class="zoom-option" @click="fitToHeight">
-          <span class="zoom-icon">↕</span> Fit to Height
-        </button>
-        <button
-          v-for="preset in zoomPresets"
-          :key="preset"
-          class="zoom-option zoom-preset"
-          :class="{ active: Math.abs(currentZoom - preset) < 0.01 }"
-          @click="setZoom(preset)"
-        >
-          {{ Math.round(preset * 100) }}%
-        </button>
+    <div id="pdfViewer"></div>
+    <button class="zoom-button" @click.stop="toggleZoomPanel">
+      {{ Math.round(currentZoom * 100) }}%
+    </button>
+    <div v-if="showZoomPanel" class="zoom-panel">
+      <div class="zoom-input-container">
+        <input
+          type="number"
+          class="zoom-input"
+          v-model="manualZoomInput"
+          @keyup.enter="applyManualZoom"
+          @blur="applyManualZoom"
+        />
+        <span class="zoom-input-percent">%</span>
       </div>
+      <div class="zoom-separator"></div>
+      <button class="zoom-option" @click="zoomIn">
+        <span class="zoom-icon">+</span> Zoom In
+      </button>
+      <button class="zoom-option" @click="zoomOut">
+        <span class="zoom-icon">−</span> Zoom Out
+      </button>
+      <div class="zoom-separator"></div>
+      <button class="zoom-option" @click="fitToWidth">
+        <span class="zoom-icon">↔</span> Fit to Width
+      </button>
+      <button class="zoom-option" @click="fitToHeight">
+        <span class="zoom-icon">↕</span> Fit to Height
+      </button>
+      <button
+        v-for="preset in zoomPresets"
+        :key="preset"
+        class="zoom-option zoom-preset"
+        :class="{ active: Math.abs(currentZoom - preset) < 0.01 }"
+        @click="setZoom(preset)"
+      >
+        {{ Math.round(preset * 100) }}%
+      </button>
     </div>
   </div>
 </template>
@@ -61,10 +46,10 @@
 import { onMounted, computed, ref, onUnmounted, watch } from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
-import { getDocument } from "pdfjs-dist/build/pdf";
-import { Streamlit } from "streamlit-component-lib";
+import {getDocument} from "pdfjs-dist/build/pdf";
+import {Streamlit} from "streamlit-component-lib";
 import * as pdfjsLib from "pdfjs-dist";
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
 
 const CMAP_URL = "pdfjs-dist/cmaps/";
 const CMAP_PACKED = true;
@@ -82,11 +67,11 @@ export default {
     const loadedPages = ref([]);
     const currentFrameHeight = ref(props.args.height || 0);
     const showZoomPanel = ref(false);
-    
+
     const initialZoom = props.args.zoom_level === null || props.args.zoom_level === undefined ? 'auto' : props.args.zoom_level;
     const localZoomLevel = ref(initialZoom);
     const currentZoom = ref(1); // Will be updated on render
-    
+
     const zoomPresets = [0.5, 0.75, 1, 1.25, 1.5, 2];
     const pdfInstance = ref(null);
     const pdfContainer = ref(null);
@@ -99,14 +84,14 @@ export default {
       if (typeof widthValue === "string" && widthValue.endsWith("%")) {
         const num = parseFloat(widthValue)
         if (!isNaN(num)) {
-          return { type: "percent", value: num / 100 }
+          return {type: "percent", value: num / 100}
         }
       }
       const numeric = Number(widthValue)
       if (!isNaN(numeric) && numeric > 0) {
-        return { type: "pixel", value: numeric }
+        return {type: "pixel", value: numeric}
       }
-      return { type: "pixel", value: fallbackValue }
+      return {type: "pixel", value: fallbackValue}
     }
 
     const pdfContainerStyle = computed(() => {
@@ -117,7 +102,7 @@ export default {
         height: props.args.height ? `${props.args.height}px` : 'auto',
         position: 'relative',
       };
-      
+
       const align = props.args.viewer_align || 'center';
       if (align === 'center') {
         style.marginLeft = 'auto';
@@ -129,7 +114,7 @@ export default {
         style.marginLeft = 'auto';
         style.marginRight = '0';
       }
-      
+
       return style;
     });
 
@@ -139,7 +124,7 @@ export default {
     };
 
     const createCanvasForPage = (page, scale, rotation, pageNumber, resolutionRatioBoost = 1) => {
-      const viewport = page.getViewport({ scale, rotation });
+      const viewport = page.getViewport({scale, rotation});
       const ratio = (window.devicePixelRatio || 1) * resolutionRatioBoost;
 
       const canvas = document.createElement("canvas");
@@ -176,7 +161,7 @@ export default {
       if (!renderText) {
         annotationDiv.addEventListener('click', () => {
           Streamlit.setComponentValue({
-            clicked_annotation: { index: annotation.id, ...annotation },
+            clicked_annotation: {index: annotation.id, ...annotation},
           });
         });
       }
@@ -247,7 +232,7 @@ export default {
 
     const getPagesToRender = (numPages) => {
       if (props.args.pages_to_render.length === 0) {
-        return Array.from({ length: numPages }, (_, i) => i + 1);
+        return Array.from({length: numPages}, (_, i) => i + 1);
       }
       return props.args.pages_to_render;
     };
@@ -286,7 +271,7 @@ export default {
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
         const page = await pdf.getPage(pageNumber);
         const rotation = page.rotate;
-        
+
         pageScales.value.push(finalScale);
         pageHeights.value.push(page.getViewport({ scale: 1.0, rotation }).height);
 
@@ -300,7 +285,7 @@ export default {
           pdfViewer.style.setProperty('--scale-factor', finalScale);
 
           const annotationsForPage = props.args.annotations.filter(
-            anno => Number(anno.page) === pageNumber
+              anno => Number(anno.page) === pageNumber
           );
 
           totalHeight.value += canvas.height / ((window.devicePixelRatio || 1) * resolutionBoost);
@@ -312,7 +297,7 @@ export default {
           }
         }
       }
-      
+
       if (pagesToRender.length > 0) {
         totalHeight.value -= props.args.pages_vertical_spacing;
       }
@@ -354,12 +339,12 @@ export default {
       if (props.args.scroll_to_page) {
         const page = document.getElementById(`canvas_page_${props.args.scroll_to_page}`);
         if (page) {
-          page.scrollIntoView({ behavior: "smooth" });
+          page.scrollIntoView({behavior: "smooth"});
         }
       } else if (props.args.scroll_to_annotation) {
         const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
         if (annotation) {
-          annotation.scrollIntoView({ behavior: "smooth", block: "center" });
+          annotation.scrollIntoView({behavior: "smooth", block: "center"});
         }
       }
     };
@@ -390,12 +375,11 @@ export default {
       if (isRendering.value) return;
       isRendering.value = true;
       try {
-        if (props.args.rendering === "unwrap") {
-          const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
-          setFrameWidth();
-          await loadPdfs(binaryDataUrl);
-          setFrameHeight();
-        }
+        const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
+        setFrameWidth();
+        await loadPdfs(binaryDataUrl);
+        setFrameHeight();
+
       } catch (error) {
         console.error(error);
       } finally {
@@ -411,7 +395,7 @@ export default {
         localZoomLevel.value = newVal === null || newVal === undefined ? 'auto' : newVal;
         handleResize();
     });
-    
+
     watch(() => props.args.viewer_align, () => {
         handleResize();
     });
