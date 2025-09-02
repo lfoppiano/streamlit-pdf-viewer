@@ -352,12 +352,12 @@ export default {
       if (props.args.scroll_to_page) {
         const page = document.getElementById(`canvas_page_${props.args.scroll_to_page}`);
         if (page) {
-          page.scrollIntoView({behavior: "smooth"});
+          page.scrollIntoView(props.args.scroll_options);
         }
       } else if (props.args.scroll_to_annotation) {
         const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
         if (annotation) {
-          annotation.scrollIntoView({behavior: "smooth", block: "center"});
+          annotation.scrollIntoView(props.args.scroll_options);
         }
       }
     };

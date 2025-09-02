@@ -38,6 +38,7 @@ def pdf_viewer(
         show_page_separator: bool = True,
         scroll_to_page: Optional[int] = None,
         scroll_to_annotation: Optional[int] = None,
+        scroll_options: Optional[dict] = None,
         on_annotation_click: Optional[Callable[[dict], None]] = None,
         show_fullscreen_toggle: bool = True,
 ):
@@ -59,6 +60,7 @@ def pdf_viewer(
     :param show_page_separator: Whether to show a separator between pages. Defaults to True.
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
+    :param scroll_options: Options to pass to the scrollIntoView function to control behavior. Defaults to {"behavior": "smooth"}.
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
     :param show_fullscreen_toggle: Whether to show button to toggle fullscreen. Defaults to True.
 
@@ -105,6 +107,9 @@ def pdf_viewer(
         if scroll_to_annotation is not None and scroll_to_annotation < 1:
             scroll_to_annotation = None
 
+    if scroll_options is None:
+        scroll_options = {"behavior": "smooth"}
+
     if type(input) is not bytes:
         with open(input, 'rb') as fo:
             binary = fo.read()
@@ -135,6 +140,7 @@ def pdf_viewer(
         show_page_separator=show_page_separator,
         scroll_to_page=scroll_to_page,
         scroll_to_annotation=scroll_to_annotation,
+        scroll_options=scroll_options,
         show_fullscreen_toggle=show_fullscreen_toggle,
     )
 
