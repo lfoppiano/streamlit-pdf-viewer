@@ -1,6 +1,8 @@
 <template>
   <div :style="pdfContainerStyle" ref="pdfContainer" class="container-wrapper">
-    <div id="pdfViewer"></div>
+    <div class="scrolling-container">
+      <div id="pdfViewer"></div>
+    </div>
     <div class="zoom-controls">
       <button class="zoom-button" @click.stop="toggleZoomPanel">
         {{ Math.round(currentZoom * 100) }}%
