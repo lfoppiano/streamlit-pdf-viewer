@@ -1,49 +1,51 @@
 <template>
   <div :style="pdfContainerStyle" ref="pdfContainer" class="container-wrapper">
     <div id="pdfViewer"></div>
-    <button class="zoom-button" @click.stop="toggleZoomPanel">
-      {{ Math.round(currentZoom * 100) }}%
-    </button>
-    <div v-if="showZoomPanel" class="zoom-panel">
-      <div class="zoom-input-container">
-        <input
-          type="number"
-          class="zoom-input"
-          v-model="manualZoomInput"
-          @keyup.enter="applyManualZoom"
-          @blur="applyManualZoom"
-        />
-        <span class="zoom-input-percent">%</span>
+    <div class="zoom-controls">
+      <button class="zoom-button" @click.stop="toggleZoomPanel">
+        {{ Math.round(currentZoom * 100) }}%
+      </button>
+      <div v-if="showZoomPanel" class="zoom-panel">
+        <div class="zoom-input-container">
+          <input
+              type="number"
+              class="zoom-input"
+              v-model="manualZoomInput"
+              @keyup.enter="applyManualZoom"
+              @blur="applyManualZoom"
+          />
+          <span class="zoom-input-percent">%</span>
+        </div>
+        <div class="zoom-separator"></div>
+        <button class="zoom-option" @click="zoomIn">
+          <span class="zoom-icon">+</span> Zoom In
+        </button>
+        <button class="zoom-option" @click="zoomOut">
+          <span class="zoom-icon">−</span> Zoom Out
+        </button>
+        <div class="zoom-separator"></div>
+        <button class="zoom-option" @click="fitToWidth">
+          <span class="zoom-icon">↔</span> Fit to Width
+        </button>
+        <button class="zoom-option" @click="fitToHeight">
+          <span class="zoom-icon">↕</span> Fit to Height
+        </button>
+        <button
+            v-for="preset in zoomPresets"
+            :key="preset"
+            class="zoom-option zoom-preset"
+            :class="{ active: Math.abs(currentZoom - preset) < 0.01 }"
+            @click="setZoom(preset)"
+        >
+          {{ Math.round(preset * 100) }}%
+        </button>
       </div>
-      <div class="zoom-separator"></div>
-      <button class="zoom-option" @click="zoomIn">
-        <span class="zoom-icon">+</span> Zoom In
-      </button>
-      <button class="zoom-option" @click="zoomOut">
-        <span class="zoom-icon">−</span> Zoom Out
-      </button>
-      <div class="zoom-separator"></div>
-      <button class="zoom-option" @click="fitToWidth">
-        <span class="zoom-icon">↔</span> Fit to Width
-      </button>
-      <button class="zoom-option" @click="fitToHeight">
-        <span class="zoom-icon">↕</span> Fit to Height
-      </button>
-      <button
-        v-for="preset in zoomPresets"
-        :key="preset"
-        class="zoom-option zoom-preset"
-        :class="{ active: Math.abs(currentZoom - preset) < 0.01 }"
-        @click="setZoom(preset)"
-      >
-        {{ Math.round(preset * 100) }}%
-      </button>
     </div>
   </div>
 </template>
 
 <script>
-import { onMounted, computed, ref, onUnmounted, watch } from "vue";
+import {onMounted, computed, ref, onUnmounted, watch} from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
@@ -248,7 +250,7 @@ export default {
 
       // Determine the final scale for all pages
       const firstPage = await pdf.getPage(1);
-      const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
+      const unscaledViewport = firstPage.getViewport({scale: 1.0});
       let finalScale;
       if (localZoomLevel.value === 'auto') {
         finalScale = (maxWidth.value / unscaledViewport.width) * 0.98; // Fit to width
@@ -273,11 +275,11 @@ export default {
         const rotation = page.rotate;
 
         pageScales.value.push(finalScale);
-        pageHeights.value.push(page.getViewport({ scale: 1.0, rotation }).height);
+        pageHeights.value.push(page.getViewport({scale: 1.0, rotation}).height);
 
-        const scaledViewport = page.getViewport({ scale: finalScale, rotation });
+        const scaledViewport = page.getViewport({scale: finalScale, rotation});
         if (scaledViewport.width > maxPageWidth) {
-            maxPageWidth = scaledViewport.width;
+          maxPageWidth = scaledViewport.width;
         }
 
         if (pagesToRender.includes(pageNumber)) {
@@ -388,16 +390,16 @@ export default {
     };
 
     watch(() => props.args.binary, () => {
-        handleResize();
+      handleResize();
     });
 
     watch(() => props.args.zoom_level, (newVal) => {
-        localZoomLevel.value = newVal === null || newVal === undefined ? 'auto' : newVal;
-        handleResize();
+      localZoomLevel.value = newVal === null || newVal === undefined ? 'auto' : newVal;
+      handleResize();
     });
 
     watch(() => props.args.viewer_align, () => {
-        handleResize();
+      handleResize();
     });
 
     const setZoom = (zoomLevel) => {
@@ -491,10 +493,12 @@ export default {
 .container-wrapper {
   position: relative;
 }
+
 .scrolling-container {
   height: 100%;
   overflow: auto;
 }
+
 .zoom-controls {
   position: absolute;
   top: 20px;
@@ -549,6 +553,7 @@ export default {
   text-align: right;
   -moz-appearance: textfield;
 }
+
 .zoom-input::-webkit-outer-spin-button,
 .zoom-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
