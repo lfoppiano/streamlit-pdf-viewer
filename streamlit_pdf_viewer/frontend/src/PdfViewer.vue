@@ -3,18 +3,24 @@
     <div class="scrolling-container">
       <div id="pdfViewer"></div>
     </div>
-    <div class="zoom-controls">
-      <button class="zoom-button" @click.stop="toggleZoomPanel">
-        {{ Math.round(currentZoom * 100) }}%
-      </button>
+    <div class="control-buttons">
+      <div class="top-buttons">
+        <button v-if="showFullscreen" class="control-button" @click.stop="toggleFullscreen" title="Toggle Fullscreen">
+          <svg v-if="!isFullscreen" style="width:16px; height:16px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <svg v-else style="width:16px; height:16px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        </button>
+        <button class="control-button" @click.stop="toggleZoomPanel">
+          {{ Math.round(currentZoom * 100) }}%
+        </button>
+      </div>
       <div v-if="showZoomPanel" class="zoom-panel">
         <div class="zoom-input-container">
           <input
-              type="number"
-              class="zoom-input"
-              v-model="manualZoomInput"
-              @keyup.enter="applyManualZoom"
-              @blur="applyManualZoom"
+            type="number"
+            class="zoom-input"
+            v-model="manualZoomInput"
+            @keyup.enter="applyManualZoom"
+            @blur="applyManualZoom"
           />
           <span class="zoom-input-percent">%</span>
         </div>
@@ -75,6 +81,9 @@ export default {
     const initialZoom = props.args.zoom_level === null || props.args.zoom_level === undefined ? 'auto' : props.args.zoom_level;
     const localZoomLevel = ref(initialZoom);
     const currentZoom = ref(1); // Will be updated on render
+
+    const isFullscreen = ref(false);
+    const showFullscreen = props.args.show_fullscreen_toggle === true;
 
     const zoomPresets = [0.5, 0.75, 1, 1.25, 1.5, 2];
     const pdfInstance = ref(null);
@@ -404,6 +413,27 @@ export default {
       handleResize();
     });
 
+    const enterFullscreen = () => {
+      const el = pdfContainer.value;
+      if (el && el.requestFullscreen) {
+        el.requestFullscreen();
+      }
+    };
+
+    const exitFullscreen = () => {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    };
+
+    const toggleFullscreen = () => {
+      if (!isFullscreen.value) {
+        enterFullscreen();
+      } else {
+        exitFullscreen();
+      }
+    };
+
     const setZoom = (zoomLevel) => {
       localZoomLevel.value = zoomLevel;
       showZoomPanel.value = false;
@@ -453,9 +483,13 @@ export default {
     };
 
     const handleClickOutside = (event) => {
-      if (showZoomPanel.value && !event.target.closest('.zoom-controls')) {
+      if (showZoomPanel.value && !event.target.closest('.control-buttons')) {
         showZoomPanel.value = false;
       }
+    };
+
+    const onFullscreenChange = () => {
+      isFullscreen.value = !!document.fullscreenElement;
     };
 
     const debouncedHandleResize = debounce(handleResize, 200);
@@ -464,11 +498,13 @@ export default {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
       document.addEventListener('click', handleClickOutside);
+      document.addEventListener('fullscreenchange', onFullscreenChange);
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
     });
 
     return {
@@ -486,6 +522,9 @@ export default {
       fitToHeight,
       toggleZoomPanel,
       applyManualZoom,
+      showFullscreen,
+      isFullscreen,
+      toggleFullscreen,
     };
   },
 };
@@ -501,7 +540,7 @@ export default {
   overflow: auto;
 }
 
-.zoom-controls {
+.control-buttons {
   position: absolute;
   top: 20px;
   right: 20px;
@@ -511,7 +550,13 @@ export default {
   align-items: flex-end;
 }
 
-.zoom-button {
+.top-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.control-button {
   background: rgba(40, 40, 40, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
@@ -522,10 +567,9 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   font-weight: 500;
   transition: background 0.2s;
-  margin-bottom: 8px;
 }
 
-.zoom-button:hover {
+.control-button:hover {
   background: rgba(50, 50, 50, 0.9);
 }
 
