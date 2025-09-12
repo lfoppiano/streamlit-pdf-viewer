@@ -14,6 +14,7 @@ jobs:
         os: [ubuntu-latest]
         python-version: [ '3.10', '3.11', '3.12', '3.13']
         node-version: [ 18, 20 ]
+      fail-fast: false
 
     runs-on: ${{ matrix.os }}
 

@@ -83,8 +83,8 @@ def test_should_render_template_check_container_size(page: Page):
     # click on the second tab and verify that the PDF is visible
     tab1.click()
     
-    # Wait for the tab to load
-    page.wait_for_timeout(2000)
+    # Wait for the tab to load and the PDF to render
+    page.wait_for_timeout(3000)
 
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
     pdf_container_1 = iframe_frame_1.locator('div[id="pdfContainer"]')
@@ -98,10 +98,17 @@ def test_should_render_template_check_container_size(page: Page):
     assert round(b_box_1['width']) <= iframe_box['width'] and round(b_box_1['height']) <= round(b_box_1['height'])
 
     pdf_viewer_1 = iframe_frame_1.locator('div[id="pdfViewer"]')
+    
+    # Wait for the PDF viewer to become visible and contain content
+    pdf_viewer_1.wait_for(timeout=15000, state='visible')
     expect(pdf_viewer_1).to_be_visible()
-
+    
+    # Wait for canvas elements to be rendered (PDF content)
+    canvas = pdf_viewer_1.locator('canvas').first
+    canvas.wait_for(timeout=10000, state='visible')
+    
     # Wait for text layer to render (especially in Firefox)
-    page.wait_for_timeout(3000)
+    page.wait_for_timeout(2000)
     
     text_in_pdf = pdf_viewer_1.get_by_text("from LaH10 to room–temperature").nth(0)
     text_in_pdf.wait_for(timeout=10000, state='visible')
