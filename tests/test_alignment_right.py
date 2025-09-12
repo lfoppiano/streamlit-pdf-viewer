@@ -58,7 +58,8 @@ def test_right_alignment_positioning(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Get the main container that should have alignment styles applied
-    main_container = iframe_frame.locator('div.container-wrapper')
+    main_container = iframe_frame.locator('div[id="pdfContainer"]')
+    main_container.wait_for(timeout=5000, state='visible')
     expect(main_container).to_be_visible()
     
     # For right alignment, check that left margin is much larger than right margin
@@ -70,6 +71,7 @@ def test_right_alignment_positioning(page: Page):
     right_value = float(margin_right.replace('px', ''))
     
     # For right alignment: left margin should be much larger than right margin
+    # (The browser computes 'auto' to a specific pixel value to achieve right alignment)
     assert left_value > right_value + 50, f"Expected left margin to be much larger than right margin for right alignment. Left: {margin_left}, Right: {margin_right}"
     # Right margin should be close to 0
     assert right_value < 5, f"Expected right margin to be close to 0 for right alignment, got: {margin_right}" 

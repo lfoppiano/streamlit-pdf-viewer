@@ -38,6 +38,7 @@ def test_should_render_with_auto_zoom(page: Page):
     expect(page.get_by_text("Test PDF Viewer with auto zoom (fit to width)")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)

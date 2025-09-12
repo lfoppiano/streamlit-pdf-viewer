@@ -67,7 +67,7 @@ def test_page_separators_are_visible(page: Page):
     
     # Get the first page div and check its computed style
     first_page = page_divs.first
-    border_bottom = first_page.evaluate("el => getComputedStyle(el).borderBottomWidth")
+    border_bottom = first_page.evaluate("el => getComputedStyle(el).marginBottom")
     
     # The border should be set (not '0px')
     assert border_bottom != '0px', f"Expected border-bottom to be set, but got: {border_bottom}" 

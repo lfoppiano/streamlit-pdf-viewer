@@ -58,7 +58,8 @@ def test_center_alignment_positioning(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Get the main container that should have alignment styles applied
-    main_container = iframe_frame.locator('div.container-wrapper')
+    main_container = iframe_frame.locator('div[id="pdfContainer"]')
+    main_container.wait_for(timeout=5000, state='visible')
     expect(main_container).to_be_visible()
     
     # For center alignment, check that the margins are equal (indicating centering)

@@ -1,5 +1,5 @@
 <template>
-  <div :style="pdfContainerStyle" ref="pdfContainer" class="container-wrapper">
+  <div :style="pdfContainerStyle" ref="pdfContainer" id="pdfContainer" class="container-wrapper">
     <div class="scrolling-container">
       <div id="pdfViewer"></div>
     </div>
