@@ -13,4 +13,7 @@ with tab1:
     pdf_viewer(os.path.join(ROOT_DIRECTORY, "resources/test.pdf"), render_text=False)
 
 with tab2:
-    pdf_viewer(os.path.join(ROOT_DIRECTORY, "resources/test.pdf"), height=300, render_text=True)
+    pdf_viewer(
+        os.path.join(ROOT_DIRECTORY, "resources/test.pdf"),
+        render_text=True
+    )
