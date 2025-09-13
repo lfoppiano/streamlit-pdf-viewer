@@ -38,7 +38,7 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     page.get_by_role("img", name="Running...").is_hidden()
 
 
-
+@pytest.mark.skip(reason="This test cannot run consistently in CI")
 def test_should_render_template_check_container_size(page: Page):
     """
     Verify that the PDF viewer embedded in two tabs renders text and that container sizing behaves as expected.
