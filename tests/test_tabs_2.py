@@ -29,9 +29,9 @@ def streamlit_app():
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     """
-    Navigate the Playwright page to the Streamlit app and wait until the app finishes loading.
+    Navigate the browser to the running Streamlit app and wait until the app signals it has finished loading.
     
-    This pytest fixture navigates the browser to the running Streamlit app and blocks until the app's loading indicator ("Running..." image) is hidden, ensuring the page is ready for test interactions.
+    This autouse fixture directs the Playwright page to the StreamlitRunner's server URL and waits for the "Running..." image indicator to become hidden, indicating the app has loaded and is ready for interaction.
     """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
@@ -40,6 +40,18 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 @pytest.mark.skip("Needs investigation")
 def test_should_render_template_check_container_size(page: Page):
+    """
+    Verify the PDF viewer renders correctly across two tabs and that the PDF container sizes and visibility update when switching tabs.
+    
+    Detailed behavior:
+    - Confirms the test page text is visible and locates the PDF viewer iframe.
+    - Asserts the iframe has non-zero width and height.
+    - For tab 1: waits for the PDF container and viewer to be visible, checks the container height > 0 and that its width equals the iframe width, and confirms the first annotations element is hidden.
+    - For tab 2 (initial state): verifies the PDF container and viewer are not visible and the second annotations element is hidden; verifies both tab labels are visible.
+    - Clicks the second tab, waits for its PDF container to become visible, asserts the container height is approximately 300px, and checks that the resized PDF width is constrained relative to the iframe width (preserving proportions); finally confirms the PDF viewer in tab 2 is visible.
+    
+    This test uses a Playwright Page fixture and performs UI assertions and size checks; it does not return a value.
+    """
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)

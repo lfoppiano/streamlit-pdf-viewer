@@ -36,13 +36,9 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 def test_should_render_with_auto_zoom(page: Page):
     """
-    Verify the PDF viewer renders inside an iframe with auto-zoom controls and visible page canvases.
+    Verify the Streamlit PDF viewer renders with auto-zoom enabled and essential UI elements are visible.
     
-    This test checks that:
-    - The app title "Test PDF Viewer with auto zoom (fit to width)" is visible.
-    - The PDF viewer iframe is present and becomes visible (waits up to 5s).
-    - Inside the iframe, the PDF container and a zoom control button are visible.
-    - The PDF viewer element contains at least one canvas, and every canvas is visible.
+    Checks that the app text for the auto-zoom example appears, the viewer iframe becomes visible, the PDF container and viewer are present, zoom controls exist, and at least one visible canvas is rendered inside the viewer.
     """
     expect(page.get_by_text("Test PDF Viewer with auto zoom (fit to width)")).to_be_visible()
 

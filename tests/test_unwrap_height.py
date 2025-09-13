@@ -19,9 +19,9 @@ def streamlit_app():
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     """
-    Navigate the Playwright page to the Streamlit app and wait until the app's "Running..." image is hidden.
+    Navigate the Playwright page to the running Streamlit app and wait until the app finishes loading.
     
-    This performs a page.goto to the runner's server_url and waits for the app to finish loading by checking that the role="img" element with name "Running..." is no longer visible.
+    This fixture visits the Streamlit server URL provided by the StreamlitRunner and waits for the "Running..." status image to become hidden, indicating the app has finished loading and is ready for interaction.
     """
     page.goto(streamlit_app.server_url)
     # Wait for app to load

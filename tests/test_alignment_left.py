@@ -56,9 +56,9 @@ def test_should_render_with_left_alignment(page: Page):
 
 def test_left_alignment_positioning(page: Page):
     """
-    Verify the PDF viewer's main container is left-aligned by checking its computed CSS margins.
+    Verify the PDF viewer's main container is left-aligned by checking its computed margins.
     
-    Locates the iframe titled "streamlit_pdf_viewer.streamlit_pdf_viewer", waits for the main container div with id "pdfContainer" to become visible, and evaluates its computed `marginLeft` and `marginRight`. Asserts that `marginLeft` is '0px' (expected for left alignment). `marginRight` is retrieved for inspection but not asserted.
+    Waits up to 5 seconds for the iframe's main pdfContainer to become visible, then reads its computed CSS marginLeft and marginRight values. Asserts that marginLeft equals '0px' (the expected value for left alignment). marginRight is retrieved for context but not asserted.
     """
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
