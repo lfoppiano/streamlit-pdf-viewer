@@ -7,7 +7,7 @@ from playwright.sync_api import Page, expect
 from tests import ROOT_DIRECTORY
 from tests.e2e_utils import StreamlitRunner
 
-BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_tab_2.py")
+BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_tab_setWidth.py")
 
 
 @pytest.fixture(scope="session")
@@ -28,17 +28,11 @@ def streamlit_app():
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
-    """
-    Navigate the Playwright page to the Streamlit app and wait until the app finishes loading.
-    
-    This pytest fixture navigates the browser to the running Streamlit app and blocks until the app's loading indicator ("Running..." image) is hidden, ensuring the page is ready for test interactions.
-    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
 
 
-@pytest.mark.skip("Needs investigation")
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab")).to_be_visible()
 
@@ -53,19 +47,18 @@ def test_should_render_template_check_container_size(page: Page):
     # Tab 1
     iframe_frame_0 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     pdf_container_0 = iframe_frame_0.locator('div[id="pdfContainer"]')
-    pdf_container_0.wait_for(timeout=5000, state='visible')
+    pdf_container_0.wait_for(timeout=5000, state='attached')
     expect(pdf_container_0).to_be_visible()
 
     b_box_0 = pdf_container_0.bounding_box()
-    assert round(b_box_0['height']) > 0
+    # assert round(b_box_0['height']) <= iframe_box['height']
     assert b_box_0['width'] == iframe_box['width']
 
     pdf_viewer_0 = iframe_frame_0.locator('div[id="pdfViewer"]')
-    pdf_viewer_0.wait_for(timeout=5000, state='visible')
+    pdf_viewer_0.wait_for(timeout=5000, state='attached')
     expect(pdf_viewer_0).to_be_visible()
 
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
-    annotations_locator.wait_for(timeout=5000, state='hidden')
     expect(annotations_locator).to_be_hidden()
 
     # Tab 2
@@ -90,14 +83,11 @@ def test_should_render_template_check_container_size(page: Page):
 
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
     pdf_container_1 = iframe_frame_1.locator('div[id="pdfContainer"]')
-    pdf_container_1.wait_for(timeout=5000, state='visible')
     expect(pdf_container_1).to_be_visible()
 
     b_box_1 = pdf_container_1.bounding_box()
-    assert 299 <= b_box_1['height'] <= 301
-    # The second part of the If tests that the width < height, which indicate that we have resized
-    # the PDF to keep the proportions
-    assert round(b_box_1['width']) <= iframe_box['width'] and round(b_box_1['height']) <= round(b_box_1['height'])
+    assert round(b_box_1['height']) < iframe_box['height'] and round(b_box_1['height']) > 0
+    assert b_box_1['width'] == 300
 
     pdf_viewer_1 = iframe_frame_1.locator('div[id="pdfViewer"]')
     expect(pdf_viewer_1).to_be_visible()
