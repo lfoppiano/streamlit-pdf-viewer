@@ -64,6 +64,11 @@ def test_should_render_with_numeric_zoom(page: Page):
 
 
 def test_zoom_controls_functionality(page: Page):
+    """
+    Verify the PDF viewer's zoom controls open and all expected controls are visible.
+    
+    Navigates into the viewer iframe, opens the zoom panel by clicking the zoom button (waits up to 5s for the button to become visible), and asserts that the zoom panel, "Zoom In" and "Zoom Out" buttons, and the manual zoom input are visible.
+    """
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Click zoom button to open panel
