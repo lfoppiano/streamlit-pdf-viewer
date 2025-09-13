@@ -28,6 +28,11 @@ def streamlit_app():
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the Streamlit app and wait until the app finishes loading.
+    
+    This pytest fixture navigates the browser to the running Streamlit app and blocks until the app's loading indicator ("Running..." image) is hidden, ensuring the page is ready for test interactions.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()

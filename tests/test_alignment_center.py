@@ -55,6 +55,17 @@ def test_should_render_with_center_alignment(page: Page):
 
 
 def test_center_alignment_positioning(page: Page):
+    """
+    Verify the PDF viewer's main container is horizontally centered inside its iframe.
+    
+    This test locates the app iframe, waits for the PDF main container (div#pdfContainer) to become visible, reads its computed left and right CSS margins, and asserts they are approximately equal (difference < 5 pixels), which indicates center alignment.
+    
+    Parameters:
+        page (playwright.sync_api.Page): Playwright Page instance already navigated to the Streamlit app.
+    
+    Raises:
+        AssertionError: If the absolute difference between left and right margins is 5 pixels or more.
+    """
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Get the main container that should have alignment styles applied

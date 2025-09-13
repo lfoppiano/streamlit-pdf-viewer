@@ -28,6 +28,11 @@ def streamlit_app():
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the Streamlit app and wait until the app finishes loading.
+    
+    This directs `page` to the URL provided by `streamlit_app.server_url` and waits for the loading indicator (an image with accessible name "Running...") to become hidden, ensuring the app has finished its initial load before tests proceed.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -35,6 +40,21 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 @pytest.mark.skip("Needs investigation")
 def test_should_render_template_check_container_size(page: Page):
+    """
+    Verify that the PDF viewer embedded in two tabs renders text and that container sizing behaves as expected.
+    
+    Performs UI assertions against two iframe-based PDF viewers:
+    - Confirms the main template text and both tab labels are visible.
+    - For the first tab: asserts the PDF container and viewer are visible and the container width matches the iframe width; annotations are hidden.
+    - For the second tab: verifies initial invisibility of its PDF container/viewer and annotations, then clicks the tab, waits for rendering, and asserts:
+      - the PDF container becomes visible and its height is approximately 300px,
+      - the container dimensions do not exceed the iframe width,
+      - the PDF viewer and its canvas content render,
+      - the expected text inside the PDF becomes visible.
+    
+    Parameters:
+        page (playwright.sync_api.Page): Playwright page used to interact with the app and perform element assertions.
+    """
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab and rendering text")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
