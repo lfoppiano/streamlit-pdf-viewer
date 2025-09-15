@@ -35,9 +35,20 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_with_auto_height_zoom(page: Page):
+    """
+    Verify the PDF viewer with auto-height zoom renders inside the Streamlit iframe and shows zoom controls and rendered pages.
+    
+    Waits up to 5000 ms for the viewer iframe to become visible, then asserts:
+    - the page heading for the test example is visible,
+    - the iframe's pdfContainer, zoom button, and pdfViewer elements are visible,
+    - at least one canvas (PDF page) is present and each canvas is visible.
+    
+    This test will fail if any expected element is missing, not visible, or if no canvas elements are rendered.
+    """
     expect(page.get_by_text("Test PDF Viewer with auto-height zoom (fit to height)")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)

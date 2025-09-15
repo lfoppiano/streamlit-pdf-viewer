@@ -55,6 +55,17 @@ def test_should_render_with_page_separators_enabled(page: Page):
 
 
 def test_page_separators_are_visible(page: Page):
+    """
+    Verify that page separators are present when the viewer is configured with page separators.
+    
+    This test:
+    - Locates the first PDF viewer iframe and the page divs within it.
+    - Asserts at least one page div is visible.
+    - Reads the computed `margin-bottom` style of the first page div and asserts it is not "0px", indicating a visible separator between pages.
+    
+    Parameters:
+        page (playwright.sync_api.Page): Playwright page instance pointing at the running app.
+    """
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Look for page elements with border styles
@@ -67,7 +78,7 @@ def test_page_separators_are_visible(page: Page):
     
     # Get the first page div and check its computed style
     first_page = page_divs.first
-    border_bottom = first_page.evaluate("el => getComputedStyle(el).borderBottomWidth")
+    border_bottom = first_page.evaluate("el => getComputedStyle(el).marginBottom")
     
     # The border should be set (not '0px')
     assert border_bottom != '0px', f"Expected border-bottom to be set, but got: {border_bottom}" 
