@@ -1,6 +1,6 @@
 <template>
   <div :style="pdfContainerStyle" ref="pdfContainer" class="container-wrapper">
-    <div class="scrolling-container">
+    <div class="scrolling-container" ref="scrollingContainer">
       <div id="pdfViewer"></div>
     </div>
     <div class="control-buttons">
@@ -9,6 +9,9 @@
           <svg v-if="!isFullscreen" style="width:16px; height:16px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           <svg v-else style="width:16px; height:16px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
         </button>
+        <div v-if="showPageNumber" class="control-button page-number-display">
+          {{ currentPageNumber }} / {{ totalPages }}
+        </div>
         <button class="control-button" @click.stop="toggleZoomPanel">
           {{ Math.round(currentZoom * 100) }}%
         </button>
@@ -77,6 +80,9 @@ export default {
     const loadedPages = ref([]);
     const currentFrameHeight = ref(props.args.height || 0);
     const showZoomPanel = ref(false);
+    const scrollingContainer = ref(null);
+    const currentPageNumber = ref(1);
+    const totalPages = ref(0);
 
     const initialZoom = props.args.zoom_level === null || props.args.zoom_level === undefined ? 'auto' : props.args.zoom_level;
     const localZoomLevel = ref(initialZoom);
@@ -84,6 +90,7 @@ export default {
 
     const isFullscreen = ref(false);
     const showFullscreen = props.args.show_fullscreen_toggle === true;
+    const showPageNumber = props.args.show_page_number !== false;
 
     const zoomPresets = [0.5, 0.75, 1, 1.25, 1.5, 2];
     const pdfInstance = ref(null);
@@ -192,6 +199,7 @@ export default {
 
       const pageDiv = document.createElement('div');
       pageDiv.className = 'page';
+      pageDiv.dataset.pageNumber = page.pageNumber;
       pageDiv.style.position = 'relative';
       pageDiv.style.width = `${viewport.width}px`;
       pageDiv.style.height = `${viewport.height}px`;
@@ -336,11 +344,13 @@ export default {
         });
         const pdf = await loadingTask.promise;
         pdfInstance.value = pdf;
+        totalPages.value = pdf.numPages;
 
         const pdfViewer = document.getElementById("pdfViewer");
         clearExistingCanvases(pdfViewer);
 
         const pagesToRender = getPagesToRender(pdf.numPages);
+        currentPageNumber.value = pagesToRender.length > 0 ? pagesToRender[0] : 1;
         await renderPdfPages(pdf, pdfViewer, pagesToRender);
         scrollToItem();
       } catch (error) {
@@ -488,6 +498,40 @@ export default {
       }
     };
 
+    const handleScroll = () => {
+      if (!scrollingContainer.value) return;
+
+      const container = scrollingContainer.value;
+      const pages = container.querySelectorAll('.page[data-page-number]');
+      if (pages.length === 0) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const containerMidPointY = containerRect.top + containerRect.height / 2;
+
+      let closestPage = null;
+      let minDistance = Infinity;
+
+      pages.forEach(page => {
+        const pageRect = page.getBoundingClientRect();
+        const pageMidPointY = pageRect.top + pageRect.height / 2;
+        const distance = Math.abs(pageMidPointY - containerMidPointY);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestPage = page;
+        }
+      });
+
+      if (closestPage) {
+        const pageNum = parseInt(closestPage.dataset.pageNumber, 10);
+        if (pageNum !== currentPageNumber.value) {
+          currentPageNumber.value = pageNum;
+        }
+      }
+    };
+
+    const debouncedHandleScroll = debounce(handleScroll, 100);
+
     const onFullscreenChange = () => {
       isFullscreen.value = !!document.fullscreenElement;
     };
@@ -499,12 +543,14 @@ export default {
       window.addEventListener("resize", debouncedHandleResize);
       document.addEventListener('click', handleClickOutside);
       document.addEventListener('fullscreenchange', onFullscreenChange);
+      scrollingContainer.value?.addEventListener('scroll', debouncedHandleScroll);
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
       document.removeEventListener('fullscreenchange', onFullscreenChange);
+      scrollingContainer.value?.removeEventListener('scroll', debouncedHandleScroll);
     });
 
     return {
@@ -515,6 +561,9 @@ export default {
       localZoomLevel,
       zoomPresets,
       manualZoomInput,
+      scrollingContainer,
+      currentPageNumber,
+      totalPages,
       setZoom,
       zoomIn,
       zoomOut,
@@ -525,6 +574,7 @@ export default {
       showFullscreen,
       isFullscreen,
       toggleFullscreen,
+      showPageNumber,
     };
   },
 };
@@ -650,5 +700,13 @@ export default {
   height: 1px;
   background: rgba(255, 255, 255, 0.2);
   margin: 8px 0;
+}
+
+.page-number-display {
+  cursor: default;
+}
+
+.control-button.page-number-display:hover {
+  background: rgba(40, 40, 40, 0.9);
 }
 </style>

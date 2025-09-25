@@ -40,6 +40,7 @@ def pdf_viewer(
         scroll_to_annotation: Optional[int] = None,
         scroll_options: Optional[dict] = None,
         on_annotation_click: Optional[Callable[[dict], None]] = None,
+        show_page_number: bool = True,
         show_fullscreen_toggle: bool = True,
 ):
     """
@@ -62,6 +63,7 @@ def pdf_viewer(
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
     :param scroll_options: Options to pass to the scrollIntoView function to control behavior. Defaults to {"behavior": "smooth"}.
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
+    :param show_page_number: Whether to show the page number display. Defaults to True.
     :param show_fullscreen_toggle: Whether to show button to toggle fullscreen. Defaults to True.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
@@ -141,6 +143,7 @@ def pdf_viewer(
         scroll_to_page=scroll_to_page,
         scroll_to_annotation=scroll_to_annotation,
         scroll_options=scroll_options,
+        show_page_number=show_page_number,
         show_fullscreen_toggle=show_fullscreen_toggle,
     )
 
