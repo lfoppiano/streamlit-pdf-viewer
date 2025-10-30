@@ -56,6 +56,8 @@ def test_should_render_template_check_container_size(page: Page):
     pdf_viewer.wait_for(timeout=5000, state='visible')
     expect(pdf_viewer).to_be_visible()
 
+    # Wait briefly for rendering to begin before checking canvas count
+    page.wait_for_timeout(500)
     # Wait for canvases to stabilize before checking count
     canvas_locator = pdf_viewer.locator("canvas")
     canvas_list = wait_for_canvases(canvas_locator)
