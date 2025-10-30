@@ -38,7 +38,6 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     page.get_by_role("img", name="Running...").is_hidden()
 
 
-@pytest.mark.skip(reason="I give up. This test cannot run consistently in CI")
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab")).to_be_visible()
 
@@ -65,7 +64,6 @@ def test_should_render_template_check_container_size(page: Page):
     expect(pdf_viewer_0).to_be_visible()
 
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
-    annotations_locator.wait_for(timeout=5000, state='hidden')
     expect(annotations_locator).to_be_hidden()
 
     # Tab 2
@@ -88,9 +86,10 @@ def test_should_render_template_check_container_size(page: Page):
     # click on the second tab and verify that the PDF is visible
     tab1.click()
 
+    # Wait for the PDF container to become visible after tab switch
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
     pdf_container_1 = iframe_frame_1.locator('div[id="pdfContainer"]')
-    pdf_container_1.wait_for(timeout=5000, state='visible')
+    pdf_container_1.wait_for(timeout=10000, state='visible')
     expect(pdf_container_1).to_be_visible()
 
     b_box_1 = pdf_container_1.bounding_box()

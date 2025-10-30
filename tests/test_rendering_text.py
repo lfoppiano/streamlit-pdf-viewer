@@ -38,7 +38,6 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     page.get_by_role("img", name="Running...").is_hidden()
 
 
-@pytest.mark.skip(reason="This test cannot run consistently in CI")
 def test_should_render_template_check_container_size(page: Page):
     """
     Verify that the PDF viewer embedded in two tabs renders text and that container sizing behaves as expected.
@@ -71,7 +70,7 @@ def test_should_render_template_check_container_size(page: Page):
     tab1 = page.get_by_text('tab2')
     expect(tab1).to_be_visible()
 
-    # Tab 1
+    # Tab 1 - render_text=False
     iframe_frame_0 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     pdf_container_0 = iframe_frame_0.locator('div[id="pdfContainer"]')
     pdf_container_0.wait_for(timeout=5000, state='visible')
@@ -87,7 +86,7 @@ def test_should_render_template_check_container_size(page: Page):
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
     expect(annotations_locator).to_be_hidden()
 
-    # Tab 2
+    # Tab 2 - render_text=True (initially hidden)
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
     pdf_container_1 = iframe_frame_1.locator('div[id="pdfContainer"]')
     expect(pdf_container_1).not_to_be_visible()
@@ -104,9 +103,7 @@ def test_should_render_template_check_container_size(page: Page):
     # click on the second tab and verify that the PDF is visible
     tab1.click()
     
-    # Wait for the tab to load and the PDF to render
-    page.wait_for_timeout(3000)
-
+    # Wait for the PDF container to become visible after tab switch
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
     pdf_container_1 = iframe_frame_1.locator('div[id="pdfContainer"]')
     pdf_container_1.wait_for(timeout=10000, state='visible')
@@ -120,17 +117,17 @@ def test_should_render_template_check_container_size(page: Page):
 
     pdf_viewer_1 = iframe_frame_1.locator('div[id="pdfViewer"]')
     
-    # Wait for the PDF viewer to become visible and contain content
-    pdf_viewer_1.wait_for(timeout=15000, state='visible')
+    # Wait for the PDF viewer to become visible
+    pdf_viewer_1.wait_for(timeout=10000, state='visible')
     expect(pdf_viewer_1).to_be_visible()
     
     # Wait for canvas elements to be rendered (PDF content)
     canvas = pdf_viewer_1.locator('canvas').first
     canvas.wait_for(timeout=10000, state='visible')
+    expect(canvas).to_be_visible()
     
-    # Wait for text layer to render (especially in Firefox)
-    page.wait_for_timeout(2000)
-    
+    # Wait for text layer to render with increased timeout
+    # Text layers in PDFs can take longer to render, especially in Firefox
     text_in_pdf = pdf_viewer_1.get_by_text("from LaH10 to room–temperature").nth(0)
-    text_in_pdf.wait_for(timeout=10000, state='visible')
+    text_in_pdf.wait_for(timeout=20000, state='visible')
     expect(text_in_pdf).to_be_visible()
