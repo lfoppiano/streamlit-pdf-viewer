@@ -10,12 +10,11 @@ def test_multiple_pdf_viewers_render(page: Page):
 
     # Check that all four PDF viewer instances are present
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
-    expect(iframe_components).to_have_count(1)
+    expect(iframe_components).to_have_count(4)
 
     # Check that all iframes are visible
     for i in range(4):
-        iframe = iframe_components.nth(i)
-        expect(iframe).to_be_visible()
+        expect(iframe_components.nth(i)).to_be_visible()
 
 
 @pytest.mark.skip(reason="Test expects 4 PDF viewers to test independent functionality, but the test app example_zoom_auto.py only contains 1 PDF viewer. Cannot test independent functionality with single viewer.")
@@ -23,10 +22,10 @@ def test_multiple_pdf_viewers_render(page: Page):
 def test_multiple_pdf_viewers_independent_functionality(page: Page):
     """Test that multiple PDF viewers function independently."""
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
+    expect(iframe_components).to_have_count(4)
 
     # Test each iframe independently
     for i in range(4):
-        iframe = iframe_components.nth(i)
         iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(i)
 
         # Check that each PDF container is visible
@@ -43,6 +42,7 @@ def test_multiple_pdf_viewers_independent_functionality(page: Page):
 def test_multiple_pdf_viewers_different_configurations(page: Page):
     """Test that multiple PDF viewers with different configurations work correctly."""
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
+    expect(iframe_components).to_have_count(4)
 
     # Test the first two viewers (in columns) have different zoom levels
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
@@ -70,17 +70,15 @@ def test_multiple_pdf_viewers_performance(page: Page):
     page.wait_for_timeout(5000)
 
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
-    expect(iframe_components).to_have_count(1)
+    expect(iframe_components).to_have_count(4)
 
     # Check that all viewers are responsive
     for i in range(4):
-        iframe = iframe_components.nth(i)
         iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(i)
 
         # Each viewer should have rendered content
         pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
         expect(pdf_viewer).to_be_visible()
 
-        # Check for canvas elements (rendered PDF content)
-        canvas_elements = pdf_viewer.locator("canvas")
-        expect(canvas_elements).to_have_count(1)  # At least one canvas per viewer
+        # Check for canvas elements (rendered PDF content) - ensure at least one canvas per viewer
+        expect(pdf_viewer.locator("canvas").first).to_be_visible()
