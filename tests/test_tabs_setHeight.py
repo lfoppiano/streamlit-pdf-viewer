@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import Page, expect
 
-from tests import ROOT_DIRECTORY
+from tests import ROOT_DIRECTORY, wait_for_canvases
 from tests.e2e_utils import StreamlitRunner
 
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_tab_setHeight.py")
@@ -87,6 +87,9 @@ def test_should_render_template_check_container_size(page: Page):
 
     # click on the second tab and verify that the PDF is visible
     tab1.click()
+
+    # Wait for tab content to load
+    page.wait_for_timeout(1000)
 
     iframe_frame_1 = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(1)
     pdf_container_1 = iframe_frame_1.locator('div[id="pdfContainer"]')
