@@ -14,8 +14,12 @@
 # limitations under the License.
 
 import pytest
+from pathlib import Path
 from typing import Generator, Any, Dict
 from playwright.sync_api import Browser, BrowserContext, Page
+
+from tests import ROOT_DIRECTORY
+from tests.e2e_utils import StreamlitRunner
 
 
 @pytest.fixture(scope="function")
@@ -119,3 +123,45 @@ def browser_type_launch_args(browser_type_launch_args):
             "pdfjs.disabled": False,
         }
     }
+
+
+@pytest.fixture(scope="session")
+def default_test_app_file():
+    """Default test app file for most tests."""
+    return Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py"
+
+
+@pytest.fixture(scope="module")
+def default_streamlit_app(default_test_app_file):
+    """Default streamlit app fixture for tests that use the default test app."""
+    with StreamlitRunner(default_test_app_file) as runner:
+        yield runner
+
+
+@pytest.fixture(scope="function")
+def default_go_to_app(page: Page, default_streamlit_app: StreamlitRunner):
+    """Navigate to the default streamlit app and wait for it to load."""
+    page.goto(default_streamlit_app.server_url)
+    # Wait for app to load
+    page.get_by_role("img", name="Running...").is_hidden()
+
+
+@pytest.fixture(autouse=True, scope="module")
+def streamlit_app(default_test_app_file):
+    """Streamlit app fixture for tests that use the default test app.
+
+    Tests can override this by defining their own streamlit_app fixture.
+    """
+    with StreamlitRunner(default_test_app_file) as runner:
+        yield runner
+
+
+@pytest.fixture(autouse=True, scope="function")
+def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """Navigate to the streamlit app and wait for it to load.
+
+    Tests can override this by defining their own go_to_app fixture.
+    """
+    page.goto(streamlit_app.server_url)
+    # Wait for app to load
+    page.get_by_role("img", name="Running...").is_hidden()

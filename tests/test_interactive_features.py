@@ -1,57 +1,5 @@
-import os
-from pathlib import Path
-
 import pytest
 from playwright.sync_api import Page, expect
-
-from tests import ROOT_DIRECTORY
-from tests.e2e_utils import StreamlitRunner
-
-# Create a test app for interactive features
-TEST_APP_CONTENT = '''
-import os
-import streamlit as st
-from streamlit_pdf_viewer import pdf_viewer
-
-st.subheader("Test PDF Viewer Interactive Features")
-
-# Test with zoom controls
-st.write("**PDF Viewer with Zoom Controls**")
-pdf_viewer(os.path.join("tests", "resources", "test.pdf"), width=600, zoom_level=1.0)
-
-# Test with different zoom levels
-st.write("**PDF Viewer with High Zoom**")
-pdf_viewer(os.path.join("tests", "resources", "test.pdf"), width=400, zoom_level=2.0)
-
-# Test with low zoom
-st.write("**PDF Viewer with Low Zoom**")
-pdf_viewer(os.path.join("tests", "resources", "test.pdf"), width=400, zoom_level=0.5)
-'''
-
-TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py"
-
-
-@pytest.fixture(scope="session")
-def browser_type_launch_args(browser_type_launch_args):
-    return {
-        **browser_type_launch_args,
-        "firefox_user_prefs": {
-            "pdfjs.disabled": False,
-        }
-    }
-
-
-@pytest.fixture(autouse=True, scope="module")
-def streamlit_app():
-    with StreamlitRunner(TEST_APP_FILE) as runner:
-        yield runner
-
-
-@pytest.fixture(autouse=True, scope="function")
-def go_to_app(page: Page, streamlit_app: StreamlitRunner):
-    page.goto(streamlit_app.server_url)
-    # Wait for app to load
-    page.get_by_role("img", name="Running...").is_hidden()
 
 
 @pytest.mark.interactive

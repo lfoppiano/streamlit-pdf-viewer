@@ -1,55 +1,5 @@
-import os
-from pathlib import Path
-
 import pytest
 from playwright.sync_api import Page, expect
-
-from tests import ROOT_DIRECTORY
-from tests.e2e_utils import StreamlitRunner
-
-# Create a test app for responsive design testing
-TEST_APP_CONTENT = '''
-import os
-import streamlit as st
-from streamlit_pdf_viewer import pdf_viewer
-
-st.subheader("Test PDF Viewer Responsive Design")
-
-# Test with different widths
-st.write("**Desktop View (1200px width)**")
-pdf_viewer(os.path.join("tests", "resources", "test.pdf"), width=800)
-
-st.write("**Tablet View (768px width)**")
-pdf_viewer(os.path.join("tests", "resources", "test.pdf"), width=600)
-
-st.write("**Mobile View (375px width)**")
-pdf_viewer(os.path.join("tests", "resources", "test.pdf"), width=350)
-'''
-
-TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py"
-
-
-@pytest.fixture(scope="session")
-def browser_type_launch_args(browser_type_launch_args):
-    return {
-        **browser_type_launch_args,
-        "firefox_user_prefs": {
-            "pdfjs.disabled": False,
-        }
-    }
-
-
-@pytest.fixture(autouse=True, scope="module")
-def streamlit_app():
-    with StreamlitRunner(TEST_APP_FILE) as runner:
-        yield runner
-
-
-@pytest.fixture(autouse=True, scope="function")
-def go_to_app(page: Page, streamlit_app: StreamlitRunner):
-    page.goto(streamlit_app.server_url)
-    # Wait for app to load
-    page.get_by_role("img", name="Running...").is_hidden()
 
 
 @pytest.mark.responsive
