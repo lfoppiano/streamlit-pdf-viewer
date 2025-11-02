@@ -40,16 +40,9 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 def test_should_render_template_check_container_size(page: Page):
     """
-    Verify that the PDF viewer embedded in two tabs renders text and that container sizing behaves as expected.
+    Check that the PDF viewer embedded in two tabbed iframes renders text and that container sizing meets expectations.
     
-    Performs UI assertions against two iframe-based PDF viewers:
-    - Confirms the main template text and both tab labels are visible.
-    - For the first tab: asserts the PDF container and viewer are visible and the container width matches the iframe width; annotations are hidden.
-    - For the second tab: verifies initial invisibility of its PDF container/viewer and annotations, then clicks the tab, waits for rendering, and asserts:
-      - the PDF container becomes visible and its height is approximately 300px,
-      - the container dimensions do not exceed the iframe width,
-      - the PDF viewer and its canvas content render,
-      - the expected text inside the PDF becomes visible.
+    Asserts that the main template text and both tab labels are visible; for the first tab the PDF container and viewer are visible and the container width equals the iframe width and annotations are hidden; for the second tab verifies initial invisibility, then after activating the tab asserts the PDF container becomes visible with a height between 299 and 8000 pixels, the container fits within the iframe width, the viewer and its canvas render, and the expected text inside the PDF becomes visible.
     
     Parameters:
         page (playwright.sync_api.Page): Playwright page used to interact with the app and perform element assertions.

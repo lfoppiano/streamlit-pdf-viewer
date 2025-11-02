@@ -31,6 +31,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Enable Firefox's built-in PDF.js by extending the given browser launch arguments with the necessary user preference.
+    
+    Parameters:
+    	browser_type_launch_args (dict): Existing browser launch arguments to extend.
+    
+    Returns:
+    	(dict): A new launch-arguments dictionary containing all original entries plus `"firefox_user_prefs": {"pdfjs.disabled": False}`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -41,12 +50,25 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Provide a running StreamlitRunner for the test app and ensure it is cleaned up afterward.
+    
+    Yields:
+        runner (StreamlitRunner): A running StreamlitRunner instance serving TEST_APP_FILE.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the Streamlit app and wait for the app's running indicator to be hidden.
+    
+    Parameters:
+    	page (Page): Playwright page used to navigate and interact with the browser.
+    	streamlit_app (StreamlitRunner): Runner providing the app's server_url to navigate to.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -54,7 +76,11 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 @pytest.mark.responsive
 def test_responsive_design_desktop_view(page: Page):
-    """Test PDF viewer responsiveness on desktop viewport."""
+    """
+    Verify the PDF viewer adapts to a desktop viewport and that the PDF container width does not exceed 800 pixels.
+    
+    Asserts the page displays the expected viewer, that a single PDF viewer iframe and its `#pdfContainer` are visible, and that the container's measured width is <= 800.
+    """
     # Set desktop viewport
     page.set_viewport_size({"width": 1200, "height": 800})
     page.wait_for_timeout(1000)

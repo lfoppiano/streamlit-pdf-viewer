@@ -13,6 +13,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Merge additional launch arguments enabling Firefox's built-in PDF viewer into existing Playwright browser launch options.
+    
+    Parameters:
+        browser_type_launch_args (dict): Existing browser launch arguments to extend.
+    
+    Returns:
+        dict: A new launch arguments mapping with `firefox_user_prefs` set so the Firefox PDF viewer (`pdfjs.disabled`) is disabled (PDF viewer enabled).
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -23,12 +32,25 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Start the Streamlit example app defined by TEST_APP_FILE and yield the running StreamlitRunner for tests; the app is stopped when the fixture finishes.
+    
+    Returns:
+        StreamlitRunner: A runner instance controlling the started Streamlit app.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the given Playwright page to the Streamlit app URL and wait until the app's "Running..." indicator is hidden.
+    
+    Parameters:
+        page (Page): Playwright page instance to navigate.
+        streamlit_app (StreamlitRunner): Streamlit runner exposing the app's server_url.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -52,5 +74,4 @@ def test_valid_pdf_file_security(page: Page):
     src_attr = iframe.get_attribute('src')
     assert src_attr is not None, "PDF viewer iframe should have src attribute"
     assert 'streamlit_pdf_viewer' in src_attr, "PDF viewer iframe should have correct src"
-
 

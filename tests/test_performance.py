@@ -30,6 +30,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Extend the provided Playwright browser launch arguments to enable Firefox's built-in PDF viewer.
+    
+    Parameters:
+        browser_type_launch_args (dict): Base browser launch arguments to be extended.
+    
+    Returns:
+        dict: A copy of `browser_type_launch_args` with `firefox_user_prefs` set so `"pdfjs.disabled"` is `False`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -40,12 +49,25 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Provide a StreamlitRunner running the test application for the test session.
+    
+    Yields:
+        StreamlitRunner: A runner started with TEST_APP_FILE that manages the lifecycle of the Streamlit test app.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the running Streamlit app and wait until the app's "Running..." indicator is hidden.
+    
+    Parameters:
+        page (Page): Playwright page used for navigation and DOM interaction.
+        streamlit_app (StreamlitRunner): Runner that exposes the app's server_url to navigate to.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -108,7 +130,9 @@ def test_performance_pdf_content_rendering(page: Page):
 @pytest.mark.skip(reason="Test expects 5 PDF viewers to test memory usage, but the test app example_zoom_auto.py only contains 1 PDF viewer. Cannot test multiple viewer memory usage with single viewer.")
 @pytest.mark.performance
 def test_performance_memory_usage(page: Page):
-    """Test that multiple PDF viewers don't cause excessive memory usage."""
+    """
+    Verify each PDF viewer renders a visible canvas with positive dimensions, indicating reasonable memory usage.
+    """
     # Wait for all content to load
     page.wait_for_timeout(5000)
 

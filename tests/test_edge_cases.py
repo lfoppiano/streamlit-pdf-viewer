@@ -13,6 +13,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Enable Firefox's built-in PDF viewer by merging a Firefox user preference into browser launch arguments.
+    
+    Parameters:
+        browser_type_launch_args (dict): Existing browser launch arguments.
+    
+    Returns:
+        dict: A new mapping containing all original launch arguments plus a Firefox user preference setting `"pdfjs.disabled": False`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -23,12 +32,25 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Start the test Streamlit application and provide its runner to tests.
+    
+    Yields:
+        StreamlitRunner: a running Streamlit app runner that tests can use to interact with the launched test app.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the provided Streamlit app URL and wait for the app to finish loading.
+    
+    Parameters:
+        page (Page): Playwright page used for navigation and DOM interactions.
+        streamlit_app (StreamlitRunner): Running test app runner providing `server_url`.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -36,7 +58,11 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 @pytest.mark.edge_case
 def test_edge_case_very_small_width(page: Page):
-    """Test PDF viewer with very small width."""
+    """
+    Verify the PDF viewer renders correctly when the viewer width is very small.
+    
+    Asserts the test app title is visible, a single viewer iframe is present, the iframe's pdfContainer is visible, and the container reports a positive width and height.
+    """
     expect(page.get_by_text("Test PDF Viewer with auto zoom (fit to width)")).to_be_visible()
     
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
@@ -73,7 +99,11 @@ def test_edge_case_very_large_width(page: Page):
 
 @pytest.mark.edge_case
 def test_edge_case_extreme_zoom_out(page: Page):
-    """Test PDF viewer with extreme zoom out."""
+    """
+    Verify the PDF viewer renders a visible canvas when displayed at an extreme zoom-out level.
+    
+    Asserts that a single PDF viewer iframe is present, the viewer container and viewer are visible, the first canvas is visible, and the canvas width is greater than zero.
+    """
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
     expect(iframe_components).to_have_count(1)
     
@@ -119,7 +149,11 @@ def test_edge_case_extreme_zoom_in(page: Page):
 
 @pytest.mark.edge_case
 def test_edge_case_no_width_specified(page: Page):
-    """Test PDF viewer with no width specified (should use default)."""
+    """
+    Verifies a PDF viewer rendered without an explicit width uses a reasonable default size.
+    
+    Asserts that a single PDF viewer iframe is present, its pdfContainer is visible, and the container's width is greater than zero and less than 2000 pixels.
+    """
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
     expect(iframe_components).to_have_count(1)
     

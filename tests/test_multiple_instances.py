@@ -37,6 +37,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Extend Playwright browser launch arguments to enable Firefox's built-in PDF viewer.
+    
+    Parameters:
+        browser_type_launch_args (dict): Base browser launch arguments to extend.
+    
+    Returns:
+        dict: A copy of the provided launch arguments with the Firefox preference `pdfjs.disabled` set to `False`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -47,12 +56,25 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Launches the test Streamlit app from TEST_APP_FILE and yields its runner.
+    
+    Starts a StreamlitRunner serving the file at TEST_APP_FILE and provides the runner to tests; the runner is stopped when the fixture context exits.
+    
+    Returns:
+        StreamlitRunner: The runner instance managing the running test Streamlit app.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the Streamlit app URL and wait for the app to finish loading.
+    
+    Waits until the "Running..." status image is no longer visible before returning.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -77,7 +99,9 @@ def test_multiple_pdf_viewers_render(page: Page):
 @pytest.mark.skip(reason="Test expects 4 PDF viewers to test independent functionality, but the test app example_zoom_auto.py only contains 1 PDF viewer. Cannot test independent functionality with single viewer.")
 @pytest.mark.multiple_instances
 def test_multiple_pdf_viewers_independent_functionality(page: Page):
-    """Test that multiple PDF viewers function independently."""
+    """
+    Verify each of the four PDF viewer iframes exposes a visible `pdfContainer` and `pdfViewer`, ensuring each viewer functions independently.
+    """
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
 
     # Test each iframe independently

@@ -33,6 +33,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Merge Playwright browser launch arguments with a Firefox preference that enables the browser's built-in PDF viewer.
+    
+    Parameters:
+        browser_type_launch_args (dict): Existing Playwright browser launch arguments.
+    
+    Returns:
+        dict: Combined launch arguments including `firefox_user_prefs` with `"pdfjs.disabled": False`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -43,12 +52,27 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Start the test Streamlit app defined by TEST_APP_FILE and yield its StreamlitRunner for use in tests.
+    
+    The StreamlitRunner is active for the duration of the yield and is stopped when the context exits.
+    
+    Returns:
+        runner (StreamlitRunner): Active runner managing the running test app.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the Streamlit app URL and wait for the app's loading indicator to be hidden.
+    
+    Parameters:
+        page (Page): Playwright Page instance used to navigate and query the app.
+        streamlit_app (StreamlitRunner): Runner providing the app's server_url.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()

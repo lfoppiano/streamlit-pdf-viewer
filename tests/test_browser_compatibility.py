@@ -13,6 +13,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Provide browser launch arguments with Firefox PDF handling enabled.
+    
+    Parameters:
+        browser_type_launch_args (dict): Existing browser launch arguments to merge into the returned mapping.
+    
+    Returns:
+        dict: The merged browser launch arguments with the Firefox preference `pdfjs.disabled` set to `False`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -23,12 +32,25 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Start the example Streamlit application and provide a StreamlitRunner for tests.
+    
+    Returns:
+        runner (StreamlitRunner): Runner for interacting with the launched app. The app is stopped and the runner cleaned up when the fixture completes.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the provided Streamlit app URL and wait until the app indicates it has finished loading.
+    
+    Parameters:
+        page (Page): Playwright page used for navigation and interaction.
+        streamlit_app (StreamlitRunner): Runner providing the Streamlit app server URL.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -36,7 +58,11 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 @pytest.mark.compatibility
 def test_basic_pdf_viewer_compatibility(page: Page):
-    """Test basic PDF viewer functionality across browsers."""
+    """
+    Verify the PDF viewer iframe, its container, and rendered canvas are present and visible.
+    
+    Asserts the page shows the test heading, a single iframe titled "streamlit_pdf_viewer.streamlit_pdf_viewer" exists, the iframe contains visible elements with ids "pdfContainer" and "pdfViewer", and the first canvas inside "pdfViewer" is visible.
+    """
     expect(page.get_by_text("Test PDF Viewer with auto zoom (fit to width)")).to_be_visible()
     
     # Check that the basic PDF viewer iframe is present

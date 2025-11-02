@@ -40,6 +40,11 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 @pytest.mark.skip(reason="I give up. This test cannot run consistently in CI")
 def test_should_render_template_check_container_size(page: Page):
+    """
+    Verify the PDF viewer renders correctly inside tabbed iframes and that container sizing updates when switching tabs.
+    
+    Checks that the PDF viewer iframe is visible and has positive dimensions, that the first tab's PDF container and viewer are visible while annotations are hidden, that the second tab's content is initially hidden, and that after activating the second tab the PDF container becomes visible with an expected height around 300 and the viewer is visible.
+    """
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)

@@ -13,6 +13,15 @@ TEST_APP_FILE = Path(__file__).parent / "streamlit_apps" / "example_zoom_auto.py
 
 @pytest.fixture(scope="session")
 def browser_type_launch_args(browser_type_launch_args):
+    """
+    Add Firefox-specific preferences to the provided browser launch arguments.
+    
+    Parameters:
+        browser_type_launch_args (dict): Base browser launch arguments to extend.
+    
+    Returns:
+        dict: A new launch-arguments mapping that includes a `firefox_user_prefs` entry with `"pdfjs.disabled": False`.
+    """
     return {
         **browser_type_launch_args,
         "firefox_user_prefs": {
@@ -23,12 +32,26 @@ def browser_type_launch_args(browser_type_launch_args):
 
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """
+    Start a Streamlit app for the test session and provide its runner.
+    
+    The function launches the Streamlit app located at TEST_APP_FILE and yields a StreamlitRunner instance for use by tests. The runner is started before yielding and stopped when the generator completes.
+    Returns:
+    	runner (StreamlitRunner): A running StreamlitRunner for the test application.
+    """
     with StreamlitRunner(TEST_APP_FILE) as runner:
         yield runner
 
 
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
+    """
+    Navigate the Playwright page to the Streamlit app and wait for the app to finish loading.
+    
+    Parameters:
+        page (Page): Playwright page used to navigate and interact with the application.
+        streamlit_app (StreamlitRunner): Test runner that exposes the app's server_url to navigate to.
+    """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
     page.get_by_role("img", name="Running...").is_hidden()
@@ -68,7 +91,11 @@ def test_accessibility_keyboard_navigation(page: Page):
 
 @pytest.mark.accessibility
 def test_accessibility_zoom_levels_for_visibility(page: Page):
-    """Test that different zoom levels improve accessibility for users with visual impairments."""
+    """
+    Verify the PDF viewer's rendered canvas has positive width and height to ensure the content is visible to users with visual impairments.
+    
+    This test locates the PDF viewer iframe and asserts the first canvas element inside it has a width and height greater than zero.
+    """
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
     expect(iframe_components).to_have_count(1)
     
@@ -84,7 +111,11 @@ def test_accessibility_zoom_levels_for_visibility(page: Page):
 
 @pytest.mark.accessibility
 def test_accessibility_screen_reader_compatibility(page: Page):
-    """Test that PDF viewers are compatible with screen readers."""
+    """
+    Verifies the PDF viewer iframe exposes screen-reader relevant attributes.
+    
+    Asserts a single PDF viewer iframe exists, that it has a non-empty title attribute, and that it is not hidden from assistive technologies via `aria-hidden="true"`.
+    """
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
     expect(iframe_components).to_have_count(1)
     
@@ -102,7 +133,11 @@ def test_accessibility_screen_reader_compatibility(page: Page):
 
 @pytest.mark.accessibility
 def test_accessibility_high_contrast_mode(page: Page):
-    """Test that PDF viewers work well in high contrast mode."""
+    """
+    Ensure the embedded PDF viewer remains visible and functional when a high-contrast CSS filter is applied.
+    
+    Applies a global contrast filter to simulate high-contrast mode, waits briefly for rendering, asserts exactly one viewer iframe is present, and verifies the viewer container (div#pdfViewer) and its first canvas element are visible.
+    """
     # Simulate high contrast mode by adding CSS
     page.add_style_tag(content="""
         * {

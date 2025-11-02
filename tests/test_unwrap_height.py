@@ -19,9 +19,14 @@ def streamlit_app():
 @pytest.fixture(autouse=True, scope="function")
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     """
-    Navigate the Playwright page to the Streamlit app and wait until the app's "Running..." image is hidden.
+    Navigate the Playwright page to the Streamlit app and wait until the app's "Running..." indicator is hidden.
     
-    This performs a page.goto to the runner's server_url and waits for the app to finish loading by checking that the role="img" element with name "Running..." is no longer visible.
+    Parameters:
+        page (Page): Playwright Page used to navigate and query the app.
+        streamlit_app (StreamlitRunner): Runner providing the app's server_url; navigation targets this URL.
+    
+    Detailed behavior:
+        Navigates the page to streamlit_app.server_url and waits until the role="img" element with name "Running..." is no longer visible, indicating the app has finished loading.
     """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
@@ -29,6 +34,11 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_template_check_container_size(page: Page):
+    """
+    Verify the PDF viewer renders with the expected container size, canvases, and hidden annotations.
+    
+    Asserts that the example text is visible, the PDF viewer iframe is present and has a non-zero bounding box, the inner pdfContainer width does not exceed the iframe width and has a height of 300, the pdfViewer is visible, exactly 8 canvases (pages) are rendered and visible, and the pdfAnnotations element is hidden.
+    """
     expect(page.get_by_text("Test PDF Viewer with specified height")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)

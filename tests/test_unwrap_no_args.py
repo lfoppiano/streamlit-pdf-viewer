@@ -24,6 +24,16 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
 
 
 def test_should_render_template_check_container_size(page: Page):
+    """
+    Verify the PDF viewer template renders, the pdfContainer occupies the iframe width with a positive height, eight page canvases are rendered and visible, and the annotations element is hidden.
+    
+    Checks performed:
+    - Page contains the expected title text.
+    - The iframe for the PDF viewer is visible and has non-zero width/height.
+    - The pdfContainer is visible, its width equals the iframe width, and its height is greater than zero.
+    - The pdfViewer is visible and contains exactly 8 canvas elements, each visible with positive dimensions.
+    - The pdfAnnotations element is hidden.
+    """
     expect(page.get_by_text("Test PDF Viewer with no args")).to_be_visible()
 
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
@@ -60,7 +70,11 @@ def test_should_render_template_check_container_size(page: Page):
     expect(annotations_locator).to_be_hidden()
 
 def test_should_render_multiple_pages(page: Page):
-    """Test that PDF viewer renders all pages correctly"""
+    """
+    Verify the PDF viewer renders every page and that each rendered canvas has positive dimensions.
+    
+    Waits for the viewer iframe and its internal pdfViewer to become visible, collects rendered canvases, asserts there are eight pages, and checks each canvas is visible with width and height greater than zero.
+    """
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     iframe_component.wait_for(timeout=5000, state='visible')
 
@@ -87,7 +101,11 @@ def test_should_render_multiple_pages(page: Page):
 
 
 def test_should_responsive_to_viewport_changes(page: Page):
-    """Test that PDF viewer responds correctly to viewport size changes"""
+    """
+    Verify the PDF viewer adjusts its iframe size and keeps its content visible after changing the browser viewport.
+    
+    Asserts that the iframe's width or height changes after resizing the viewport and that the PDF container element remains visible.
+    """
     iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     iframe_component.wait_for(timeout=5000, state='visible')
 
