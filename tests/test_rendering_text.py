@@ -10,18 +10,9 @@ from tests.e2e_utils import StreamlitRunner
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_text_layers.py")
 
 
-@pytest.fixture(scope="session")
-def browser_type_launch_args(browser_type_launch_args):
-    return {
-        **browser_type_launch_args,
-        "firefox_user_prefs": {
-            "pdfjs.disabled": False,
-        }
-    }
-
-
 @pytest.fixture(autouse=True, scope="module")
 def streamlit_app():
+    """Streamlit app fixture using the text layers example."""
     with StreamlitRunner(Path(BASIC_EXAMPLE_FILE)) as runner:
         yield runner
 
@@ -30,7 +21,7 @@ def streamlit_app():
 def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     """
     Navigate the Playwright page to the Streamlit app and wait until the app finishes loading.
-    
+
     This directs `page` to the URL provided by `streamlit_app.server_url` and waits for the loading indicator (an image with accessible name "Running...") to become hidden, ensuring the app has finished its initial load before tests proceed.
     """
     page.goto(streamlit_app.server_url)
@@ -38,7 +29,6 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     page.get_by_role("img", name="Running...").is_hidden()
 
 
-@pytest.mark.skip(reason="This test cannot run consistently in CI")
 def test_should_render_template_check_container_size(page: Page):
     """
     Verify that the PDF viewer embedded in two tabs renders text and that container sizing behaves as expected.
