@@ -59,65 +59,54 @@ def test_should_render_template_check_container_size(page: Page):
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
     expect(annotations_locator).to_be_hidden()
 
-# def test_should_render_template(page: Page):
-#     frame_0 = page.frame_locator(
-#         'iframe[title="my_component\\.my_component"]'
-#     ).nth(0)
-#     frame_1 = page.frame_locator(
-#         'iframe[title="my_component\\.my_component"]'
-#     ).nth(1)
-#
-#     st_markdown_0 = page.get_by_role('paragraph').nth(0)
-#     st_markdown_1 = page.get_by_role('paragraph').nth(1)
-#
-#     expect(st_markdown_0).to_contain_text("You've clicked 0 times!")
-#
-#     frame_0.get_by_role("button", name="Click me!").click()
-#
-#     expect(st_markdown_0).to_contain_text("You've clicked 1 times!")
-#     expect(st_markdown_1).to_contain_text("You've clicked 0 times!")
-#
-#     frame_1.get_by_role("button", name="Click me!").click()
-#     frame_1.get_by_role("button", name="Click me!").click()
-#
-#     expect(st_markdown_0).to_contain_text("You've clicked 1 times!")
-#     expect(st_markdown_1).to_contain_text("You've clicked 2 times!")
-#
-#     page.get_by_label("Enter a name").click()
-#     page.get_by_label("Enter a name").fill("World")
-#     page.get_by_label("Enter a name").press("Enter")
-#
-#     expect(frame_1.get_by_text("Hello, World!")).to_be_visible()
-#
-#     frame_1.get_by_role("button", name="Click me!").click()
-#
-#     expect(st_markdown_0).to_contain_text("You've clicked 1 times!")
-#     expect(st_markdown_1).to_contain_text("You've clicked 3 times!")
-#
-#
-# def test_should_change_iframe_height(page: Page):
-#     frame = page.frame_locator('iframe[title="my_component\\.my_component"]').nth(1)
-#
-#     expect(frame.get_by_text("Hello, Streamlit!")).to_be_visible()
-#
-#     locator = page.locator('iframe[title="my_component\\.my_component"]').nth(1)
-#
-#     init_frame_height = locator.bounding_box()['height']
-#     assert init_frame_height != 0
-#
-#     page.get_by_label("Enter a name").click()
-#
-#     page.get_by_label("Enter a name").fill(35 * "Streamlit ")
-#     page.get_by_label("Enter a name").press("Enter")
-#
-#     expect(frame.get_by_text("Streamlit Streamlit Streamlit")).to_be_visible()
-#
-#     frame_height = locator.bounding_box()['height']
-#     assert frame_height > init_frame_height
-#
-#     page.set_viewport_size({"width": 150, "height": 150})
-#
-#     expect(frame.get_by_text("Streamlit Streamlit Streamlit")).not_to_be_in_viewport()
-#
-#     frame_height_after_viewport_change = locator.bounding_box()['height']
-#     assert frame_height_after_viewport_change > frame_height
+def test_should_render_multiple_pages(page: Page):
+    """Test that PDF viewer renders all pages correctly"""
+    iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
+
+    iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
+    pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
+    pdf_viewer.wait_for(timeout=5000, state='visible')
+
+    # Wait for canvases to render
+    page.wait_for_timeout(500)
+    canvas_locator = pdf_viewer.locator("canvas")
+    canvas_list = wait_for_canvases(canvas_locator)
+
+    # Should have 8 pages total for the test PDF
+    assert len(canvas_list) == 8
+
+    # All canvases should be visible
+    for i, canvas in enumerate(canvas_list):
+        canvas.wait_for(timeout=5000, state='visible')
+        expect(canvas).to_be_visible()
+        # Each canvas should have reasonable dimensions
+        canvas_box = canvas.bounding_box()
+        assert canvas_box['width'] > 0
+        assert canvas_box['height'] > 0
+
+
+def test_should_responsive_to_viewport_changes(page: Page):
+    """Test that PDF viewer responds correctly to viewport size changes"""
+    iframe_component = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
+    iframe_component.wait_for(timeout=5000, state='visible')
+
+    # Get initial dimensions
+    initial_frame_box = iframe_component.bounding_box()
+    initial_width = initial_frame_box['width']
+    initial_height = initial_frame_box['height']
+
+    # Change viewport size
+    page.set_viewport_size({"width": 600, "height": 400})
+    page.wait_for_timeout(1000)  # Wait for responsive adjustment
+
+    # Get dimensions after viewport change
+    new_frame_box = iframe_component.bounding_box()
+
+    # The viewer should adjust to viewport changes
+    assert new_frame_box['width'] != initial_width or new_frame_box['height'] != initial_height
+
+    # PDF content should still be visible
+    iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
+    pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
+    expect(pdf_container).to_be_visible()
