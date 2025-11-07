@@ -41,6 +41,9 @@ def test_should_render_with_numeric_zoom(page: Page):
     iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
+    # Wait for iframe to be properly loaded and have content
+    page.wait_for_timeout(2000)
+
     iframe_box = iframe_component.bounding_box()
     assert iframe_box['width'] > 0
     assert iframe_box['height'] > 0
@@ -50,7 +53,7 @@ def test_should_render_with_numeric_zoom(page: Page):
     expect(pdf_container).to_be_visible()
 
     # Check that zoom controls are present
-    zoom_button = iframe_frame.locator('button.zoom-button')
+    zoom_button = iframe_frame.locator('.top-buttons button.control-button').nth(1)
     expect(zoom_button).to_be_visible()
 
     # Verify PDF viewer is present and has content
@@ -72,7 +75,7 @@ def test_zoom_controls_functionality(page: Page):
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     
     # Click zoom button to open panel
-    zoom_button = iframe_frame.locator('button.zoom-button')
+    zoom_button = iframe_frame.locator('.top-buttons button.control-button').nth(1)
     zoom_button.wait_for(timeout=5000, state='visible')
     zoom_button.click()
     

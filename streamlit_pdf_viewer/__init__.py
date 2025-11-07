@@ -60,7 +60,7 @@ def pdf_viewer(
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
-    :param show_fullscreen_toggle: Whether to show button to toggle fullscreen. Defaults to True.
+    :param show_fullscreen_toggle: Whether to show button to toggle maximized mode. This provides expanded viewing within the component boundaries rather than browser fullscreen. Defaults to True.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
