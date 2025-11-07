@@ -7,7 +7,7 @@
       <button class="zoom-button" @click.stop="toggleZoomPanel">
         {{ Math.round(currentZoom * 100) }}%
       </button>
-      <div v-if="showZoomPanel" class="zoom-panel">
+      <div v-show="showZoomPanel" class="zoom-panel">
         <div class="zoom-input-container">
           <input
               type="number"
@@ -33,13 +33,13 @@
           <span class="zoom-icon">↕</span> Fit to Height
         </button>
         <button
-            v-for="preset in zoomPresets"
-            :key="preset"
+            v-for="preset in computedZoomPresets"
+            :key="preset.value"
             class="zoom-option zoom-preset"
-            :class="{ active: Math.abs(currentZoom - preset) < 0.01 }"
-            @click="setZoom(preset)"
+            :class="{ active: preset.active }"
+            @click="setZoom(preset.value)"
         >
-          {{ Math.round(preset * 100) }}%
+          {{ preset.label }}
         </button>
       </div>
     </div>
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import {onMounted, computed, ref, onUnmounted, watch} from "vue";
+import {onMounted, computed, ref, onUnmounted, watch, nextTick} from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
@@ -83,6 +83,15 @@ export default {
     const isRendering = ref(false);
 
     const renderText = props.args.render_text === true;
+
+    // Pre-compute preset values to avoid template calculations
+    const computedZoomPresets = computed(() => {
+      return zoomPresets.map(preset => ({
+        value: preset,
+        label: `${Math.round(preset * 100)}%`,
+        active: Math.abs(currentZoom.value - preset) < 0.01
+      }));
+    });
 
     const parseWidthValue = (widthValue, fallbackValue = window.innerWidth) => {
       if (typeof widthValue === "string" && widthValue.endsWith("%")) {
@@ -433,9 +442,12 @@ export default {
       }
     };
 
-    const toggleZoomPanel = () => {
+    const toggleZoomPanel = async () => {
       showZoomPanel.value = !showZoomPanel.value;
+
+      // Use nextTick to ensure DOM updates before potentially expensive operations
       if (showZoomPanel.value) {
+        await nextTick();
         manualZoomInput.value = Math.round(currentZoom.value * 100);
       }
     };
@@ -478,6 +490,7 @@ export default {
       currentZoom,
       localZoomLevel,
       zoomPresets,
+      computedZoomPresets,
       manualZoomInput,
       setZoom,
       zoomIn,
@@ -531,11 +544,19 @@ export default {
 
 .zoom-panel {
   background: rgba(25, 25, 25, 0.95);
-  backdrop-filter: blur(5px);
   border-radius: 8px;
   padding: 8px;
   width: 200px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.zoom-panel[style*="display: block"],
+.zoom-panel:not([style*="display: none"]) {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .zoom-input-container {
