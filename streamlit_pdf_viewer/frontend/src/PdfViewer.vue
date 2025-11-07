@@ -1,20 +1,26 @@
 <template>
-  <div :style="pdfContainerStyle" ref="pdfContainer" id="pdfContainer" class="container-wrapper">
+  <div :style="pdfContainerStyle" ref="pdfContainer" id="pdfContainer" :class="['container-wrapper', { maximized: isMaximized }]">
     <div class="scrolling-container">
       <div id="pdfViewer"></div>
     </div>
-    <div class="zoom-controls">
-      <button class="zoom-button" @click.stop="toggleZoomPanel">
-        {{ Math.round(currentZoom * 100) }}%
-      </button>
+    <div class="control-buttons">
+      <div class="top-buttons">
+        <button v-if="showFullscreen" class="control-button" @click.stop="toggleMaximized" :title="isMaximized ? 'Exit Maximized' : 'Enter Maximized'">
+          <svg v-if="!isMaximized" style="width:16px; height:16px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <svg v-else style="width:16px; height:16px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        </button>
+        <button class="control-button" @click.stop="toggleZoomPanel">
+          {{ Math.round(currentZoom * 100) }}%
+        </button>
+      </div>
       <div v-if="showZoomPanel" class="zoom-panel">
         <div class="zoom-input-container">
           <input
-              type="number"
-              class="zoom-input"
-              v-model="manualZoomInput"
-              @keyup.enter="applyManualZoom"
-              @blur="applyManualZoom"
+            type="number"
+            class="zoom-input"
+            v-model="manualZoomInput"
+            @keyup.enter="applyManualZoom"
+            @blur="applyManualZoom"
           />
           <span class="zoom-input-percent">%</span>
         </div>
@@ -76,6 +82,9 @@ export default {
     const localZoomLevel = ref(initialZoom);
     const currentZoom = ref(1); // Will be updated on render
 
+    const isMaximized = ref(false);
+    const showFullscreen = props.args.show_fullscreen_toggle === true;
+
     const zoomPresets = [0.5, 0.75, 1, 1.25, 1.5, 2];
     const pdfInstance = ref(null);
     const pdfContainer = ref(null);
@@ -100,23 +109,40 @@ export default {
 
     const pdfContainerStyle = computed(() => {
       const result = parseWidthValue(props.args.width, window.innerWidth);
-      const widthCSS = result.type === "percent" ? `${result.value * 100}%` : `${result.value}px`;
+      let widthCSS, heightCSS;
+
+      if (isMaximized.value) {
+        // In maximized mode, use full viewport
+        widthCSS = '100vw';
+        heightCSS = '100vh';
+      } else {
+        widthCSS = result.type === "percent" ? `${result.value * 100}%` : `${result.value}px`;
+        heightCSS = props.args.height ? `${props.args.height}px` : 'auto';
+      }
+
       const style = {
         width: widthCSS,
-        height: props.args.height ? `${props.args.height}px` : 'auto',
-        position: 'relative',
+        height: heightCSS,
+        position: isMaximized.value ? 'fixed' : 'relative',
+        top: isMaximized.value ? '0' : 'auto',
+        left: isMaximized.value ? '0' : 'auto',
+        zIndex: isMaximized.value ? '9999' : 'auto',
+        backgroundColor: isMaximized.value ? 'white' : 'transparent',
+        transition: 'all 0.3s ease-in-out',
       };
 
-      const align = props.args.viewer_align || 'center';
-      if (align === 'center') {
-        style.marginLeft = 'auto';
-        style.marginRight = 'auto';
-      } else if (align === 'left') {
-        style.marginLeft = '0';
-        style.marginRight = 'auto';
-      } else if (align === 'right') {
-        style.marginLeft = 'auto';
-        style.marginRight = '0';
+      if (!isMaximized.value) {
+        const align = props.args.viewer_align || 'center';
+        if (align === 'center') {
+          style.marginLeft = 'auto';
+          style.marginRight = 'auto';
+        } else if (align === 'left') {
+          style.marginLeft = '0';
+          style.marginRight = 'auto';
+        } else if (align === 'right') {
+          style.marginLeft = 'auto';
+          style.marginRight = '0';
+        }
       }
 
       return style;
@@ -391,6 +417,33 @@ export default {
       }
     };
 
+    // Handle maximized state changes without full re-render
+    const handleMaximizedResize = () => {
+      if (isMaximized.value) {
+        // When maximized, adjust container dimensions without re-rendering PDF
+        const scrollingContainer = document.querySelector('.scrolling-container');
+        if (scrollingContainer) {
+          scrollingContainer.style.height = 'calc(100vh - 120px)'; // Account for control buttons
+        }
+
+        // Adjust PDF viewer width to fit the maximized container
+        const pdfViewer = document.getElementById("pdfViewer");
+        if (pdfViewer && maxWidth.value) {
+          pdfViewer.style.width = '100%';
+          pdfViewer.style.maxWidth = 'none';
+        }
+      } else {
+        // Restore original dimensions when exiting maximized mode
+        const scrollingContainer = document.querySelector('.scrolling-container');
+        if (scrollingContainer) {
+          scrollingContainer.style.height = '';
+        }
+
+        // Trigger a single re-render to restore original layout
+        handleResize();
+      }
+    };
+
     watch(() => props.args.binary, () => {
       handleResize();
     });
@@ -401,8 +454,47 @@ export default {
     });
 
     watch(() => props.args.viewer_align, () => {
-      handleResize();
+      if (!isMaximized.value) {
+        handleResize();
+      }
     });
+
+    // Watch for maximized state changes to handle edge cases
+    watch(isMaximized, (newVal) => {
+      if (newVal) {
+        // When entering maximized mode, ensure zoom controls work properly
+        setTimeout(() => {
+          const scrollingContainer = document.querySelector('.scrolling-container');
+          if (scrollingContainer) {
+            scrollingContainer.scrollTop = parseFloat(scrollingContainer.dataset.savedScrollTop || 0);
+            scrollingContainer.scrollLeft = parseFloat(scrollingContainer.dataset.savedScrollLeft || 0);
+          }
+        }, 100); // Small delay to ensure DOM has updated
+      }
+    });
+
+    const toggleMaximized = () => {
+    isMaximized.value = !isMaximized.value;
+
+    // Save/restore scroll position and handle maximized state
+    const scrollingContainer = document.querySelector('.scrolling-container');
+    if (scrollingContainer) {
+      if (isMaximized.value) {
+        // Save scroll position when entering maximized mode
+        scrollingContainer.dataset.savedScrollTop = scrollingContainer.scrollTop;
+        scrollingContainer.dataset.savedScrollLeft = scrollingContainer.scrollLeft;
+      } else {
+        // Restore scroll position when exiting maximized mode
+        if (scrollingContainer.dataset.savedScrollTop !== undefined) {
+          scrollingContainer.scrollTop = parseFloat(scrollingContainer.dataset.savedScrollTop);
+          scrollingContainer.scrollLeft = parseFloat(scrollingContainer.dataset.savedScrollLeft);
+        }
+      }
+    }
+
+    // Handle the resize without full re-render
+    handleMaximizedResize();
+  };
 
     const setZoom = (zoomLevel) => {
       localZoomLevel.value = zoomLevel;
@@ -453,8 +545,14 @@ export default {
     };
 
     const handleClickOutside = (event) => {
-      if (showZoomPanel.value && !event.target.closest('.zoom-controls')) {
+      if (showZoomPanel.value && !event.target.closest('.control-buttons')) {
         showZoomPanel.value = false;
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && isMaximized.value) {
+        toggleMaximized();
       }
     };
 
@@ -464,11 +562,13 @@ export default {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
       document.addEventListener('click', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     });
 
     return {
@@ -486,6 +586,9 @@ export default {
       fitToHeight,
       toggleZoomPanel,
       applyManualZoom,
+      showFullscreen,
+      isMaximized,
+      toggleMaximized,
     };
   },
 };
@@ -494,14 +597,29 @@ export default {
 <style scoped>
 .container-wrapper {
   position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .scrolling-container {
   height: 100%;
   overflow: auto;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.zoom-controls {
+.container-wrapper.maximized {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999;
+  background: white;
+  border-radius: 0;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.control-buttons {
   position: absolute;
   top: 20px;
   right: 20px;
@@ -509,9 +627,16 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.zoom-button {
+.top-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.control-button {
   background: rgba(40, 40, 40, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
@@ -522,10 +647,9 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   font-weight: 500;
   transition: background 0.2s;
-  margin-bottom: 8px;
 }
 
-.zoom-button:hover {
+.control-button:hover {
   background: rgba(50, 50, 50, 0.9);
 }
 

@@ -50,12 +50,15 @@ def test_should_render_with_auto_zoom(page: Page):
     iframe_component.wait_for(timeout=5000, state='visible')
     expect(iframe_component).to_be_visible()
 
+    # Wait for iframe to be properly loaded and have content
+    page.wait_for_timeout(2000)
+
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     pdf_container = iframe_frame.locator('div[id="pdfContainer"]')
     expect(pdf_container).to_be_visible()
 
     # Check that zoom controls are present
-    zoom_button = iframe_frame.locator('button.zoom-button')
+    zoom_button = iframe_frame.locator('.top-buttons button.control-button').nth(1)
     expect(zoom_button).to_be_visible()
 
     # Verify PDF viewer is present and has content
