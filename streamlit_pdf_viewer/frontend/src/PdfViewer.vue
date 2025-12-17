@@ -1,7 +1,69 @@
 <template>
   <div :style="pdfContainerStyle" ref="pdfContainer" id="pdfContainer" class="container-wrapper">
     <div class="scrolling-container">
-      <div id="pdfViewer"></div>
+      <div id="pdfViewer" :style="{ '--scale-factor': currentZoom }">
+        <div
+            v-for="page in pages"
+            :key="page.pageNumber"
+            class="page"
+            :style="{
+            width: `${page.viewport.width}px`,
+            height: `${page.viewport.height}px`,
+            marginBottom: `${args.pages_vertical_spacing}px`,
+            borderBottom: args.show_page_separator ? '1px solid #ddd' : 'none',
+            position: 'relative'
+          }"
+        >
+          <div class="canvasWrapper" :style="{ position: 'absolute', top: 0, left: 0 }">
+            <canvas
+                :ref="(el) => { if (el) pageCanvasRefs[page.pageNumber] = el }"
+                :id="`canvas_page_${page.pageNumber}`"
+                :width="page.width"
+                :height="page.height"
+                :style="{
+                width: `${page.viewport.width}px`,
+                height: `${page.viewport.height}px`,
+                display: 'block'
+              }"
+            ></canvas>
+          </div>
+
+          <div
+              v-if="renderText"
+              class="textLayer"
+              :style="{
+              zIndex: 11,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: `${page.viewport.height}px`,
+              width: `${page.viewport.width}px`
+            }"
+              :ref="(el) => { if (el) pageTextLayerRefs[page.pageNumber] = el }"
+          ></div>
+
+          <div v-if="page.annotations && page.annotations.length > 0">
+            <div
+                v-for="annotation in page.annotations"
+                :key="annotation.id"
+                :id="`annotation-${annotation.id}`"
+                :data-index="annotation.id"
+                :style="{
+                position: 'absolute',
+                left: `${annotation.x * page.scale}px`,
+                top: `${annotation.y * page.scale}px`,
+                width: `${annotation.width * page.scale}px`,
+                height: `${annotation.height * page.scale}px`,
+                outline: `${args.annotation_outline_size * page.scale}px ${annotation.borderStyle} ${annotation.color}`,
+                cursor: renderText ? 'text' : 'pointer',
+                pointerEvents: renderText ? 'none' : 'auto',
+                zIndex: 10
+              }"
+                @click="!renderText && handleAnnotationClick(annotation)"
+            ></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="zoom-controls">
       <button class="zoom-button" @click.stop="toggleZoomPanel">
@@ -47,7 +109,7 @@
 </template>
 
 <script>
-import {onMounted, computed, ref, onUnmounted, watch} from "vue";
+import {onMounted, computed, ref, onUnmounted, watch, nextTick} from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
@@ -66,9 +128,9 @@ export default {
   setup(props) {
     const totalHeight = ref(0);
     const maxWidth = ref(0);
-    const pageScales = ref([]);
-    const pageHeights = ref([]);
-    const loadedPages = ref([]);
+    const pages = ref([]);
+    const pageCanvasRefs = ref({});
+    const pageTextLayerRefs = ref({});
     const currentFrameHeight = ref(props.args.height || 0);
     const showZoomPanel = ref(false);
 
@@ -122,116 +184,10 @@ export default {
       return style;
     });
 
-    const clearExistingCanvases = (pdfViewer) => {
-      if (!pdfViewer) return;
-      pdfViewer.innerHTML = '';
-    };
-
-    const createCanvasForPage = (page, scale, rotation, pageNumber, resolutionRatioBoost = 1) => {
-      const viewport = page.getViewport({scale, rotation});
-      const ratio = (window.devicePixelRatio || 1) * resolutionRatioBoost;
-
-      const canvas = document.createElement("canvas");
-      canvas.id = `canvas_page_${pageNumber}`;
-      canvas.height = viewport.height * ratio;
-      canvas.width = viewport.width * ratio;
-      canvas.style.width = `${viewport.width}px`;
-      canvas.style.height = `${viewport.height}px`;
-      canvas.style.display = "block";
-      canvas.getContext("2d").scale(ratio, ratio);
-
-      return canvas;
-    };
-
-    const renderAnnotation = (annotation, annotationIndex, pageDiv, scale) => {
-      const annotationDiv = document.createElement('div');
-      annotation.id = `${annotation.id || annotationIndex}`
-      annotationDiv.id = `annotation-${annotation.id}`;
-      annotationDiv.setAttribute("data-index", annotation.id);
-      annotationDiv.style.position = 'absolute';
-      annotationDiv.style.left = `${annotation.x * scale}px`;
-      annotationDiv.style.top = `${annotation.y * scale}px`;
-      annotationDiv.style.width = `${annotation.width * scale}px`;
-      annotationDiv.style.height = `${annotation.height * scale}px`;
-      let border = annotation.border
-      if (!annotation.border || !acceptedBorderStyleAttributes.includes(annotation.border)) {
-        border = "solid"
-      }
-      annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px ${border} ${annotation.color}`;
-      annotationDiv.style.cursor = renderText ? 'text' : 'pointer';
-      annotationDiv.style.pointerEvents = renderText ? 'none' : 'auto';
-      annotationDiv.style.zIndex = 10;
-
-      if (!renderText) {
-        annotationDiv.addEventListener('click', () => {
-          Streamlit.setComponentValue({
-            clicked_annotation: {index: annotation.id, ...annotation},
-          });
-        });
-      }
-
-      pageDiv.appendChild(annotationDiv);
-    };
-
-    const renderPage = async (page, canvas, viewport, annotations, annotationCount) => {
-      const renderContext = {
-        canvasContext: canvas.getContext("2d"),
-        viewport: viewport
-      };
-
-      await page.render(renderContext).promise;
-
-      const pageDiv = document.createElement('div');
-      pageDiv.className = 'page';
-      pageDiv.style.position = 'relative';
-      pageDiv.style.width = `${viewport.width}px`;
-      pageDiv.style.height = `${viewport.height}px`;
-      pageDiv.style.marginBottom = `${props.args.pages_vertical_spacing}px`;
-
-      if (props.args.show_page_separator) {
-        pageDiv.style.borderBottom = '1px solid #ddd';
-      }
-
-      const canvasWrapper = document.createElement('div');
-      canvasWrapper.className = 'canvasWrapper';
-      canvasWrapper.style.position = 'absolute';
-      canvasWrapper.style.top = '0';
-      canvasWrapper.style.left = '0';
-      canvasWrapper.appendChild(canvas);
-
-      pageDiv.appendChild(canvasWrapper);
-
-      if (renderText) {
-        const textContent = await page.getTextContent();
-        const textLayerDiv = document.createElement("div");
-        textLayerDiv.className = "textLayer";
-        textLayerDiv.style.zIndex = "11";
-        textLayerDiv.style.position = 'absolute';
-        textLayerDiv.style.top = '0';
-        textLayerDiv.style.left = '0';
-        textLayerDiv.style.height = `${viewport.height}px`;
-        textLayerDiv.style.width = `${viewport.width}px`;
-
-        const textLayer = new pdfjsLib.TextLayer({
-          textContentSource: textContent,
-          container: textLayerDiv,
-          viewport: viewport,
-          textDivs: []
-        });
-        await textLayer.render();
-
-        pageDiv.appendChild(textLayerDiv);
-      }
-
-      if (annotations && annotations.length > 0) {
-        annotations.forEach((annotation, index) => {
-          const annotationUniqueIndex = annotationCount + index
-          renderAnnotation(annotation, annotationUniqueIndex, pageDiv, viewport.scale);
-        });
-      }
-
-      const pdfViewer = document.getElementById("pdfViewer");
-      pdfViewer.appendChild(pageDiv);
+    const handleAnnotationClick = (annotation) => {
+      Streamlit.setComponentValue({
+        clicked_annotation: {index: annotation.id, ...annotation},
+      });
     };
 
     const getPagesToRender = (numPages) => {
@@ -241,11 +197,11 @@ export default {
       return props.args.pages_to_render;
     };
 
-    const renderPdfPages = async (pdf, pdfViewer, pagesToRender) => {
+    const renderPdfPages = async (pdf, pagesToRender) => {
       totalHeight.value = 0;
-      pageScales.value = [];
-      pageHeights.value = [];
-      loadedPages.value = [];
+      pages.value = [];
+      pageCanvasRefs.value = {};
+      pageTextLayerRefs.value = {};
 
       const resolutionBoost = props.args.resolution_boost || 1;
       let maxPageWidth = 0;
@@ -272,43 +228,87 @@ export default {
 
       let annotationCount = 0;
 
+      const newPages = [];
+
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-        const page = await pdf.getPage(pageNumber);
-        const rotation = page.rotate;
-
-        pageScales.value.push(finalScale);
-        pageHeights.value.push(page.getViewport({scale: 1.0, rotation}).height);
-
-        const scaledViewport = page.getViewport({scale: finalScale, rotation});
-        if (scaledViewport.width > maxPageWidth) {
-          maxPageWidth = scaledViewport.width;
-        }
-
         if (pagesToRender.includes(pageNumber)) {
-          const canvas = createCanvasForPage(page, finalScale, rotation, pageNumber, resolutionBoost);
-          pdfViewer.style.setProperty('--scale-factor', finalScale);
+          const page = await pdf.getPage(pageNumber);
+          const rotation = page.rotate;
+          const viewport = page.getViewport({scale: finalScale, rotation});
+          const ratio = (window.devicePixelRatio || 1) * resolutionBoost;
+
+          if (viewport.width > maxPageWidth) {
+            maxPageWidth = viewport.width;
+          }
 
           const annotationsForPage = props.args.annotations.filter(
               anno => Number(anno.page) === pageNumber
-          );
+          ).map((anno, index) => {
+            let border = anno.border;
+            if (!anno.border || !acceptedBorderStyleAttributes.includes(anno.border)) {
+              border = "solid";
+            }
+            return {
+              ...anno,
+              id: anno.id || (annotationCount + index),
+              borderStyle: border
+            };
+          });
 
-          totalHeight.value += canvas.height / ((window.devicePixelRatio || 1) * resolutionBoost);
-          await renderPage(page, canvas, scaledViewport, annotationsForPage, annotationCount);
-          annotationCount += annotationsForPage.length
+          annotationCount += annotationsForPage.length;
 
-          if (canvas.id) {
-            loadedPages.value.push(canvas.id);
-          }
+          newPages.push({
+            pageNumber,
+            page,
+            viewport,
+            width: viewport.width * ratio,
+            height: viewport.height * ratio,
+            scale: finalScale,
+            annotations: annotationsForPage
+          });
+
+          totalHeight.value += viewport.height;
         }
       }
 
       if (pagesToRender.length > 0) {
-        totalHeight.value -= props.args.pages_vertical_spacing;
+        totalHeight.value -= props.args.pages_vertical_spacing; // Adjust for last margin
       }
 
-      pdfViewer.style.width = `${maxPageWidth}px`;
-      pdfViewer.style.marginLeft = 'auto';
-      pdfViewer.style.marginRight = 'auto';
+      pages.value = newPages;
+
+      // Wait for DOM update to render canvases
+      await nextTick();
+
+      for (const pageData of pages.value) {
+        try {
+          const canvas = pageCanvasRefs.value[pageData.pageNumber];
+          if (canvas) {
+            const renderContext = {
+              canvasContext: canvas.getContext("2d"),
+              viewport: pageData.viewport,
+              transform: [resolutionBoost, 0, 0, resolutionBoost, 0, 0] // Scale for resolution boost
+            };
+            await pageData.page.render(renderContext).promise;
+          }
+
+          if (renderText) {
+            const textLayerDiv = pageTextLayerRefs.value[pageData.pageNumber];
+            if (textLayerDiv) {
+              const textContent = await pageData.page.getTextContent();
+              const textLayer = new pdfjsLib.TextLayer({
+                textContentSource: textContent,
+                container: textLayerDiv,
+                viewport: pageData.viewport,
+                textDivs: []
+              });
+              await textLayer.render();
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to render page ${pageData.pageNumber}:`, error);
+        }
+      }
     };
 
     const alertError = (error) => {
@@ -328,11 +328,8 @@ export default {
         const pdf = await loadingTask.promise;
         pdfInstance.value = pdf;
 
-        const pdfViewer = document.getElementById("pdfViewer");
-        clearExistingCanvases(pdfViewer);
-
         const pagesToRender = getPagesToRender(pdf.numPages);
-        await renderPdfPages(pdf, pdfViewer, pagesToRender);
+        await renderPdfPages(pdf, pagesToRender);
         scrollToItem();
       } catch (error) {
         alertError(error);
@@ -467,6 +464,11 @@ export default {
     });
 
     onUnmounted(() => {
+      // Clean up PDF.js resources
+      if (pdfInstance.value) {
+        pdfInstance.value.destroy();
+        pdfInstance.value = null;
+      }
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
     });
@@ -486,6 +488,11 @@ export default {
       fitToHeight,
       toggleZoomPanel,
       applyManualZoom,
+      pages,
+      pageCanvasRefs,
+      pageTextLayerRefs,
+      renderText,
+      handleAnnotationClick
     };
   },
 };
