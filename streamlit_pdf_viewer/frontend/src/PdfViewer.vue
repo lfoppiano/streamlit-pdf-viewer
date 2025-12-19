@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import {onMounted, computed, ref, onUnmounted, watch, nextTick} from "vue";
+import {onMounted, computed, ref, onUnmounted, watch, nextTick, markRaw} from "vue";
 import "pdfjs-dist/web/pdf_viewer.css";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import {getDocument} from "pdfjs-dist/build/pdf";
@@ -259,8 +259,8 @@ export default {
 
           newPages.push({
             pageNumber,
-            page,
-            viewport,
+            page: markRaw(page),
+            viewport: markRaw(viewport),
             width: viewport.width * ratio,
             height: viewport.height * ratio,
             scale: finalScale,
