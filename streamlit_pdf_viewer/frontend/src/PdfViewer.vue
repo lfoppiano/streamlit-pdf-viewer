@@ -83,6 +83,7 @@ export default {
     const isRendering = ref(false);
 
     const renderText = props.args.render_text === true;
+    const allowClickableAnnotationsWithTextRendering = props.args.allow_clickable_annotations_with_text_rendering === true;
 
     const parseWidthValue = (widthValue, fallbackValue = window.innerWidth) => {
       if (typeof widthValue === "string" && widthValue.endsWith("%")) {
@@ -158,11 +159,13 @@ export default {
         border = "solid"
       }
       annotationDiv.style.outline = `${props.args.annotation_outline_size * scale}px ${border} ${annotation.color}`;
-      annotationDiv.style.cursor = renderText ? 'text' : 'pointer';
-      annotationDiv.style.pointerEvents = renderText ? 'none' : 'auto';
-      annotationDiv.style.zIndex = 10;
+      const annotationsClickable = !renderText || allowClickableAnnotationsWithTextRendering;
+      annotationDiv.style.cursor = annotationsClickable ? 'pointer' : 'text';
+      annotationDiv.style.pointerEvents = annotationsClickable ? 'auto' : 'none';
+      // Use higher z-index when annotations need to be above text layer (z-index 11)
+      annotationDiv.style.zIndex = (renderText && allowClickableAnnotationsWithTextRendering) ? 12 : 10;
 
-      if (!renderText) {
+      if (annotationsClickable) {
         annotationDiv.addEventListener('click', () => {
           Streamlit.setComponentValue({
             clicked_annotation: {index: annotation.id, ...annotation},
