@@ -39,6 +39,7 @@ def pdf_viewer(
         scroll_to_page: Optional[int] = None,
         scroll_to_annotation: Optional[int] = None,
         on_annotation_click: Optional[Callable[[dict], None]] = None,
+        allow_clickable_annotations_with_text_rendering: bool = False,
 ):
     """
     pdf_viewer function to display a PDF file in a Streamlit app.
@@ -59,6 +60,7 @@ def pdf_viewer(
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
+    :param allow_clickable_annotations_with_text_rendering: When True, annotations remain clickable even when render_text is enabled. Note that text selection will not work through annotation areas. Defaults to False.
 
     The function reads the PDF file (from a file path, URL, or binary data), encodes it in base64,
     and uses a Streamlit component to render it in the app. It supports optional annotations and adjustable margins.
@@ -132,7 +134,8 @@ def pdf_viewer(
         viewer_align=viewer_align,
         show_page_separator=show_page_separator,
         scroll_to_page=scroll_to_page,
-        scroll_to_annotation=scroll_to_annotation
+        scroll_to_annotation=scroll_to_annotation,
+        allow_clickable_annotations_with_text_rendering=allow_clickable_annotations_with_text_rendering
     )
 
     # Execute the custom callback function
