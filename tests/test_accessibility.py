@@ -43,9 +43,14 @@ def test_accessibility_zoom_levels_for_visibility(page: Page):
     # Test the PDF viewer
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     canvas = iframe_frame.locator("canvas").first
+
+    # Wait for the canvas to be visible before getting bounding box
+    expect(canvas).to_be_visible()
+
     canvas_box = canvas.bounding_box()
     
     # Verify that the canvas has reasonable dimensions for accessibility
+    assert canvas_box is not None, "Canvas bounding box should be available"
     assert canvas_box['width'] > 0, "Canvas should have positive width for accessibility"
     assert canvas_box['height'] > 0, "Canvas should have positive height for accessibility"
 
@@ -120,5 +125,6 @@ def test_accessibility_responsive_text_sizing(page: Page):
         
         # Verify canvas has reasonable dimensions for accessibility
         canvas_box = canvas.bounding_box()
+        assert canvas_box is not None, f"Canvas bounding box should be available at viewport {viewport}"
         assert canvas_box['width'] > 0, f"Canvas should be visible at viewport {viewport}"
         assert canvas_box['height'] > 0, f"Canvas should have positive height at viewport {viewport}"
